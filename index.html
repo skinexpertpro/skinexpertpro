@@ -4363,6 +4363,31 @@
     });
   }
 
+  // Igual ao resizeImageFile, mas devolve um Blob (usado no upload real pro Storage)
+  function resizeImageFileToBlob(file, maxSize){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if(w > h && w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; }
+          else if(h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob((blob) => {
+            if(blob) resolve(blob); else reject(new Error('Falha ao gerar imagem'));
+          }, 'image/jpeg', 0.82);
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   const fotosEvolucaoDemo = []; // fallback local para pacientes de demonstração
 
   document.getElementById('btnAdicionarFotoEvolucao').addEventListener('click', async () => {
@@ -4375,17 +4400,25 @@
     const etiqueta = document.getElementById('fotoEvolucaoEtiqueta').value.trim();
     const observacoes = document.getElementById('fotoEvolucaoObs').value.trim();
 
-    let fotoBase64;
-    try {
-      fotoBase64 = await resizeImageFile(file, 900);
-    } catch(e) {
-      showToast('Não foi possível processar a imagem.');
-      return;
-    }
-
     if(isPacienteReal(currentPatient)){
       const { data: userData } = await supabaseClient.auth.getUser();
       if(!userData || !userData.user){ showToast('Sessão expirada, faça login novamente.'); return; }
+
+      // Paciente real: a foto vai pro Supabase Storage (bucket fotos-evolucao),
+      // não fica mais salva em base64 dentro da tabela.
+      let blob;
+      try {
+        blob = await resizeImageFileToBlob(file, 900);
+      } catch(e) {
+        showToast('Não foi possível processar a imagem.');
+        return;
+      }
+
+      const fotoPath = `${userData.user.id}/${currentPatient.id}/${Date.now()}.jpg`;
+      const { error: uploadError } = await supabaseClient.storage
+        .from('fotos-evolucao')
+        .upload(fotoPath, blob, { contentType: 'image/jpeg' });
+      if(uploadError){ showToast('Erro ao enviar a foto: ' + uploadError.message); return; }
 
       const { error } = await supabaseClient.from('fotos_evolucao').insert({
         paciente_id: currentPatient.id,
@@ -4393,11 +4426,24 @@
         data_foto: dataFoto,
         etiqueta: etiqueta || null,
         observacoes: observacoes || null,
-        foto_base64: fotoBase64,
+        foto_path: fotoPath,
       });
-      if(error){ showToast('Erro ao salvar: ' + error.message); return; }
+      if(error){
+        // se salvar a linha falhar, remove o arquivo órfão do Storage
+        await supabaseClient.storage.from('fotos-evolucao').remove([fotoPath]);
+        showToast('Erro ao salvar: ' + error.message);
+        return;
+      }
     } else {
-      fotosEvolucaoDemo.push({ id: 'demo-' + Date.now(), data_foto: dataFoto, etiqueta, observacoes, foto_base64: fotoBase64 });
+      // Paciente de demonstração: continua só em memória, sem ir pro banco/Storage
+      let fotoDataUrl;
+      try {
+        fotoDataUrl = await resizeImageFile(file, 900);
+      } catch(e) {
+        showToast('Não foi possível processar a imagem.');
+        return;
+      }
+      fotosEvolucaoDemo.push({ id: 'demo-' + Date.now(), data_foto: dataFoto, etiqueta, observacoes, foto_url: fotoDataUrl });
     }
 
     fileInput.value = '';
@@ -4420,7 +4466,19 @@
         .select('*')
         .eq('paciente_id', currentPatient.id)
         .order('data_foto', { ascending: false });
-      if(!error && data) fotos = data;
+      if(!error && data){
+        // Bucket é privado: gera uma URL assinada (temporária) pra cada foto na hora de exibir
+        fotos = await Promise.all(data.map(async (f) => {
+          if(f.foto_path){
+            const { data: signed } = await supabaseClient.storage
+              .from('fotos-evolucao')
+              .createSignedUrl(f.foto_path, 3600);
+            return { ...f, foto_url: signed ? signed.signedUrl : '' };
+          }
+          // compatibilidade com fotos antigas que ainda estejam em base64
+          return { ...f, foto_url: f.foto_base64 || '' };
+        }));
+      }
     } else {
       fotos = fotosEvolucaoDemo.slice().sort((a,b) => b.data_foto.localeCompare(a.data_foto));
     }
@@ -4436,7 +4494,7 @@
         <button class="foto-evolucao-remove" title="Remover">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
-        <img src="${f.foto_base64}" alt="Foto de evolução">
+        <img src="${f.foto_url}" alt="Foto de evolução">
         <div class="foto-evolucao-card-info">
           <div class="foto-evolucao-card-data">${dataFormatada}</div>
           ${f.etiqueta ? `<div class="foto-evolucao-card-etiqueta">${f.etiqueta}</div>` : ''}
@@ -4446,6 +4504,9 @@
       card.querySelector('.foto-evolucao-remove').addEventListener('click', async (e) => {
         e.stopPropagation();
         if(isPacienteReal(currentPatient)){
+          if(f.foto_path){
+            await supabaseClient.storage.from('fotos-evolucao').remove([f.foto_path]);
+          }
           await supabaseClient.from('fotos_evolucao').delete().eq('id', f.id);
         } else {
           const idx = fotosEvolucaoDemo.findIndex(x => x.id === f.id);
@@ -4462,7 +4523,7 @@
     box.className = 'foto-evolucao-lightbox';
     box.innerHTML = `
       <button class="foto-evolucao-lightbox-close">&times;</button>
-      <img src="${f.foto_base64}" alt="Foto de evolução">
+      <img src="${f.foto_url}" alt="Foto de evolução">
       <div class="foto-evolucao-lightbox-info">
         <div style="font-weight:700;">${dataFormatada}${f.etiqueta ? ' · ' + f.etiqueta : ''}</div>
         ${f.observacoes ? `<div style="margin-top:4px; opacity:.85; max-width:500px;">${f.observacoes}</div>` : ''}
