@@ -1089,11 +1089,11 @@
   .fin-tab.active #selecionadosCount{ background: var(--gold); }
 
   /* ---------- A-Z ativos browser (estilo Tulipia) ---------- */
-  .az-nav{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:22px; }
+  .az-nav{ display:flex; flex-wrap:nowrap; gap:6px; margin-bottom:22px; width:100%; }
   .az-nav-letter{
-    width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center;
-    font-size:12px; font-weight:700; color: var(--text-muted); background:#fff; border:1px solid var(--border);
-    cursor:pointer; text-decoration:none;
+    flex:1 1 0; min-width:0; height:44px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; color: var(--text-muted); background:#fff; border:1px solid var(--border);
+    cursor:pointer; text-decoration:none; padding:0 2px;
   }
   .az-nav-letter:hover{ border-color: var(--gold); color: var(--text-dark); }
   .az-nav-letter.disabled{ opacity:.35; cursor:default; pointer-events:none; }
@@ -1927,7 +1927,42 @@
                   </div>
                 </div>
                 <div class="form-field"><label>Data de Nascimento</label><input id="regDataNascimento" type="date"></div>
-                <div class="form-field"><label>País</label><input id="regPais" type="text" value="Brasil"></div>
+                <div class="form-field">
+                  <label>País</label>
+                  <select class="anamnese-select" id="regPais">
+                    <option value="Brasil" selected>Brasil</option>
+                    <option value="Estados Unidos">Estados Unidos</option>
+                    <optgroup label="União Europeia">
+                      <option value="Alemanha">Alemanha</option>
+                      <option value="Áustria">Áustria</option>
+                      <option value="Bélgica">Bélgica</option>
+                      <option value="Bulgária">Bulgária</option>
+                      <option value="Chipre">Chipre</option>
+                      <option value="Croácia">Croácia</option>
+                      <option value="Dinamarca">Dinamarca</option>
+                      <option value="Eslováquia">Eslováquia</option>
+                      <option value="Eslovênia">Eslovênia</option>
+                      <option value="Espanha">Espanha</option>
+                      <option value="Estônia">Estônia</option>
+                      <option value="Finlândia">Finlândia</option>
+                      <option value="França">França</option>
+                      <option value="Grécia">Grécia</option>
+                      <option value="Hungria">Hungria</option>
+                      <option value="Irlanda">Irlanda</option>
+                      <option value="Itália">Itália</option>
+                      <option value="Letônia">Letônia</option>
+                      <option value="Lituânia">Lituânia</option>
+                      <option value="Luxemburgo">Luxemburgo</option>
+                      <option value="Malta">Malta</option>
+                      <option value="Países Baixos">Países Baixos</option>
+                      <option value="Polônia">Polônia</option>
+                      <option value="Portugal">Portugal</option>
+                      <option value="República Tcheca">República Tcheca</option>
+                      <option value="Romênia">Romênia</option>
+                      <option value="Suécia">Suécia</option>
+                    </optgroup>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -2563,6 +2598,9 @@
             </button>
             <p style="font-size:12.5px; color:var(--text-muted); margin:8px 0 0 0;">Escolha os ativos que deseja na rotina e veja quais produtos do Catálogo os contêm.</p>
 
+            <div class="toggle-subtitle">Função do produto na rotina</div>
+            <div class="chip-select" id="skcFuncaoExterno" style="margin-bottom:18px;"></div>
+
             <div class="registro-card" id="skcAssistentePanel" style="display:none; margin-top:16px; padding:22px;">
               <div class="anamnese-title" style="margin-bottom:16px;">Filtrar Ativos Disponíveis</div>
 
@@ -2571,9 +2609,6 @@
                 <label class="switch"><input type="checkbox" id="skcAssistGestante"><span class="switch-slider"></span></label>
               </div>
 
-              <div class="toggle-subtitle">Função do produto na rotina</div>
-              <div class="chip-select" id="skcAssistFuncao" style="margin-bottom:18px;"></div>
-
               <div class="toggle-subtitle">Classes de Ativos</div>
               <div class="chip-select" id="skcAssistClasses" style="margin-bottom:8px;"></div>
 
@@ -2581,17 +2616,10 @@
                 <button class="modal-btn-cancel" id="skcBtnLimparFiltros">Limpar Filtros</button>
                 <button class="btn-save" id="skcBtnAplicarFiltros">Aplicar Filtros</button>
               </div>
-            </div>
 
-            <div class="filter-bar" style="margin-top:20px;">
-              <div class="search-input">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="skcAtivosSearch" placeholder="Buscar ativos...">
-              </div>
+              <div class="toggle-subtitle">Ativos Desejados</div>
+              <div class="chip-select" id="skcAtivosDesejadosChips" style="margin-bottom:18px;"></div>
             </div>
-
-            <div class="toggle-subtitle">Ativos Desejados</div>
-            <div class="chip-select" id="skcAtivosDesejadosChips" style="margin-bottom:18px;"></div>
 
             <div class="toggle-subtitle">Produtos Encontrados</div>
             <div class="product-detail-list" id="skcProdutosEncontrados"></div>
@@ -2806,11 +2834,10 @@
           </div>
 
           <div class="filter-bar">
-            <div class="search-input">
+            <div class="search-input" style="flex:1 1 100%; width:100%;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="text" id="ativosSearch" placeholder="Buscar ativos...">
             </div>
-            <div class="spacer-flex"></div>
           </div>
 
           <div class="az-nav" id="azNav"></div>
@@ -3760,7 +3787,7 @@
         <td>${acompHTML(p.acomp)}</td>
         <td><span class="status-active">${p.status}</span></td>
       `;
-      tr.querySelector('.patient-name').addEventListener('click', () => openPatientRegistro(p.id, 'anamnese'));
+      tr.querySelector('.patient-name').addEventListener('click', () => openPatientRegistro(p.id, 'dados'));
       tbody.appendChild(tr);
     });
   }
@@ -3836,10 +3863,23 @@
 
   const patientPhotoDefaultIcon = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
-  function setPatientPhotoCircle(url){
+  function setPatientPhotoCircle(url, initials, color, bg){
     const circle = document.getElementById('patientPhotoCircle');
+    const inner = document.getElementById('patientPhotoInner');
     circle.classList.toggle('has-photo', !!url);
-    document.getElementById('patientPhotoInner').innerHTML = url ? `<img src="${url}" alt="Foto da paciente">` : patientPhotoDefaultIcon;
+    if(url){
+      inner.style.background = '';
+      inner.style.color = '';
+      inner.innerHTML = `<img src="${url}" alt="Foto da paciente">`;
+    } else if(initials){
+      inner.style.background = bg || 'var(--tag-bg)';
+      inner.style.color = color || 'var(--tag-text)';
+      inner.innerHTML = `<span style="font-weight:700; font-size:26px;">${initials}</span>`;
+    } else {
+      inner.style.background = '';
+      inner.style.color = '';
+      inner.innerHTML = patientPhotoDefaultIcon;
+    }
   }
 
   document.getElementById('patientPhotoCircle').addEventListener('click', () => {
@@ -3910,7 +3950,7 @@
     document.getElementById('regPhoneNumber').value = p.phoneNumber || '';
     document.getElementById('regDataNascimento').value = p.dataNascimento || '';
     document.getElementById('regPais').value = p.pais || 'Brasil';
-    setPatientPhotoCircle(p.foto_url || '');
+    setPatientPhotoCircle(p.foto_url || '', initialsFromName(p.name), p.color, p.bg);
 
     navItems.forEach(i => i.classList.remove('active'));
     const pacientesNavForRegistro = document.querySelector('.nav-item[data-view="pacientes"]');
@@ -5055,13 +5095,22 @@
     return 'EUR'; // PT, ES, FR, IT, DE, EU
   }
   // Deduz a moeda a partir do país escrito/selecionado no cadastro da paciente.
+  const PAISES_UNIAO_EUROPEIA = [
+    'alemanha', 'austria', 'áustria', 'belgica', 'bélgica', 'bulgaria', 'bulgária', 'chipre',
+    'croacia', 'croácia', 'dinamarca', 'eslovaquia', 'eslováquia', 'eslovenia', 'eslovênia',
+    'espanha', 'spain', 'estonia', 'estônia', 'finlandia', 'finlândia', 'franca', 'frança', 'france',
+    'grecia', 'grécia', 'hungria', 'irlanda', 'ireland', 'italia', 'itália', 'italy', 'letonia', 'letônia',
+    'lituania', 'lituânia', 'luxemburgo', 'malta', 'paises baixos', 'países baixos', 'holanda', 'netherlands',
+    'polonia', 'polônia', 'portugal', 'republica tcheca', 'república tcheca', 'romenia', 'romênia', 'suecia', 'suécia',
+    'europa', 'europe',
+  ];
   function moedaPorPais(pais){
     if(!pais) return null;
     const p = pais.trim().toLowerCase();
     if(!p) return null;
     if(p.includes('brasil') || p.includes('brazil')) return 'BRL';
     if(p.includes('united states') || p.includes('estados unidos') || p === 'eua' || p === 'usa') return 'USD';
-    if(['portugal','espanha','spain','frança','franca','france','itália','italia','italy','alemanha','germany','holanda','netherlands','bélgica','belgica','belgium','europa','europe','irlanda','ireland'].some(pais2 => p.includes(pais2))) return 'EUR';
+    if(PAISES_UNIAO_EUROPEIA.some(pais2 => p.includes(pais2))) return 'EUR';
     return null;
   }
 
@@ -7437,7 +7486,8 @@
     skcClassesContainer.appendChild(chip);
   });
 
-  const skcFuncaoContainer = document.getElementById('skcAssistFuncao');
+  const skcFuncaoContainer = document.getElementById('skcFuncaoExterno');
+
   skincareCategories.forEach(cat => {
     const chip = document.createElement('div');
     chip.className = 'chip';
@@ -7448,11 +7498,9 @@
   });
 
   document.getElementById('skcAssistGestante').addEventListener('change', renderSkcAtivosDesejadosChips);
-  document.getElementById('skcAtivosSearch').addEventListener('input', renderSkcAtivosDesejadosChips);
 
   document.getElementById('skcBtnLimparFiltros').addEventListener('click', () => {
     document.getElementById('skcAssistGestante').checked = false;
-    skcFuncaoContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
     skcClassesContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
     renderSkcAtivosDesejadosChips();
     showToast('Filtros limpos');
@@ -7464,12 +7512,10 @@
   });
 
   function renderSkcAtivosDesejadosChips(){
-    const term = document.getElementById('skcAtivosSearch').value.trim().toLowerCase();
     const gestante = document.getElementById('skcAssistGestante').checked;
     const classesAtivas = Array.from(skcClassesContainer.querySelectorAll('.chip.selected')).map(c => c.dataset.classe);
 
     const filtered = ativosData.filter(a => {
-      if(term && !a.nome.toLowerCase().includes(term)) return false;
       if(gestante && !a.gestantes) return false;
       if(classesAtivas.length > 0 && !classesAtivas.some(c => a.classe.includes(c))) return false;
       return true;
