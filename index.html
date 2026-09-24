@@ -2615,16 +2615,6 @@
           <div class="builder-grid">
             <div class="anamnese-card">
               <div class="anamnese-title" style="margin-bottom:16px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-                Jornada da Rotina
-              </div>
-              <div id="jornadaContainer">
-                <div class="routine-empty">Nenhum produto adicionado ainda. Escolha produtos ao lado para montar a rotina.</div>
-              </div>
-            </div>
-
-            <div class="anamnese-card">
-              <div class="anamnese-title" style="margin-bottom:16px;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
                 Produtos <span id="produtosCategoriaLabel" style="color:var(--text-muted); font-weight:600;">— Demaquilante</span>
               </div>
@@ -2635,6 +2625,16 @@
               <div class="category-tabs" id="skincareCategoryTabs"></div>
               <div class="toggle-subtitle">Indicados para este perfil</div>
               <div id="skincareProductsList" class="product-pick-scroll"></div>
+            </div>
+
+            <div class="anamnese-card">
+              <div class="anamnese-title" style="margin-bottom:16px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                Jornada da Rotina
+              </div>
+              <div id="jornadaContainer">
+                <div class="routine-empty">Nenhum produto adicionado ainda. Escolha produtos ao lado para montar a rotina.</div>
+              </div>
             </div>
           </div>
 
@@ -3319,8 +3319,8 @@
       <select id="apptPatientSelect"></select>
     </div>
     <div class="modal-field" id="modalServiceField">
-      <label>Serviço</label>
-      <select id="apptServico"></select>
+      <label>Serviço(s)</label>
+      <div id="apptServicosContainer" style="display:flex; flex-direction:column; gap:4px; max-height:150px; overflow-y:auto; border:1px solid var(--border); border-radius:9px; padding:8px 10px;"></div>
     </div>
     <div class="modal-field">
       <label>Horário</label>
@@ -3329,14 +3329,19 @@
     <div class="modal-field">
       <label>Duração</label>
       <select id="apptDuration">
+        <option value="15">15 min</option>
         <option value="30">30 min</option>
+        <option value="45">45 min</option>
         <option value="60" selected>60 min</option>
         <option value="90">90 min</option>
         <option value="120">120 min</option>
       </select>
     </div>
     <div class="modal-field" id="modalWhatsappField">
-      <label class="checkbox-item"><input type="checkbox" id="apptEnviarWhatsapp" checked> Enviar confirmação por WhatsApp</label>
+      <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:var(--text-dark); cursor:pointer; margin:0;">
+        <input type="checkbox" id="apptEnviarWhatsapp" checked style="width:16px; height:16px; accent-color:var(--sidebar-bg); cursor:pointer; flex-shrink:0; margin:0;">
+        Enviar confirmação por WhatsApp
+      </label>
     </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" id="modalCancel">Cancelar</button>
@@ -5844,7 +5849,7 @@
   const apptPatient = document.getElementById('apptPatient');
   const apptPatientSelect = document.getElementById('apptPatientSelect');
   const modalServiceField = document.getElementById('modalServiceField');
-  const apptServico = document.getElementById('apptServico');
+  const apptServicosContainer = document.getElementById('apptServicosContainer');
   const apptTime = document.getElementById('apptTime');
   const apptDuration = document.getElementById('apptDuration');
   const modalConfirm = document.getElementById('modalConfirm');
@@ -5857,9 +5862,20 @@
       || '<option value="">Nenhuma paciente cadastrada</option>';
   }
 
-  function popularSelectServicos(){
-    apptServico.innerHTML = '<option value="">Selecione um serviço</option>' +
-      servicosData.map(s => `<option value="${s.nome}">${s.nome} (${s.duracao})</option>`).join('');
+  // Permite marcar mais de um serviço para o mesmo atendimento (ex: Limpeza de Pele + Drenagem).
+  function popularServicosCheckboxes(){
+    apptServicosContainer.innerHTML = servicosData.length
+      ? servicosData.map(s => `
+          <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text-dark); cursor:pointer; margin:0;">
+            <input type="checkbox" class="appt-servico-check" value="${s.nome}" data-duracao="${s.duracao}" style="width:15px; height:15px; accent-color:var(--sidebar-bg); cursor:pointer; flex-shrink:0; margin:0;">
+            ${s.nome} <span style="color:var(--text-muted); font-size:12px;">(${s.duracao})</span>
+          </label>
+        `).join('')
+      : '<span style="font-size:13px; color:var(--text-muted);">Nenhum serviço cadastrado</span>';
+  }
+
+  function getServicosSelecionados(){
+    return Array.from(apptServicosContainer.querySelectorAll('.appt-servico-check:checked')).map(cb => cb.value);
   }
 
   // Converte algo como "1h", "45 min" ou "1h30" em minutos, para sugerir a duração do atendimento.
@@ -5878,13 +5894,18 @@
     return encontrou ? minutos : null;
   }
 
-  apptServico.addEventListener('change', () => {
-    const servicoSelecionado = servicosData.find(s => s.nome === apptServico.value);
-    if(!servicoSelecionado) return;
-    const minutos = duracaoServicoParaMinutos(servicoSelecionado.duracao);
-    if(minutos){
-      const opcoes = [30, 60, 90, 120];
-      const maisProxima = opcoes.reduce((a, b) => Math.abs(b - minutos) < Math.abs(a - minutos) ? b : a);
+  // Ao marcar/desmarcar serviços, soma a duração de todos os selecionados e sugere a mais próxima disponível.
+  apptServicosContainer.addEventListener('change', () => {
+    const selecionados = apptServicosContainer.querySelectorAll('.appt-servico-check:checked');
+    if(selecionados.length === 0) return;
+    let totalMinutos = 0;
+    selecionados.forEach(cb => {
+      const minutos = duracaoServicoParaMinutos(cb.dataset.duracao);
+      if(minutos) totalMinutos += minutos;
+    });
+    if(totalMinutos){
+      const opcoes = [15, 30, 45, 60, 90, 120];
+      const maisProxima = opcoes.reduce((a, b) => Math.abs(b - totalMinutos) < Math.abs(a - totalMinutos) ? b : a);
       apptDuration.value = String(maisProxima);
     }
   });
@@ -5892,7 +5913,6 @@
   function openModal(mode, prefillTime){
     modalMode = mode;
     apptPatient.value = '';
-    apptServico.value = '';
     apptTime.value = prefillTime || '09:00';
     apptDuration.value = '60';
     if(mode === 'appt'){
@@ -5902,7 +5922,7 @@
       apptPatientSelect.style.display = 'block';
       popularSelectPacientes();
       modalServiceField.style.display = 'block';
-      popularSelectServicos();
+      popularServicosCheckboxes();
       modalConfirm.textContent = 'Agendar';
       modalWhatsappField.style.display = 'block';
     } else {
@@ -5952,7 +5972,8 @@
       const pacienteId = apptPatientSelect.value;
       const pacienteSelecionado = patients.find(p => String(p.id) === String(pacienteId));
       if(!pacienteSelecionado){ showToast('Selecione uma paciente.'); return; }
-      const servicoNome = apptServico.value || null;
+      const servicosSelecionados = getServicosSelecionados();
+      const servicoNome = servicosSelecionados.length ? servicosSelecionados.join(', ') : null;
 
       const { data: inserted, error } = await supabaseClient.from('agendamentos').insert({
         profissional_id: usuarioLogado.id,
@@ -6013,7 +6034,7 @@
       time: hora,
       duration: duracao,
       label: pacienteDemo,
-      servico: modalMode === 'appt' ? (apptServico.value || null) : null,
+      servico: modalMode === 'appt' ? (getServicosSelecionados().join(', ') || null) : null,
       type: modalMode
     });
     closeModal();
@@ -7620,6 +7641,7 @@
           <div class="product-detail-top">
             <div class="product-detail-name">${prod.name}</div>
             <div class="product-detail-brand">${prod.brand}${prod.price ? ' · ' + faixaDePrecoCompacta(prod.price, prod.apenasBrasil) : ''}</div>
+            ${prod.category ? `<span class="category-chip" style="margin-top:4px;">${prod.category}</span>` : ''}
           </div>
           ${prod.func ? `<div class="product-detail-func">${prod.func}</div>` : ''}
           <div class="product-detail-why">
