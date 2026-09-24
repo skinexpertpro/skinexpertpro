@@ -642,10 +642,10 @@
 
   .product-pick-scroll{ display:flex; gap:12px; overflow-x:auto; overflow-y:hidden; padding-bottom:8px; width:100%; min-width:0; }
 
-  .product-detail-list{ display:flex; gap:14px; overflow-x:auto; overflow-y:hidden; padding-bottom:8px; align-items:flex-start; width:100%; min-width:0; }
+  .product-detail-list{ display:flex; gap:14px; overflow-x:auto; overflow-y:hidden; padding-bottom:8px; align-items:stretch; width:100%; min-width:0; }
   .product-detail-card{ display:flex; flex-direction:column; border:1px solid var(--border); border-radius:12px; padding:14px; flex:0 0 250px; width:250px; box-sizing:border-box; }
-  .product-detail-thumb{ width:100%; height:140px; border-radius:9px; border:1px solid var(--border); object-fit:cover; margin-bottom:10px; }
-  .product-detail-info{ min-width:0; }
+  .product-detail-thumb{ width:100%; height:140px; border-radius:9px; border:1px solid var(--border); object-fit:cover; margin-bottom:10px; flex-shrink:0; }
+  .product-detail-info{ min-width:0; display:flex; flex-direction:column; flex:1; }
   .product-detail-top{ display:flex; flex-direction:column; gap:2px; }
   .product-detail-name{ font-family:'Playfair Display', serif; font-weight:700; font-size:14px; color: var(--text-dark); }
   .product-detail-brand{ font-size:11.5px; color: var(--text-muted); }
@@ -654,7 +654,7 @@
   .product-detail-why-title{ font-size:10px; font-weight:700; color: var(--gold-dark); text-transform:uppercase; letter-spacing:.03em; margin-bottom:4px; }
   .product-detail-why-item{ font-size:11px; color: var(--text-dark); line-height:1.45; margin-bottom:3px; }
   .product-detail-why-item b{ color: var(--gold-dark); }
-  .product-detail-actions{ display:flex; gap:6px; margin-top:10px; width:100%; }
+  .product-detail-actions{ display:flex; gap:6px; margin-top:auto; padding-top:10px; width:100%; }
   .product-detail-actions .period-btn{ flex:1; padding:7px 6px; }
   .product-pick-row{
     display:flex; flex-direction:column; align-items:flex-start; gap:8px; border:1px solid var(--border); border-radius:11px;
@@ -2566,28 +2566,13 @@
             <div class="registro-card" id="skcAssistentePanel" style="display:none; margin-top:16px; padding:22px;">
               <div class="anamnese-title" style="margin-bottom:16px;">Filtrar Ativos Disponíveis</div>
 
-              <div class="toggle-row-header" style="justify-content:space-between; margin-bottom:14px;">
-                <span style="font-size:13.5px; color:var(--text-dark);">A paciente é gestante?</span>
+              <div class="toggle-row-header" style="justify-content:space-between; margin-bottom:18px;">
+                <span style="font-size:13.5px; color:var(--text-dark);">A paciente é gestante/lactante?</span>
                 <label class="switch"><input type="checkbox" id="skcAssistGestante"><span class="switch-slider"></span></label>
               </div>
-              <div class="toggle-row-header" style="justify-content:space-between; margin-bottom:14px;">
-                <span style="font-size:13.5px; color:var(--text-dark);">Buscar somente ativos veganos/cruelty-free?</span>
-                <label class="switch"><input type="checkbox" id="skcAssistVegano"><span class="switch-slider"></span></label>
-              </div>
-              <div class="toggle-row-header" style="justify-content:space-between; margin-bottom:18px;">
-                <span style="font-size:13.5px; color:var(--text-dark);">Buscar somente ativos orgânicos?</span>
-                <label class="switch"><input type="checkbox" id="skcAssistOrganico"><span class="switch-slider"></span></label>
-              </div>
 
-              <div class="form-field" style="max-width:260px; margin-bottom:20px;">
-                <label>Período</label>
-                <select class="anamnese-select" id="skcAssistPeriodo">
-                  <option value="">Todos</option>
-                  <option value="Diurno">Diurno</option>
-                  <option value="Noite">Noturno</option>
-                  <option value="Ambos">Ambos</option>
-                </select>
-              </div>
+              <div class="toggle-subtitle">Função do produto na rotina</div>
+              <div class="chip-select" id="skcAssistFuncao" style="margin-bottom:18px;"></div>
 
               <div class="toggle-subtitle">Classes de Ativos</div>
               <div class="chip-select" id="skcAssistClasses" style="margin-bottom:8px;"></div>
@@ -2612,29 +2597,13 @@
             <div class="product-detail-list" id="skcProdutosEncontrados"></div>
           </div>
 
-          <div class="builder-grid">
-            <div class="anamnese-card">
-              <div class="anamnese-title" style="margin-bottom:16px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-                Produtos <span id="produtosCategoriaLabel" style="color:var(--text-muted); font-weight:600;">— Demaquilante</span>
-              </div>
-              <div class="search-input" style="margin-bottom:14px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="skincareProductSearch" placeholder="Buscar por nome ou marca...">
-              </div>
-              <div class="category-tabs" id="skincareCategoryTabs"></div>
-              <div class="toggle-subtitle">Indicados para este perfil</div>
-              <div id="skincareProductsList" class="product-pick-scroll"></div>
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              Jornada da Rotina
             </div>
-
-            <div class="anamnese-card">
-              <div class="anamnese-title" style="margin-bottom:16px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-                Jornada da Rotina
-              </div>
-              <div id="jornadaContainer">
-                <div class="routine-empty">Nenhum produto adicionado ainda. Escolha produtos ao lado para montar a rotina.</div>
-              </div>
+            <div id="jornadaContainer">
+              <div class="routine-empty">Nenhum produto adicionado ainda. Escolha uma função de produto ou ativos acima para montar a rotina.</div>
             </div>
           </div>
 
@@ -3910,11 +3879,28 @@
     e.target.value = '';
   });
 
+  // Busca a moeda de investimento definida na anamnese clínica mais recente da paciente,
+  // para usar como referência de preço no Plano de SkinCare.
+  async function carregarMoedaAnamnese(patient){
+    if(!patient || !String(patient.id).includes('-')) return; // pula pacientes de demonstração
+    try{
+      const { data, error } = await supabaseClient
+        .from('anamneses')
+        .select('investimento_moeda')
+        .eq('paciente_id', patient.id)
+        .order('respondida_em', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if(!error && data && data.investimento_moeda) patient.moedaAnamnese = data.investimento_moeda;
+    } catch(e){ /* mantém a moeda padrão em caso de falha */ }
+  }
+
   function openPatientRegistro(patientId, tab){
     const p = patients.find(x => x.id === patientId);
     if(!p) return;
     pushNavHistory();
     currentPatient = p;
+    carregarMoedaAnamnese(p);
 
     document.getElementById('regBreadcrumbName').textContent = p.name;
     document.getElementById('regNome').value = p.name || '';
@@ -4136,8 +4122,11 @@
         como_gostaria: document.getElementById('paComoGostaria').value,
       },
       investimento: document.getElementById('paInvestimento').value,
+      investimento_moeda: document.getElementById('paInvestimentoMoeda').value,
       observacoes: document.getElementById('paObservacoes').value.trim(),
     };
+
+    if(currentPatient) currentPatient.moedaAnamnese = payload.investimento_moeda;
 
     if(isPacienteReal(currentPatient)){
       const { data: userData } = await supabaseClient.auth.getUser();
@@ -4579,9 +4568,6 @@
 
   /* ================= PLANO DE SKINCARE MODULE ================= */
   const skincareCategories = ["Demaquilante","Limpador","Tônico","Esfoliante","Hidratante","Área dos Olhos","Tratamento","Filtro Solar"];
-  const categoryAlias = { "Filtro Solar": "Protetor Solar" }; // maps builder category -> catalog category name
-  let skincareActiveCategory = "Demaquilante";
-  let skincareSearchTerm = "";
   const routineEntries = []; // { id, category, product, period, frequency, selectedDays:[], usage, link, expanded }
   const weekdayLabels = ["D","S","T","Q","Q","S","S"];
 
@@ -4596,62 +4582,6 @@
     document.getElementById('skincareBaumannBadge').textContent = baumannVal || '—';
     const fitzSel = document.querySelector('#panel-avaliacao .scale-card.selected[data-group="fitzpatrick"]');
     document.getElementById('skincareFototipoBadge').textContent = fitzSel ? fitzSel.querySelector('.sc-title').textContent : '—';
-  }
-
-  function renderCategoryTabs(){
-    const wrap = document.getElementById('skincareCategoryTabs');
-    wrap.innerHTML = '';
-    skincareCategories.forEach(cat => {
-      const btn = document.createElement('div');
-      btn.className = 'category-tab' + (cat === skincareActiveCategory ? ' active' : '');
-      btn.textContent = cat;
-      btn.addEventListener('click', () => {
-        skincareActiveCategory = cat;
-        document.getElementById('produtosCategoriaLabel').textContent = '— ' + cat;
-        renderCategoryTabs();
-        renderSkincareProducts();
-      });
-      wrap.appendChild(btn);
-    });
-  }
-
-  function renderSkincareProducts(){
-    const list = document.getElementById('skincareProductsList');
-    list.innerHTML = '';
-    const catalogCategory = categoryAlias[skincareActiveCategory] || skincareActiveCategory;
-    const term = skincareSearchTerm.toLowerCase();
-    const matches = products.filter(p =>
-      p.category === catalogCategory &&
-      (!term || p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term))
-    );
-
-    if(matches.length === 0){
-      list.innerHTML = '<div class="routine-empty">Nenhum produto cadastrado nesta categoria ainda.</div>';
-      return;
-    }
-
-    matches.forEach(prod => {
-      const row = document.createElement('div');
-      row.className = 'product-pick-row';
-      const onManha = routineEntries.some(e => e.product.id === prod.id && e.period === 'manha');
-      const onNoite = routineEntries.some(e => e.product.id === prod.id && e.period === 'noite');
-      const imgSrc = prod.image || 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2216%22%20fill%3D%22%23f4ede8%22/%3E%3Cpath%20d%3D%22M40%2028h20v9l7%207v42a5%205%200%2001-5%205H38a5%205%200%2001-5-5V44l7-7z%22%20fill%3D%22none%22%20stroke%3D%22%238a7060%22%20stroke-width%3D%224%22%20stroke-linejoin%3D%22round%22/%3E%3Cline%20x1%3D%2240%22%20y1%3D%2250%22%20x2%3D%2260%22%20y2%3D%2250%22%20stroke%3D%22%238a7060%22%20stroke-width%3D%224%22/%3E%3C/svg%3E';
-      row.innerHTML = `
-        <img class="product-pick-thumb" src="${imgSrc}" alt="${prod.name}">
-        <div class="product-pick-info">
-          <div class="product-pick-name">${prod.name}</div>
-          <div class="product-pick-brand">${prod.brand}</div>
-          <div class="product-pick-price">${faixaDePrecoCompacta(prod.price, prod.apenasBrasil)}</div>
-        </div>
-        <div class="product-pick-actions">
-          <button class="period-btn manha-btn ${onManha ? 'on' : ''}">☀ Manhã</button>
-          <button class="period-btn noite-btn ${onNoite ? 'on' : ''}">🌙 Noite</button>
-        </div>
-      `;
-      row.querySelector('.manha-btn').addEventListener('click', () => toggleRoutineEntry(prod, 'manha'));
-      row.querySelector('.noite-btn').addEventListener('click', () => toggleRoutineEntry(prod, 'noite'));
-      list.appendChild(row);
-    });
   }
 
   function toggleRoutineEntry(product, period, why){
@@ -4672,7 +4602,7 @@
         why: why || [],
       });
     }
-    renderSkincareProducts();
+    renderSkcProdutosEncontrados();
     renderJornada();
   }
 
@@ -4725,7 +4655,7 @@
         const idx = routineEntries.indexOf(entry);
         if(idx >= 0) routineEntries.splice(idx, 1);
         renderJornada();
-        renderSkincareProducts();
+        renderSkcProdutosEncontrados();
       });
       const freqSelect = card.querySelector('.freq-select');
       freqSelect.addEventListener('click', (e) => e.stopPropagation());
@@ -4752,11 +4682,6 @@
       container.appendChild(card);
     });
   }
-
-  document.getElementById('skincareProductSearch').addEventListener('input', (e) => {
-    skincareSearchTerm = e.target.value;
-    renderSkincareProducts();
-  });
 
   /* ================= RECOMENDAÇÕES MODULE (planos de skincare salvos) ================= */
   const recomendacoesDataDemo = []; // usado apenas no modo demonstração (pacientes fictícias)
@@ -5129,6 +5054,26 @@
     if(pais === 'BR') return 'BRL';
     return 'EUR'; // PT, ES, FR, IT, DE, EU
   }
+  // Deduz a moeda a partir do país escrito/selecionado no cadastro da paciente.
+  function moedaPorPais(pais){
+    if(!pais) return null;
+    const p = pais.trim().toLowerCase();
+    if(!p) return null;
+    if(p.includes('brasil') || p.includes('brazil')) return 'BRL';
+    if(p.includes('united states') || p.includes('estados unidos') || p === 'eua' || p === 'usa') return 'USD';
+    if(['portugal','espanha','spain','frança','franca','france','itália','italia','italy','alemanha','germany','holanda','netherlands','bélgica','belgica','belgium','europa','europe','irlanda','ireland'].some(pais2 => p.includes(pais2))) return 'EUR';
+    return null;
+  }
+
+  // Moeda a usar para a paciente atual: prioriza o que foi definido na anamnese clínica
+  // (campo "Investimento"); se ainda não houver isso, deduz pelo país do cadastro;
+  // e por último cai na moeda padrão do profissional.
+  function moedaAnamnesePaciente(){
+    if(currentPatient && currentPatient.moedaAnamnese) return currentPatient.moedaAnamnese;
+    const moedaPais = currentPatient ? moedaPorPais(currentPatient.pais) : null;
+    if(moedaPais) return moedaPais;
+    return moedaPreferidaAtual();
+  }
   function faixasOrdenadasPorMoeda(i){
     const todas = { BRL: faixasPrecoBRL[i], USD: faixasPrecoUSD[i], EUR: faixasPrecoEUR[i] };
     const principal = moedaPreferidaAtual();
@@ -5153,6 +5098,23 @@
     return `<div class="faixa-preco-compacta">
       <div class="faixa-preco-principal">${principal}</div>
       <div class="faixa-preco-secundaria">${secundarias.join(' · ')}</div>
+    </div>`;
+  }
+
+  // Mostra apenas a faixa de preço na moeda definida na anamnese clínica da paciente
+  // (sem as outras moedas), para os cards do Plano de SkinCare.
+  function faixaDePrecoUnica(v, apenasBrasil){
+    const i = faixaIndex(v);
+    if(apenasBrasil){
+      return `<div class="faixa-preco-compacta">
+        <div class="faixa-preco-principal">${faixasPrecoBRL[i]}</div>
+        <div class="faixa-preco-secundaria">Venda somente no Brasil</div>
+      </div>`;
+    }
+    const todas = { BRL: faixasPrecoBRL[i], USD: faixasPrecoUSD[i], EUR: faixasPrecoEUR[i] };
+    const moeda = moedaAnamnesePaciente();
+    return `<div class="faixa-preco-compacta">
+      <div class="faixa-preco-principal">${todas[moeda] || todas.BRL}</div>
     </div>`;
   }
 
@@ -5304,8 +5266,6 @@
 
   renderCatalogo();
 
-  renderCategoryTabs();
-  renderSkincareProducts();
   renderJornada();
 
   /* ---------- Carrega Catálogo de Produtos do Supabase (com fallback ao mock) ---------- */
@@ -5332,8 +5292,7 @@
       }));
 
       renderCatalogo();
-      renderCategoryTabs();
-      renderSkincareProducts();
+      renderSkcProdutosEncontrados();
     } catch(e){
       // qualquer falha de rede/consulta: segue com o mock local, sem travar o app
     }
@@ -7271,7 +7230,7 @@
   }
 
   /* ---------- Assistente de Busca Guiada (fábrica reutilizável) ---------- */
-  const classesDisponiveis = ['Higienizantes', 'Umectantes', 'Emolientes', 'Oclusivos', 'Esfoliantes', 'Enzimáticos', 'Despigmentantes', 'Antioxidantes', 'Retinoides', 'Calmantes', 'Anti-inflamatórios', 'Seborreguladores', 'Antiacneicos', 'Reparadores de barreira', 'Peptídeos', 'Antiglicantes', 'Vasoprotetores', 'Antimicrobianos', 'Fotoprotetores', 'Filmógenos', 'Regeneradores', 'Firmadores', 'Tensores', 'Antipoluição', 'Detoxificantes', 'Clareadores', 'Cicatrizantes', 'Queratolíticos', 'Antipruriginosos', 'Prebióticos', 'Probióticos', 'Tensoativos'];
+  const classesDisponiveis = ['Antiacneicos', 'Antiglicantes', 'Anti-inflamatórios', 'Antimicrobianos', 'Antioxidantes', 'Antipoluição', 'Antipruriginosos', 'Calmantes', 'Cicatrizantes', 'Clareadores', 'Despigmentantes', 'Detoxificantes', 'Emolientes', 'Enzimáticos', 'Esfoliantes', 'Filmógenos', 'Firmadores', 'Fotoprotetores', 'Oclusivos', 'Peptídeos', 'Prebióticos', 'Probióticos', 'Queratolíticos', 'Regeneradores', 'Reparadores de barreira', 'Retinoides', 'Seborreguladores', 'Tensoativos', 'Tensores', 'Umectantes', 'Vasoprotetores'];
   const alfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   let renderAll;
 
@@ -7478,17 +7437,22 @@
     skcClassesContainer.appendChild(chip);
   });
 
-  [ 'skcAssistGestante', 'skcAssistVegano', 'skcAssistOrganico' ].forEach(id => {
-    document.getElementById(id).addEventListener('change', renderSkcAtivosDesejadosChips);
+  const skcFuncaoContainer = document.getElementById('skcAssistFuncao');
+  skincareCategories.forEach(cat => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.dataset.funcao = cat;
+    chip.textContent = cat;
+    chip.addEventListener('click', () => { chip.classList.toggle('selected'); renderSkcProdutosEncontrados(); });
+    skcFuncaoContainer.appendChild(chip);
   });
-  document.getElementById('skcAssistPeriodo').addEventListener('change', renderSkcAtivosDesejadosChips);
+
+  document.getElementById('skcAssistGestante').addEventListener('change', renderSkcAtivosDesejadosChips);
   document.getElementById('skcAtivosSearch').addEventListener('input', renderSkcAtivosDesejadosChips);
 
   document.getElementById('skcBtnLimparFiltros').addEventListener('click', () => {
     document.getElementById('skcAssistGestante').checked = false;
-    document.getElementById('skcAssistVegano').checked = false;
-    document.getElementById('skcAssistOrganico').checked = false;
-    document.getElementById('skcAssistPeriodo').value = '';
+    skcFuncaoContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
     skcClassesContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
     renderSkcAtivosDesejadosChips();
     showToast('Filtros limpos');
@@ -7502,17 +7466,11 @@
   function renderSkcAtivosDesejadosChips(){
     const term = document.getElementById('skcAtivosSearch').value.trim().toLowerCase();
     const gestante = document.getElementById('skcAssistGestante').checked;
-    const vegano = document.getElementById('skcAssistVegano').checked;
-    const organico = document.getElementById('skcAssistOrganico').checked;
-    const periodo = document.getElementById('skcAssistPeriodo').value;
     const classesAtivas = Array.from(skcClassesContainer.querySelectorAll('.chip.selected')).map(c => c.dataset.classe);
 
     const filtered = ativosData.filter(a => {
       if(term && !a.nome.toLowerCase().includes(term)) return false;
       if(gestante && !a.gestantes) return false;
-      if(vegano && !a.vegano) return false;
-      if(organico && !a.organico) return false;
-      if(periodo && a.periodo !== periodo && a.periodo !== 'Ambos') return false;
       if(classesAtivas.length > 0 && !classesAtivas.some(c => a.classe.includes(c))) return false;
       return true;
     }).sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR'));
@@ -7610,20 +7568,26 @@
     const container = document.getElementById('skcProdutosEncontrados');
     container.innerHTML = '';
 
-    if(skcAtivosDesejados.size === 0){
-      container.innerHTML = '<div class="registro-card empty-state">Selecione um ou mais ativos acima para ver os produtos do Catálogo que os contêm.</div>';
+    const funcoesAtivas = Array.from(skcFuncaoContainer.querySelectorAll('.chip.selected')).map(c => c.dataset.funcao);
+
+    if(skcAtivosDesejados.size === 0 && funcoesAtivas.length === 0){
+      container.innerHTML = '<div class="registro-card empty-state">Escolha uma função de produto ou selecione ativos acima para ver as opções do Catálogo.</div>';
       return;
     }
 
-    const encontrados = products.filter(p => p.ativos && p.ativos.some(aid => skcAtivosDesejados.has(aid)));
+    const encontrados = products.filter(p => {
+      if(funcoesAtivas.length > 0 && !funcoesAtivas.includes(p.category)) return false;
+      if(skcAtivosDesejados.size > 0 && !(p.ativos && p.ativos.some(aid => skcAtivosDesejados.has(aid)))) return false;
+      return true;
+    });
 
     if(encontrados.length === 0){
-      container.innerHTML = '<div class="registro-card empty-state">Nenhum produto do Catálogo contém esses ativos ainda.</div>';
+      container.innerHTML = '<div class="registro-card empty-state">Nenhum produto do Catálogo corresponde a esses critérios ainda.</div>';
       return;
     }
 
     encontrados.forEach(prod => {
-      const ativosMatch = prod.ativos.filter(aid => skcAtivosDesejados.has(aid))
+      const ativosMatch = (prod.ativos || []).filter(aid => skcAtivosDesejados.has(aid))
         .map(aid => ativosData.find(x => x.id === aid))
         .filter(Boolean);
       const onManha = routineEntries.some(e => e.product.id === prod.id && e.period === 'manha');
@@ -7640,14 +7604,15 @@
         <div class="product-detail-info">
           <div class="product-detail-top">
             <div class="product-detail-name">${prod.name}</div>
-            <div class="product-detail-brand">${prod.brand}${prod.price ? ' · ' + faixaDePrecoCompacta(prod.price, prod.apenasBrasil) : ''}</div>
+            <div class="product-detail-brand">${prod.brand}${prod.price ? ' · ' + faixaDePrecoUnica(prod.price, prod.apenasBrasil) : ''}</div>
             ${prod.category ? `<span class="category-chip" style="margin-top:4px;">${prod.category}</span>` : ''}
           </div>
           ${prod.func ? `<div class="product-detail-func">${prod.func}</div>` : ''}
+          ${ativosMatch.length > 0 ? `
           <div class="product-detail-why">
             <div class="product-detail-why-title">Por que foi sugerido</div>
             ${whyItems}
-          </div>
+          </div>` : ''}
           <div class="product-detail-actions">
             <button class="period-btn manha-btn ${onManha ? 'on' : ''}">☀ Manhã</button>
             <button class="period-btn noite-btn ${onNoite ? 'on' : ''}">🌙 Noite</button>
