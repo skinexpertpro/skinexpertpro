@@ -2706,9 +2706,9 @@
         <div class="pdf-doc" id="anamnesePdfDoc">
           <div class="pdf-doc-header">
             <div>
-              <div class="pdf-doc-brand">Profissional Skin Expert Pro</div>
-              <div class="pdf-doc-role">Esteticista e Cosmetóloga</div>
-              <div class="pdf-doc-contact">contato@skinexpertpro.app</div>
+              <div class="pdf-doc-brand" id="pdfAnamneseBrand">Profissional Skin Expert Pro</div>
+              <div class="pdf-doc-role" id="pdfAnamneseRole">Esteticista e Cosmetóloga</div>
+              <div class="pdf-doc-contact" id="pdfAnamneseContact">contato@skinexpertpro.app</div>
             </div>
             <div class="pdf-doc-meta">
               Paciente: <b id="pdfAnamnesePaciente">—</b><br>
@@ -2760,9 +2760,9 @@
         <div class="pdf-doc pdf-doc-landscape">
           <div class="pdf-doc-header">
             <div>
-              <div class="pdf-doc-brand">Profissional Skin Expert Pro</div>
-              <div class="pdf-doc-role">Esteticista e Cosmetóloga</div>
-              <div class="pdf-doc-contact">contato@skinexpertpro.app</div>
+              <div class="pdf-doc-brand" id="pdfPlanoBrand">Profissional Skin Expert Pro</div>
+              <div class="pdf-doc-role" id="pdfPlanoRole">Esteticista e Cosmetóloga</div>
+              <div class="pdf-doc-contact" id="pdfPlanoContact">contato@skinexpertpro.app</div>
             </div>
             <div class="pdf-doc-meta">
               Paciente: <b id="pdfPlanoPaciente">—</b><br>
@@ -2838,11 +2838,6 @@
 
         <div class="catalogo-subpanel" id="catalogo-subpanel-ativos">
 
-          <div class="fin-tabs" style="margin-top:0;">
-            <div class="fin-tab active" data-ativoview="todos">Todos</div>
-            <div class="fin-tab" data-ativoview="favoritos">Favoritos</div>
-          </div>
-
           <div class="filter-bar">
             <div class="search-input" style="flex:1 1 100%; width:100%;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -2902,6 +2897,36 @@
     <!-- ================= PLANOS VIEW ================= -->
     <div class="view" id="view-configuracoes">
       <div class="content-planos" style="max-width:560px;">
+        <div class="registro-card" style="margin-bottom:20px;">
+          <div class="anamnese-title" style="margin-bottom:6px;">Meus Dados Profissionais</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">Essas informações aparecem no cabeçalho dos PDFs gerados para as suas pacientes (Ficha de Anamnese e Plano de SkinCare).</p>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Nome completo</label>
+            <input type="text" class="anamnese-select" id="cfgNomeProfissional" placeholder="Seu nome completo">
+          </div>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Título / Especialidade</label>
+            <input type="text" class="anamnese-select" id="cfgTituloProfissional" placeholder="Ex: Esteticista e Cosmetóloga">
+          </div>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Telefone / WhatsApp</label>
+            <input type="text" class="anamnese-select" id="cfgTelefoneProfissional" placeholder="Ex: (11) 91234-5678">
+          </div>
+
+          <div class="form-field" style="margin-bottom:8px;">
+            <label>E-mail</label>
+            <input type="text" class="anamnese-select" id="cfgEmailProfissional" disabled style="opacity:.7; cursor:not-allowed;">
+          </div>
+          <p style="font-size:12px; color:var(--text-muted); margin:0 0 20px 0;">O e-mail é o mesmo usado para fazer login e não pode ser editado aqui.</p>
+
+          <div class="anamnese-footer">
+            <button class="btn-save" id="btnSalvarDadosProfissionais">Salvar Meus Dados</button>
+          </div>
+        </div>
+
         <div class="registro-card">
           <div class="anamnese-title" style="margin-bottom:6px;">Preferências da Conta</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">Isso ajusta qual moeda aparece em destaque nas faixas de preço do Catálogo e do Plano de SkinCare.</p>
@@ -3635,6 +3660,68 @@
   const SUPABASE_URL = 'https://fpnphcbczyhhllmhqusy.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_xQoS6dQpOM11j0FibRIaPw_GIRRkjTD';
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  /* ---------- Meus Dados Profissionais (aparecem nos PDFs e na sidebar) ---------- */
+  // Textos genéricos abaixo são usados SOMENTE no modo demonstração. Em contas reais,
+  // se a profissional não tiver preenchido algo em Configurações, o campo fica em branco.
+  const PLACEHOLDER_DEMO = { nome: 'Profissional Skin Expert Pro', titulo: 'Esteticista e Cosmetóloga', telefone: '', email: 'contato@skinexpertpro.app' };
+  let perfilProfissional = { nome: '', titulo: '', telefone: '', email: '' };
+
+  function iniciaisDoNome(nome){
+    if(!nome) return 'SE';
+    const partes = nome.trim().split(/\s+/).filter(Boolean);
+    if(partes.length === 0) return 'SE';
+    if(partes.length === 1) return partes[0].slice(0,2).toUpperCase();
+    return (partes[0][0] + partes[partes.length-1][0]).toUpperCase();
+  }
+
+  function atualizarSidebarPerfil(){
+    document.querySelector('.topbar-avatar').textContent = iniciaisDoNome(perfilProfissional.nome);
+    document.querySelector('.profile-name').textContent = perfilProfissional.nome || '—';
+  }
+
+  function preencherCamposConfiguracoesPerfil(){
+    const nomeEl = document.getElementById('cfgNomeProfissional');
+    const tituloEl = document.getElementById('cfgTituloProfissional');
+    const telefoneEl = document.getElementById('cfgTelefoneProfissional');
+    const emailEl = document.getElementById('cfgEmailProfissional');
+    if(nomeEl) nomeEl.value = perfilProfissional.nome || '';
+    if(tituloEl) tituloEl.value = perfilProfissional.titulo || '';
+    if(telefoneEl) telefoneEl.value = perfilProfissional.telefone || '';
+    if(emailEl) emailEl.value = perfilProfissional.email || '';
+  }
+
+  async function carregarPerfilProfissionalReal(){
+    perfilProfissional = { nome: '', titulo: '', telefone: '', email: '' };
+    try{
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(!userData || !userData.user) return;
+      const user = userData.user;
+      perfilProfissional.email = user.email || '';
+
+      const { data, error } = await supabaseClient.from('perfis').select('nome, titulo, telefone').eq('id', user.id).maybeSingle();
+      if(!error && data){
+        perfilProfissional.nome = data.nome || '';
+        perfilProfissional.titulo = data.titulo || '';
+        perfilProfissional.telefone = data.telefone || '';
+      }
+    } catch(err){
+      console.warn('Não foi possível carregar Meus Dados Profissionais.', err);
+    }
+    atualizarSidebarPerfil();
+    preencherCamposConfiguracoesPerfil();
+  }
+
+  function carregarPerfilProfissionalDemo(){
+    perfilProfissional = {
+      nome: localStorage.getItem('skinExpertDemoNome') || PLACEHOLDER_DEMO.nome,
+      titulo: localStorage.getItem('skinExpertDemoTitulo') || PLACEHOLDER_DEMO.titulo,
+      telefone: localStorage.getItem('skinExpertDemoTelefone') || PLACEHOLDER_DEMO.telefone,
+      email: localStorage.getItem('skinExpertDemoEmail') || PLACEHOLDER_DEMO.email
+    };
+    atualizarSidebarPerfil();
+    preencherCamposConfiguracoesPerfil();
+  }
 
   /* ---------- Toast ---------- */
   const toastEl = document.getElementById('toast');
@@ -7981,6 +8068,9 @@
     const ev = a.estilo_vida || {};
     const sk = a.skincare || {};
 
+    document.getElementById('pdfAnamneseBrand').textContent = perfilProfissional.nome || '—';
+    document.getElementById('pdfAnamneseRole').textContent = perfilProfissional.titulo || '';
+    document.getElementById('pdfAnamneseContact').textContent = [perfilProfissional.email, perfilProfissional.telefone].filter(Boolean).join(' · ') || '—';
     document.getElementById('pdfAnamnesePaciente').textContent = currentPatient ? currentPatient.name : '—';
     document.getElementById('pdfAnamneseData').textContent = dataFormatada;
     document.getElementById('pdfPrincipalQueixa').textContent = a.principal_queixa || '—';
@@ -8035,6 +8125,9 @@
   function openPlanoPdf(plano){
     pushNavHistory();
     setLandscapePrintMode(true);
+    document.getElementById('pdfPlanoBrand').textContent = perfilProfissional.nome || '—';
+    document.getElementById('pdfPlanoRole').textContent = perfilProfissional.titulo || '';
+    document.getElementById('pdfPlanoContact').textContent = [perfilProfissional.email, perfilProfissional.telefone].filter(Boolean).join(' · ') || '—';
     document.getElementById('pdfPlanoPaciente').textContent = currentPatient ? currentPatient.name : '—';
     document.getElementById('pdfPlanoData').textContent = plano.dataGerada || '—';
     document.getElementById('pdfPlanoObjetivo').textContent = plano.objetivo || '—';
@@ -8098,6 +8191,34 @@
       localStorage.setItem('skinExpertIdioma', idiomaSelect.value);
       renderCatalogo();
       showToast('Preferências salvas com sucesso!');
+    });
+
+    document.getElementById('btnSalvarDadosProfissionais').addEventListener('click', async () => {
+      const nome = document.getElementById('cfgNomeProfissional').value.trim();
+      const titulo = document.getElementById('cfgTituloProfissional').value.trim();
+      const telefone = document.getElementById('cfgTelefoneProfissional').value.trim();
+
+      if(!nome){ showToast('Informe seu nome.'); return; }
+
+      perfilProfissional.nome = nome;
+      perfilProfissional.titulo = titulo || 'Esteticista e Cosmetóloga';
+      perfilProfissional.telefone = telefone;
+
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(userData && userData.user){
+        try {
+          await supabaseClient.from('perfis').upsert({ id: userData.user.id, nome: perfilProfissional.nome, titulo: perfilProfissional.titulo, telefone: perfilProfissional.telefone });
+        } catch(err){
+          console.warn('Não foi possível salvar Meus Dados Profissionais no Supabase.', err);
+        }
+      } else {
+        localStorage.setItem('skinExpertDemoNome', perfilProfissional.nome);
+        localStorage.setItem('skinExpertDemoTitulo', perfilProfissional.titulo);
+        localStorage.setItem('skinExpertDemoTelefone', perfilProfissional.telefone);
+      }
+
+      atualizarSidebarPerfil();
+      showToast('Seus dados foram salvos com sucesso!');
     });
   })();
 
@@ -8214,6 +8335,7 @@
   async function enterApp(){
     authScreenEl.style.display = 'none';
     appRootEl.style.display = 'flex';
+    await carregarPerfilProfissionalReal();
     await loadPacientesFromSupabase();
     await loadAgendamentosFromSupabase();
     await renderPreFichasDashboard();
@@ -8222,8 +8344,7 @@
   document.getElementById('authDemoLink').addEventListener('click', () => {
     authScreenEl.style.display = 'none';
     appRootEl.style.display = 'flex';
-    document.querySelector('.topbar-avatar').textContent = 'SE';
-    document.querySelector('.profile-name').textContent = 'Profissional Skin Expert Pro';
+    carregarPerfilProfissionalDemo();
     showToast('Modo demonstração — os dados aqui não são salvos.');
   });
 
