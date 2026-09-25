@@ -2943,6 +2943,17 @@
           </div>
         </div>
 
+        <div class="registro-card" style="flex:1; min-width:320px; margin-bottom:0;" id="googleAgendaCard">
+          <div class="anamnese-title" style="margin-bottom:6px;">Google Agenda</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 6px 0;">Conecte sua Google Agenda para que cada atendimento marcado aqui crie automaticamente um evento na sua agenda do Google.</p>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;" id="googleAgendaStatusLabel">Status: <strong style="color:var(--text-muted);">Não conectado</strong></p>
+
+          <div class="anamnese-footer" style="gap:10px; display:flex;">
+            <button class="btn-save" id="btnConectarGoogleAgenda">Conectar Google Agenda</button>
+            <button class="btn-save" id="btnDesconectarGoogleAgenda" style="background:var(--tag-bg); color:var(--text-dark); display:none;">Desconectar</button>
+          </div>
+        </div>
+
         <div class="registro-card" style="flex:1; min-width:320px; margin-bottom:0; display:none;" id="whatsappIntegrationCard">
           <div class="anamnese-title" style="margin-bottom:6px;">Integração com WhatsApp</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 6px 0;">Conecte sua própria conta do WhatsApp Business (Meta Cloud API) para enviar confirmações de agendamento automaticamente para suas pacientes, com o seu número.</p>
@@ -3814,6 +3825,66 @@
     preencherCamposWhatsapp();
   }
 
+  /* ---------- Google Agenda (cada profissional conecta sua própria conta do Google) ---------- */
+  // Troque pelo Client ID gerado no Google Cloud Console (OAuth 2.0 Client ID, tipo "Aplicativo da Web").
+  const GOOGLE_CLIENT_ID = '26417237147-prh95l1dug846iarojmcq2mgahme58gc.apps.googleusercontent.com';
+  // URL da Edge Function que recebe o retorno do Google (precisa ser a mesma cadastrada no Google Cloud Console).
+  const GOOGLE_REDIRECT_URI = SUPABASE_URL + '/functions/v1/google-agenda-callback';
+
+  let googleAgendaConectado = false;
+
+  function preencherStatusGoogleAgenda(){
+    const statusEl = document.getElementById('googleAgendaStatusLabel');
+    const btnConectar = document.getElementById('btnConectarGoogleAgenda');
+    const btnDesconectar = document.getElementById('btnDesconectarGoogleAgenda');
+    if(statusEl){
+      statusEl.innerHTML = googleAgendaConectado
+        ? 'Status: <strong style="color:#1a9c5a;">Conectado</strong>'
+        : 'Status: <strong style="color:var(--text-muted);">Não conectado</strong>';
+    }
+    if(btnConectar) btnConectar.style.display = googleAgendaConectado ? 'none' : '';
+    if(btnDesconectar) btnDesconectar.style.display = googleAgendaConectado ? '' : 'none';
+  }
+
+  async function carregarIntegracaoGoogleAgendaReal(){
+    googleAgendaConectado = false;
+    try{
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(!userData || !userData.user) return;
+      const { data, error } = await supabaseClient.from('integracoes_google_agenda')
+        .select('ativo').eq('profissional_id', userData.user.id).maybeSingle();
+      if(!error && data) googleAgendaConectado = !!data.ativo;
+    } catch(err){
+      console.warn('Não foi possível carregar a integração com a Google Agenda.', err);
+    }
+    preencherStatusGoogleAgenda();
+  }
+
+  function iniciarConexaoGoogleAgenda(userId){
+    const params = new URLSearchParams({
+      client_id: GOOGLE_CLIENT_ID,
+      redirect_uri: GOOGLE_REDIRECT_URI,
+      response_type: 'code',
+      access_type: 'offline',
+      prompt: 'consent',
+      scope: 'https://www.googleapis.com/auth/calendar.events',
+      state: userId,
+    });
+    window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+  }
+
+  // Depois de voltar do Google, a Edge Function redireciona de volta com ?google_agenda=conectado ou =erro na URL.
+  function verificarRetornoGoogleAgenda(){
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('google_agenda');
+    if(!status) return;
+    if(status === 'conectado') showToast('Google Agenda conectada com sucesso!');
+    else showToast('Não foi possível conectar sua Google Agenda. Tente novamente.');
+    params.delete('google_agenda');
+    const novaUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState({}, '', novaUrl);
+  }
+
   /* ---------- Toast ---------- */
   const toastEl = document.getElementById('toast');
   let toastTimeout;
@@ -3824,6 +3895,7 @@
     toastEl.classList.add('show');
     toastTimeout = setTimeout(()=> toastEl.classList.remove('show'), 2400);
   }
+  verificarRetornoGoogleAgenda();
   // Toast com ação "Desfazer", no estilo do Google Agenda.
   function showUndoToast(msg, onUndo){
     clearTimeout(toastTimeout);
@@ -6350,6 +6422,15 @@
   document.getElementById('modalCancel').addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) closeModal(); });
 
+  async function sincronizarComGoogleAgenda(agendamentoId){
+    if(!googleAgendaConectado) return;
+    try{
+      await supabaseClient.functions.invoke('sincronizar-google-agenda', { body: { agendamentoId } });
+    } catch(e){
+      console.warn('Não foi possível sincronizar com a Google Agenda.', e);
+    }
+  }
+
   async function dispararConfirmacaoWhatsapp(agendamentoId){
     try{
       const { error } = await supabaseClient.functions.invoke('enviar-confirmacao-whatsapp', {
@@ -6401,6 +6482,8 @@
       renderCalendar();
       renderCurrentView();
 
+      sincronizarComGoogleAgenda(inserted.id);
+
       if(apptEnviarWhatsapp.checked){
         showToast('Atendimento agendado! Enviando confirmação por WhatsApp...');
         dispararConfirmacaoWhatsapp(inserted.id);
@@ -6427,6 +6510,7 @@
       closeModal();
       renderCalendar();
       renderCurrentView();
+      sincronizarComGoogleAgenda(inserted.id);
       showToast('Horário bloqueado!');
       return;
     }
@@ -8520,6 +8604,28 @@
         showToast('Não foi possível conectar para testar agora.');
       }
     });
+
+    document.getElementById('btnConectarGoogleAgenda').addEventListener('click', async () => {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(!userData || !userData.user){
+        showToast('Conecte-se com uma conta real (fora do modo demonstração) para usar a Google Agenda.');
+        return;
+      }
+      iniciarConexaoGoogleAgenda(userData.user.id);
+    });
+
+    document.getElementById('btnDesconectarGoogleAgenda').addEventListener('click', async () => {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(!userData || !userData.user) return;
+      try{
+        await supabaseClient.from('integracoes_google_agenda').update({ ativo: false }).eq('profissional_id', userData.user.id);
+      } catch(err){
+        console.warn('Não foi possível desconectar a Google Agenda.', err);
+      }
+      googleAgendaConectado = false;
+      preencherStatusGoogleAgenda();
+      showToast('Google Agenda desconectada.');
+    });
   })();
 
   document.getElementById('backFromPlanoPdf').addEventListener('click', () => {
@@ -8637,6 +8743,7 @@
     appRootEl.style.display = 'flex';
     await carregarPerfilProfissionalReal();
     await carregarIntegracaoWhatsappReal();
+    await carregarIntegracaoGoogleAgendaReal();
     await loadPacientesFromSupabase();
     await loadAgendamentosFromSupabase();
     await renderPreFichasDashboard();
