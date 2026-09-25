@@ -2911,8 +2911,9 @@
 
     <!-- ================= PLANOS VIEW ================= -->
     <div class="view" id="view-configuracoes">
-      <div class="content-planos" style="max-width:560px;">
-        <div class="registro-card" style="margin-bottom:20px;">
+      <div class="content-planos" style="max-width:1160px;">
+        <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px; align-items:flex-start;">
+        <div class="registro-card" style="flex:1; min-width:320px; margin-bottom:0;">
           <div class="anamnese-title" style="margin-bottom:6px;">Meus Dados Profissionais</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">Essas informações aparecem no cabeçalho dos PDFs gerados para as suas pacientes (Ficha de Anamnese e Plano de SkinCare).</p>
 
@@ -2942,7 +2943,7 @@
           </div>
         </div>
 
-        <div class="registro-card" style="margin-bottom:20px;">
+        <div class="registro-card" style="flex:1; min-width:320px; margin-bottom:0; display:none;" id="whatsappIntegrationCard">
           <div class="anamnese-title" style="margin-bottom:6px;">Integração com WhatsApp</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 6px 0;">Conecte sua própria conta do WhatsApp Business (Meta Cloud API) para enviar confirmações de agendamento automaticamente para suas pacientes, com o seu número.</p>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;" id="whatsappStatusLabel">Status: <strong style="color:var(--text-muted);">Não conectado</strong></p>
@@ -2968,8 +2969,9 @@
             <button class="btn-save" id="btnTestarWhatsapp" style="background:var(--tag-bg); color:var(--text-dark);">Testar Conexão</button>
           </div>
         </div>
+        </div>
 
-        <div class="registro-card">
+        <div class="registro-card" style="max-width:560px;">
           <div class="anamnese-title" style="margin-bottom:6px;">Preferências da Conta</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">Isso ajusta qual moeda aparece em destaque nas faixas de preço do Catálogo e do Plano de SkinCare.</p>
 
