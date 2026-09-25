@@ -3417,9 +3417,9 @@
         <option value="120">120 min</option>
       </select>
     </div>
-    <div class="modal-field" id="modalWhatsappField">
+    <div class="modal-field" id="modalWhatsappField" style="display:none;">
       <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:var(--text-dark); cursor:pointer; margin:0;">
-        <input type="checkbox" id="apptEnviarWhatsapp" checked style="width:16px; height:16px; accent-color:var(--sidebar-bg); cursor:pointer; flex-shrink:0; margin:0;">
+        <input type="checkbox" id="apptEnviarWhatsapp" style="width:16px; height:16px; accent-color:var(--sidebar-bg); cursor:pointer; flex-shrink:0; margin:0;">
         Enviar confirmação por WhatsApp
       </label>
     </div>
@@ -6468,6 +6468,7 @@
         data: key,
         hora: hora,
         duracao_min: duracao,
+        duracao_minutos: duracao,
         tipo: 'appt',
         servico_nome: servicoNome,
       }).select().single();
@@ -6500,6 +6501,7 @@
         data: key,
         hora: hora,
         duracao_min: duracao,
+        duracao_minutos: duracao,
         tipo: 'block',
         motivo: motivo,
       }).select().single();
@@ -6544,7 +6546,7 @@
 
       const { data, error } = await supabaseClient
         .from('agendamentos')
-        .select('id, data, hora, duracao_min, tipo, motivo, servico_nome, paciente_id, pacientes ( nome )');
+        .select('id, data, hora, duracao_min, duracao_minutos, tipo, motivo, servico_nome, paciente_id, pacientes ( nome )');
 
       if(error || !data) return;
 
@@ -6554,7 +6556,7 @@
         appointments[row.data].push({
           id: row.id,
           time: (row.hora || '00:00:00').slice(0,5),
-          duration: row.duracao_min,
+          duration: row.duracao_min || row.duracao_minutos,
           label: row.tipo === 'block' ? (row.motivo || 'Horário bloqueado') : (row.pacientes?.nome || 'Paciente sem nome'),
           servico: row.servico_nome || null,
           type: row.tipo,
