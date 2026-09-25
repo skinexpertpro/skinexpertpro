@@ -4029,6 +4029,13 @@
   document.getElementById('btnNovoPaciente').addEventListener('click', async () => {
     const nome = prompt('Nome completo da paciente:');
     if(!nome || !nome.trim()) return;
+
+    const telefoneNumero = prompt('Telefone / WhatsApp da paciente (obrigatório, para evitar cadastros duplicados):');
+    if(!telefoneNumero || !telefoneNumero.trim()){ showToast('O telefone é obrigatório para cadastrar uma nova paciente.'); return; }
+
+    const duplicada = encontrarPacienteDuplicado(nome, telefoneNumero);
+    if(duplicada){ showToast('Já existe uma paciente cadastrada com esse nome e telefone: ' + duplicada.name); return; }
+
     const idadeStr = prompt('Idade (opcional):') || '';
     const idade = parseInt(idadeStr, 10) || null;
 
@@ -4037,6 +4044,7 @@
 
     const { error } = await supabaseClient.from('pacientes').insert({
       profissional_id: userData.user.id, nome: nome.trim(), idade, status: 'Ativo',
+      telefone_numero: telefoneNumero.trim(),
     });
 
     if(error){ showToast('Erro ao salvar: ' + error.message); return; }
@@ -4197,6 +4205,10 @@
     const pais = document.getElementById('regPais').value.trim();
 
     if(!nome){ showToast('O nome completo é obrigatório.'); return; }
+    if(!phoneNumber){ showToast('O telefone / WhatsApp é obrigatório.'); return; }
+
+    const duplicada = encontrarPacienteDuplicado(nome, phoneNumber, currentPatient.id);
+    if(duplicada){ showToast('Já existe uma paciente cadastrada com esse nome e telefone: ' + duplicada.name); return; }
 
     if(isPacienteReal(currentPatient)){
       const { error } = await supabaseClient.from('pacientes').update({
@@ -4916,6 +4928,21 @@
 
   function isPacienteReal(p){
     return p && String(p.id).includes('-');
+  }
+
+  // Evita cadastrar a mesma cliente duas vezes: considera duplicado quando o nome
+  // (ignorando maiúsculas/espaços) e o número de telefone (só os dígitos) já existem
+  // em outra paciente cadastrada. excludeId serve para não comparar a paciente com ela mesma ao editar.
+  function encontrarPacienteDuplicado(nome, telefoneNumero, excludeId){
+    const nomeNorm = (nome || '').trim().toLowerCase();
+    const telNorm = (telefoneNumero || '').replace(/\D/g, '');
+    if(!nomeNorm || !telNorm) return null;
+    return patients.find(p => {
+      if(excludeId && String(p.id) === String(excludeId)) return false;
+      const pNome = (p.name || '').trim().toLowerCase();
+      const pTel = (p.phoneNumber || '').replace(/\D/g, '');
+      return pNome === nomeNorm && pTel === telNorm;
+    }) || null;
   }
 
   /* ---------- Cabeçalho de alerta da paciente (gestante/lactante/alergia) ---------- */
@@ -6133,11 +6160,22 @@
 
   // Cria uma paciente rapidamente a partir da busca, sem sair do modal de agendamento.
   // Funciona tanto para contas reais (salva no Supabase) quanto no modo demonstração (só em memória).
-  async function criarPacienteRapido(nome){
+  async function criarPacienteRapido(nome, telefoneNumero){
+    if(!telefoneNumero || !telefoneNumero.trim()){
+      showToast('Informe o telefone da paciente para concluir o cadastro.');
+      return null;
+    }
+
+    const duplicada = encontrarPacienteDuplicado(nome, telefoneNumero);
+    if(duplicada){
+      showToast('Já existe uma paciente cadastrada com esse nome e telefone: ' + duplicada.name);
+      return null;
+    }
+
     const { data: userData } = await supabaseClient.auth.getUser();
     if(userData && userData.user){
       const { data, error } = await supabaseClient.from('pacientes')
-        .insert({ profissional_id: userData.user.id, nome: nome.trim(), status: 'Ativo' })
+        .insert({ profissional_id: userData.user.id, nome: nome.trim(), status: 'Ativo', telefone_numero: telefoneNumero.trim() })
         .select().single();
       if(error){ showToast('Erro ao criar paciente: ' + error.message); return null; }
       await loadPacientesFromSupabase();
@@ -6146,7 +6184,7 @@
       const pal = avatarPalette[patients.length % avatarPalette.length];
       const novo = {
         id: 'demo-p-' + Date.now(), initials: initialsFromName(nome), color: pal.color, bg: pal.bg,
-        name: nome.trim(), age: null, gender: '', phone: '', phoneCode: '', phoneNumber: '', email: '',
+        name: nome.trim(), age: null, gender: '', phone: telefoneNumero.trim(), phoneCode: '', phoneNumber: telefoneNumero.trim(), email: '',
         rotina: null, acomp: { type: 'dash' }, status: 'Ativo',
       };
       patients.push(novo);
@@ -6194,7 +6232,9 @@
       const nome = apptPatientSearch.value.trim();
       if(!nome) return;
       apptPatientResults.classList.remove('open');
-      const criada = await criarPacienteRapido(nome);
+      const telefoneNumero = prompt('Telefone / WhatsApp de ' + nome + ' (obrigatório, para evitar cadastros duplicados):');
+      if(!telefoneNumero || !telefoneNumero.trim()){ showToast('O telefone é obrigatório para cadastrar uma nova paciente.'); return; }
+      const criada = await criarPacienteRapido(nome, telefoneNumero);
       if(criada){
         selecionarPacienteNoModal(criada);
         showToast('Paciente "' + criada.name + '" adicionada com sucesso!');
