@@ -4233,7 +4233,29 @@
     document.getElementById('regBreadcrumbName').textContent = nome;
     showToast('Dados salvos com sucesso!');
   });
-  document.getElementById('btnExcluirCadastro').addEventListener('click', () => showToast('Ação de exclusão desabilitada nesta demonstração'));
+  document.getElementById('btnExcluirCadastro').addEventListener('click', async () => {
+    if(!currentPatient){ showToast('Nenhuma paciente selecionada.'); return; }
+
+    const confirmado = confirm('Tem certeza que deseja excluir o cadastro de "' + currentPatient.name + '"? Essa ação não pode ser desfeita.');
+    if(!confirmado) return;
+
+    if(isPacienteReal(currentPatient)){
+      const { error } = await supabaseClient.from('pacientes').delete().eq('id', currentPatient.id);
+      if(error){
+        showToast('Não foi possível excluir: ' + error.message);
+        return;
+      }
+      await loadPacientesFromSupabase();
+    } else {
+      const idx = patients.findIndex(p => String(p.id) === String(currentPatient.id));
+      if(idx !== -1) patients.splice(idx, 1);
+      renderPacientesTable();
+    }
+
+    currentPatient = null;
+    showToast('Cadastro excluído com sucesso!');
+    document.getElementById('breadcrumbPacientes').click();
+  });
 
   document.getElementById('btnGerarLinkPaciente').addEventListener('click', async () => {
     if(!currentPatient){ showToast('Selecione uma paciente primeiro.'); return; }
