@@ -1163,6 +1163,21 @@
     font-family:inherit; color: var(--text-dark); outline:none;
   }
   .modal-field input:focus, .modal-field select:focus{ border-color: var(--pink); }
+  .appt-patient-results{
+    display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:20;
+    background:#fff; border:1px solid var(--border); border-radius:9px; box-shadow:0 8px 24px rgba(0,0,0,.1);
+    max-height:220px; overflow-y:auto;
+  }
+  .appt-patient-results.open{ display:block; }
+  .appt-patient-result-item{
+    padding:9px 12px; font-size:13.5px; color: var(--text-dark); cursor:pointer;
+  }
+  .appt-patient-result-item:hover{ background: var(--tag-bg); }
+  .appt-patient-result-add{
+    padding:9px 12px; font-size:13.5px; color: var(--sidebar-bg); font-weight:700; cursor:pointer; border-top:1px solid var(--border);
+  }
+  .appt-patient-result-add:hover{ background: var(--tag-bg); }
+  .appt-patient-result-empty{ padding:9px 12px; font-size:13px; color: var(--text-muted); }
   .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
   .modal-btn-cancel{
     background:#fff; border:1px solid var(--border); border-radius:9px; padding:10px 16px;
@@ -2927,6 +2942,33 @@
           </div>
         </div>
 
+        <div class="registro-card" style="margin-bottom:20px;">
+          <div class="anamnese-title" style="margin-bottom:6px;">Integração com WhatsApp</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 6px 0;">Conecte sua própria conta do WhatsApp Business (Meta Cloud API) para enviar confirmações de agendamento automaticamente para suas pacientes, com o seu número.</p>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;" id="whatsappStatusLabel">Status: <strong style="color:var(--text-muted);">Não conectado</strong></p>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Número do WhatsApp (visível para a paciente)</label>
+            <input type="text" class="anamnese-select" id="cfgWhatsappNumero" placeholder="Ex: (11) 91234-5678">
+          </div>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Phone Number ID (Meta Business)</label>
+            <input type="text" class="anamnese-select" id="cfgWhatsappPhoneId" placeholder="Ex: 123456789012345">
+          </div>
+
+          <div class="form-field" style="margin-bottom:8px;">
+            <label>Access Token (Meta Business)</label>
+            <input type="password" class="anamnese-select" id="cfgWhatsappToken" placeholder="Token de acesso permanente">
+          </div>
+          <p style="font-size:12px; color:var(--text-muted); margin:0 0 20px 0;">Você gera esses dados no seu Meta Business Manager, ao criar sua conta do WhatsApp Business API. Podemos te ajudar com o passo a passo.</p>
+
+          <div class="anamnese-footer" style="gap:10px; display:flex;">
+            <button class="btn-save" id="btnSalvarWhatsapp">Salvar Integração</button>
+            <button class="btn-save" id="btnTestarWhatsapp" style="background:var(--tag-bg); color:var(--text-dark);">Testar Conexão</button>
+          </div>
+        </div>
+
         <div class="registro-card">
           <div class="anamnese-title" style="margin-bottom:6px;">Preferências da Conta</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">Isso ajusta qual moeda aparece em destaque nas faixas de preço do Catálogo e do Plano de SkinCare.</p>
@@ -2944,16 +2986,6 @@
               <option value="US">Estados Unidos</option>
             </select>
           </div>
-
-          <div class="form-field" style="margin-bottom:8px;">
-            <label>Idioma do Site</label>
-            <select class="anamnese-select" id="cfgIdioma">
-              <option value="pt">Português</option>
-              <option value="en">English</option>
-              <option value="es">Español</option>
-            </select>
-          </div>
-          <p style="font-size:12px; color:var(--text-muted); margin:0 0 20px 0;">A tradução completa da interface ainda está em desenvolvimento — por enquanto sua preferência fica salva para quando esse recurso estiver pronto.</p>
 
           <div class="anamnese-footer">
             <button class="btn-save" id="btnSalvarConfiguracoes">Salvar Preferências</button>
@@ -3222,7 +3254,7 @@
             <div class="card-head"><div class="card-title">Lista de Profissionais</div></div>
             <table>
               <thead>
-                <tr><th>Nome</th><th>Perfil de Acesso</th><th>Categoria</th><th>Descrição</th><th>Ativado?</th></tr>
+                <tr><th>Nome</th><th>Perfil de Acesso</th><th>Categoria</th><th>Descrição</th><th>Estado do Perfil</th></tr>
               </thead>
               <tbody id="profissionaisBody"></tbody>
             </table>
@@ -3347,7 +3379,11 @@
     <div class="modal-field" id="modalPatientField">
       <label id="modalPatientLabel">Paciente</label>
       <input id="apptPatient" type="text" placeholder="Nome do paciente" style="display:none;">
-      <select id="apptPatientSelect"></select>
+      <div id="apptPatientSearchWrap" style="position:relative; display:none;">
+        <input id="apptPatientSearch" type="text" placeholder="Buscar paciente por nome..." autocomplete="off">
+        <div id="apptPatientResults" class="appt-patient-results"></div>
+      </div>
+      <select id="apptPatientSelect" style="display:none;"></select>
     </div>
     <div class="modal-field" id="modalServiceField">
       <label>Serviço(s)</label>
@@ -3468,7 +3504,7 @@
     </div>
     <div class="modal-field" style="display:flex; align-items:center; gap:10px;">
       <input type="checkbox" id="profAtivado" style="width:16px; height:16px;" checked>
-      <label style="margin:0;">Ativado</label>
+      <label style="margin:0;">Ativo</label>
     </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" id="modalProfissionalCancel">Cancelar</button>
@@ -3678,6 +3714,7 @@
   function atualizarSidebarPerfil(){
     document.querySelector('.topbar-avatar').textContent = iniciaisDoNome(perfilProfissional.nome);
     document.querySelector('.profile-name').textContent = perfilProfissional.nome || '—';
+    if(typeof atualizarProfissionalPrincipal === 'function') atualizarProfissionalPrincipal();
   }
 
   function preencherCamposConfiguracoesPerfil(){
@@ -3721,6 +3758,58 @@
     };
     atualizarSidebarPerfil();
     preencherCamposConfiguracoesPerfil();
+  }
+
+  /* ---------- Integração com WhatsApp (Modelo 1: cada profissional conecta sua própria conta) ---------- */
+  let integracaoWhatsapp = { provider: 'meta_cloud_api', phone_number_id: '', access_token: '', numero_whatsapp: '', ativo: false };
+
+  function preencherCamposWhatsapp(){
+    const numeroEl = document.getElementById('cfgWhatsappNumero');
+    const phoneIdEl = document.getElementById('cfgWhatsappPhoneId');
+    const tokenEl = document.getElementById('cfgWhatsappToken');
+    const statusEl = document.getElementById('whatsappStatusLabel');
+    if(numeroEl) numeroEl.value = integracaoWhatsapp.numero_whatsapp || '';
+    if(phoneIdEl) phoneIdEl.value = integracaoWhatsapp.phone_number_id || '';
+    if(tokenEl) tokenEl.value = integracaoWhatsapp.access_token || '';
+    if(statusEl){
+      statusEl.innerHTML = integracaoWhatsapp.ativo
+        ? 'Status: <strong style="color:#1a9c5a;">Conectado</strong>'
+        : 'Status: <strong style="color:var(--text-muted);">Não conectado</strong>';
+    }
+  }
+
+  async function carregarIntegracaoWhatsappReal(){
+    integracaoWhatsapp = { provider: 'meta_cloud_api', phone_number_id: '', access_token: '', numero_whatsapp: '', ativo: false };
+    try{
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(!userData || !userData.user) return;
+      const { data, error } = await supabaseClient.from('integracoes_whatsapp')
+        .select('provider, phone_number_id, access_token, numero_whatsapp, ativo')
+        .eq('profissional_id', userData.user.id).maybeSingle();
+      if(!error && data){
+        integracaoWhatsapp = {
+          provider: data.provider || 'meta_cloud_api',
+          phone_number_id: data.phone_number_id || '',
+          access_token: data.access_token || '',
+          numero_whatsapp: data.numero_whatsapp || '',
+          ativo: !!data.ativo
+        };
+      }
+    } catch(err){
+      console.warn('Não foi possível carregar a integração de WhatsApp.', err);
+    }
+    preencherCamposWhatsapp();
+  }
+
+  function carregarIntegracaoWhatsappDemo(){
+    integracaoWhatsapp = {
+      provider: 'meta_cloud_api',
+      phone_number_id: localStorage.getItem('skinExpertWhatsappPhoneId') || '',
+      access_token: localStorage.getItem('skinExpertWhatsappToken') || '',
+      numero_whatsapp: localStorage.getItem('skinExpertWhatsappNumero') || '',
+      ativo: localStorage.getItem('skinExpertWhatsappAtivo') === 'true'
+    };
+    preencherCamposWhatsapp();
   }
 
   /* ---------- Toast ---------- */
@@ -6020,6 +6109,9 @@
   const modalPatientLabel = document.getElementById('modalPatientLabel');
   const apptPatient = document.getElementById('apptPatient');
   const apptPatientSelect = document.getElementById('apptPatientSelect');
+  const apptPatientSearchWrap = document.getElementById('apptPatientSearchWrap');
+  const apptPatientSearch = document.getElementById('apptPatientSearch');
+  const apptPatientResults = document.getElementById('apptPatientResults');
   const modalServiceField = document.getElementById('modalServiceField');
   const apptServicosContainer = document.getElementById('apptServicosContainer');
   const apptTime = document.getElementById('apptTime');
@@ -6029,10 +6121,86 @@
   const apptEnviarWhatsapp = document.getElementById('apptEnviarWhatsapp');
   let modalMode = 'appt';
 
-  function popularSelectPacientes(){
-    apptPatientSelect.innerHTML = patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('')
-      || '<option value="">Nenhuma paciente cadastrada</option>';
+  function selecionarPacienteNoModal(paciente){
+    apptPatientSelect.innerHTML = `<option value="${paciente.id}" selected>${paciente.name}</option>`;
+    apptPatientSearch.value = paciente.name;
+    apptPatientResults.classList.remove('open');
   }
+
+  function limparSelecaoPaciente(){
+    apptPatientSelect.innerHTML = '';
+  }
+
+  // Cria uma paciente rapidamente a partir da busca, sem sair do modal de agendamento.
+  // Funciona tanto para contas reais (salva no Supabase) quanto no modo demonstração (só em memória).
+  async function criarPacienteRapido(nome){
+    const { data: userData } = await supabaseClient.auth.getUser();
+    if(userData && userData.user){
+      const { data, error } = await supabaseClient.from('pacientes')
+        .insert({ profissional_id: userData.user.id, nome: nome.trim(), status: 'Ativo' })
+        .select().single();
+      if(error){ showToast('Erro ao criar paciente: ' + error.message); return null; }
+      await loadPacientesFromSupabase();
+      return patients.find(p => String(p.id) === String(data.id)) || null;
+    } else {
+      const pal = avatarPalette[patients.length % avatarPalette.length];
+      const novo = {
+        id: 'demo-p-' + Date.now(), initials: initialsFromName(nome), color: pal.color, bg: pal.bg,
+        name: nome.trim(), age: null, gender: '', phone: '', phoneCode: '', phoneNumber: '', email: '',
+        rotina: null, acomp: { type: 'dash' }, status: 'Ativo',
+      };
+      patients.push(novo);
+      renderPacientesTable();
+      return novo;
+    }
+  }
+
+  function renderizarResultadosBuscaPaciente(){
+    const termoRaw = apptPatientSearch.value.trim();
+    const termo = termoRaw.toLowerCase();
+    if(!termo){ apptPatientResults.classList.remove('open'); return; }
+
+    const filtrados = patients.filter(p => (p.name || '').toLowerCase().includes(termo)).slice(0, 8);
+    const nomeExato = patients.some(p => (p.name || '').toLowerCase() === termo);
+
+    let html = filtrados.length > 0
+      ? filtrados.map(p => `<div class="appt-patient-result-item" data-id="${p.id}">${p.name}</div>`).join('')
+      : `<div class="appt-patient-result-empty">Nenhuma paciente encontrada.</div>`;
+    if(!nomeExato){
+      html += `<div class="appt-patient-result-add" data-novo="1">+ Adicionar nova paciente "${termoRaw}"</div>`;
+    }
+
+    apptPatientResults.innerHTML = html;
+    apptPatientResults.classList.add('open');
+  }
+
+  apptPatientSearch.addEventListener('input', () => {
+    limparSelecaoPaciente();
+    renderizarResultadosBuscaPaciente();
+  });
+  apptPatientSearch.addEventListener('focus', () => {
+    if(apptPatientSearch.value.trim()) renderizarResultadosBuscaPaciente();
+  });
+  document.addEventListener('click', (e) => {
+    if(!apptPatientSearchWrap.contains(e.target)) apptPatientResults.classList.remove('open');
+  });
+  apptPatientResults.addEventListener('click', async (e) => {
+    const itemEl = e.target.closest('.appt-patient-result-item');
+    const addEl = e.target.closest('.appt-patient-result-add');
+    if(itemEl){
+      const paciente = patients.find(p => String(p.id) === String(itemEl.dataset.id));
+      if(paciente) selecionarPacienteNoModal(paciente);
+    } else if(addEl){
+      const nome = apptPatientSearch.value.trim();
+      if(!nome) return;
+      apptPatientResults.classList.remove('open');
+      const criada = await criarPacienteRapido(nome);
+      if(criada){
+        selecionarPacienteNoModal(criada);
+        showToast('Paciente "' + criada.name + '" adicionada com sucesso!');
+      }
+    }
+  });
 
   // Permite marcar mais de um serviço para o mesmo atendimento (ex: Limpeza de Pele + Drenagem).
   function popularServicosCheckboxes(){
@@ -6085,14 +6253,16 @@
   function openModal(mode, prefillTime){
     modalMode = mode;
     apptPatient.value = '';
+    apptPatientSearch.value = '';
+    apptPatientResults.classList.remove('open');
+    limparSelecaoPaciente();
     apptTime.value = prefillTime || '09:00';
     apptDuration.value = '60';
     if(mode === 'appt'){
       modalTitle.textContent = 'Novo Atendimento';
       modalPatientLabel.textContent = 'Paciente';
       apptPatient.style.display = 'none';
-      apptPatientSelect.style.display = 'block';
-      popularSelectPacientes();
+      apptPatientSearchWrap.style.display = 'block';
       modalServiceField.style.display = 'block';
       popularServicosCheckboxes();
       modalConfirm.textContent = 'Agendar';
@@ -6102,7 +6272,7 @@
       modalPatientLabel.textContent = 'Motivo (opcional)';
       apptPatient.placeholder = 'Ex: Almoço, Reunião';
       apptPatient.style.display = 'block';
-      apptPatientSelect.style.display = 'none';
+      apptPatientSearchWrap.style.display = 'none';
       modalServiceField.style.display = 'none';
       modalConfirm.textContent = 'Bloquear';
       modalWhatsappField.style.display = 'none';
@@ -6198,6 +6368,10 @@
     }
 
     // Modo demonstração (sem sessão real): mantém o comportamento local, sem Supabase
+    if(modalMode === 'appt' && !patients.find(p => String(p.id) === String(apptPatientSelect.value))){
+      showToast('Selecione uma paciente.');
+      return;
+    }
     const pacienteDemo = modalMode === 'appt'
       ? (patients.find(p => String(p.id) === String(apptPatientSelect.value))?.name || 'Paciente sem nome')
       : (apptPatient.value.trim() || 'Horário bloqueado');
@@ -6529,7 +6703,7 @@
 
   /* ---------- Profissionais ---------- */
   const profissionaisData = [
-    { nome:'Profissional Skin Expert Pro', perfil:'Administrador', categoria:'Estética', descricao:'Meu nome', ativado:true },
+    { nome:'—', perfil:'Administrador', categoria:'Estética', descricao:'—', ativado:true, principal:true },
   ];
 
   function renderProfissionais(){
@@ -6542,12 +6716,22 @@
         <td><span class="access-profile-chip">${p.perfil}</span></td>
         <td>${p.categoria || '—'}</td>
         <td>${p.descricao || '—'}</td>
-        <td>${p.ativado ? '<span class="status-active">Ativado</span>' : '<span class="pill pill-gray">Inativo</span>'}</td>
+        <td>${p.ativado ? '<span class="status-active">Ativo</span>' : '<span class="pill pill-gray">Inativo</span>'}</td>
       `;
       body.appendChild(tr);
     });
   }
   renderProfissionais();
+
+  // A primeira linha da lista de Profissionais representa quem está logada — atualiza
+  // com o nome/título reais assim que Meus Dados Profissionais é carregado (real ou demo).
+  function atualizarProfissionalPrincipal(){
+    const principal = profissionaisData.find(p => p.principal);
+    if(!principal) return;
+    principal.nome = perfilProfissional.nome || '—';
+    principal.descricao = perfilProfissional.titulo || '—';
+    renderProfissionais();
+  }
 
   const modalProfissionalOverlay = document.getElementById('modalProfissionalOverlay');
   document.getElementById('btnNovoProfissional').addEventListener('click', () => {
@@ -8182,13 +8366,10 @@
   /* ---------- Configurações (preferências de moeda/idioma) ---------- */
   (function initConfiguracoes(){
     const paisSelect = document.getElementById('cfgPaisAtuacao');
-    const idiomaSelect = document.getElementById('cfgIdioma');
     paisSelect.value = localStorage.getItem('skinExpertPaisAtuacao') || 'BR';
-    idiomaSelect.value = localStorage.getItem('skinExpertIdioma') || 'pt';
 
     document.getElementById('btnSalvarConfiguracoes').addEventListener('click', () => {
       localStorage.setItem('skinExpertPaisAtuacao', paisSelect.value);
-      localStorage.setItem('skinExpertIdioma', idiomaSelect.value);
       renderCatalogo();
       showToast('Preferências salvas com sucesso!');
     });
@@ -8219,6 +8400,61 @@
 
       atualizarSidebarPerfil();
       showToast('Seus dados foram salvos com sucesso!');
+    });
+
+    document.getElementById('btnSalvarWhatsapp').addEventListener('click', async () => {
+      const numero = document.getElementById('cfgWhatsappNumero').value.trim();
+      const phoneId = document.getElementById('cfgWhatsappPhoneId').value.trim();
+      const token = document.getElementById('cfgWhatsappToken').value.trim();
+
+      if(!phoneId || !token){ showToast('Preencha o Phone Number ID e o Access Token.'); return; }
+
+      integracaoWhatsapp = { provider: 'meta_cloud_api', phone_number_id: phoneId, access_token: token, numero_whatsapp: numero, ativo: true };
+
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(userData && userData.user){
+        try {
+          await supabaseClient.from('integracoes_whatsapp').upsert({
+            profissional_id: userData.user.id,
+            provider: integracaoWhatsapp.provider,
+            phone_number_id: integracaoWhatsapp.phone_number_id,
+            access_token: integracaoWhatsapp.access_token,
+            numero_whatsapp: integracaoWhatsapp.numero_whatsapp,
+            ativo: true,
+            atualizado_em: new Date().toISOString()
+          });
+        } catch(err){
+          console.warn('Não foi possível salvar a integração de WhatsApp no Supabase.', err);
+          showToast('Erro ao salvar a integração. Tente novamente.');
+          return;
+        }
+      } else {
+        localStorage.setItem('skinExpertWhatsappPhoneId', phoneId);
+        localStorage.setItem('skinExpertWhatsappToken', token);
+        localStorage.setItem('skinExpertWhatsappNumero', numero);
+        localStorage.setItem('skinExpertWhatsappAtivo', 'true');
+      }
+
+      preencherCamposWhatsapp();
+      showToast('Integração com WhatsApp salva com sucesso!');
+    });
+
+    document.getElementById('btnTestarWhatsapp').addEventListener('click', async () => {
+      if(!integracaoWhatsapp.phone_number_id || !integracaoWhatsapp.access_token){
+        showToast('Salve sua integração antes de testar.');
+        return;
+      }
+      showToast('Enviando mensagem de teste...');
+      try{
+        const { data, error } = await supabaseClient.functions.invoke('testar-whatsapp', { body: {} });
+        if(error){
+          showToast('Não foi possível confirmar o envio. Verifique seu Phone Number ID e Token.');
+        } else {
+          showToast('Mensagem de teste enviada! Verifique o WhatsApp do número cadastrado.');
+        }
+      } catch(e){
+        showToast('Não foi possível conectar para testar agora.');
+      }
     });
   })();
 
@@ -8336,6 +8572,7 @@
     authScreenEl.style.display = 'none';
     appRootEl.style.display = 'flex';
     await carregarPerfilProfissionalReal();
+    await carregarIntegracaoWhatsappReal();
     await loadPacientesFromSupabase();
     await loadAgendamentosFromSupabase();
     await renderPreFichasDashboard();
@@ -8345,6 +8582,7 @@
     authScreenEl.style.display = 'none';
     appRootEl.style.display = 'flex';
     carregarPerfilProfissionalDemo();
+    carregarIntegracaoWhatsappDemo();
     showToast('Modo demonstração — os dados aqui não são salvos.');
   });
 
