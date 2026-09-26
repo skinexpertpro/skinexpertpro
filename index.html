@@ -6898,7 +6898,11 @@
       // Compatível com bancos que ainda não têm a coluna "observacoes".
       if(error){ ({ data, error } = await supabaseClient.from('agendamentos').select(camposBase)); }
 
-      if(error || !data) return;
+      if(error || !data){
+        showToast('Não foi possível carregar sua agenda agora. Recarregue a página antes de fazer alterações.');
+        console.warn('Erro ao carregar agendamentos:', error);
+        return;
+      }
 
       Object.keys(appointments).forEach(k => delete appointments[k]);
       data.forEach(row => {
@@ -6982,6 +6986,79 @@
   async function getUsuarioLogado(){
     const { data: userData } = await supabaseClient.auth.getUser();
     return (userData && userData.user) ? userData.user : null;
+  }
+
+  /* ---------- Configurações que precisam sobreviver a recarregar a página ----------
+     Expedientes, profissionais, categorias, pacotes e anotações/favoritos de ativos
+     antes ficavam só na memória do navegador e sumiam ao recarregar ou trocar de versão.
+     Agora são salvos na tabela "configuracoes_profissional" do Supabase (uma linha por
+     tipo de configuração), com uma cópia de segurança no próprio navegador. */
+  var avisoConfigSemTabela = false;
+  function chaveLocalConfig(userId, chave){ return 'skinExpertCfg:' + userId + ':' + chave; }
+
+  async function salvarConfig(chave, valor){
+    const user = await getUsuarioLogado();
+    if(!user) return true; // modo demonstração: não salva nada
+    try{ localStorage.setItem(chaveLocalConfig(user.id, chave), JSON.stringify(valor)); }catch(e){}
+    const { error } = await supabaseClient.from('configuracoes_profissional').upsert({
+      profissional_id: user.id, chave, valor, updated_at: new Date().toISOString(),
+    }, { onConflict: 'profissional_id,chave' });
+    if(error){
+      console.warn('Não foi possível salvar "' + chave + '" no Supabase:', error.message);
+      if(!avisoConfigSemTabela){
+        avisoConfigSemTabela = true;
+        showToast('Salvo só neste navegador. Crie a tabela configuracoes_profissional no Supabase para salvar na nuvem.');
+      }
+      return false;
+    }
+    return true;
+  }
+
+  async function lerConfig(chave){
+    const user = await getUsuarioLogado();
+    if(!user) return null;
+    try{
+      const { data, error } = await supabaseClient.from('configuracoes_profissional')
+        .select('valor').eq('profissional_id', user.id).eq('chave', chave).maybeSingle();
+      if(!error && data && data.valor != null) return data.valor;
+    }catch(e){}
+    try{
+      const local = localStorage.getItem(chaveLocalConfig(user.id, chave));
+      if(local) return JSON.parse(local);
+    }catch(e){}
+    return null;
+  }
+
+  function substituirConteudo(lista, novos){
+    if(Array.isArray(novos)) lista.splice(0, lista.length, ...novos);
+  }
+
+  function anotacoesAtivosParaSalvar(){
+    const mapa = {};
+    ativosData.forEach(a => {
+      if(a.favorito || (a.anotacao && a.anotacao.trim())) mapa[a.id] = { favorito: !!a.favorito, anotacao: a.anotacao || '' };
+    });
+    return mapa;
+  }
+
+  async function carregarConfiguracoesSalvas(){
+    const user = await getUsuarioLogado();
+    if(!user) return;
+    const [exp, profs, cats, pacs, ativosNotas] = await Promise.all([
+      lerConfig('expedientes'), lerConfig('profissionais'), lerConfig('categorias'),
+      lerConfig('pacotes'), lerConfig('ativos_anotacoes'),
+    ]);
+    if(exp && exp.length){ substituirConteudo(expedientesData, exp); renderExpedientes(); }
+    if(profs && profs.length){ substituirConteudo(profissionaisData, profs); atualizarProfissionalPrincipal(); renderProfissionais(); }
+    if(cats && cats.length){ substituirConteudo(categoriasData, cats); renderCategorias(); }
+    if(pacs){ substituirConteudo(pacotesData, pacs); renderPacotes(); }
+    if(ativosNotas && typeof ativosNotas === 'object'){
+      ativosData.forEach(a => {
+        const n = ativosNotas[a.id];
+        if(n){ a.favorito = !!n.favorito; a.anotacao = n.anotacao || ''; }
+      });
+      try{ renderAll(); }catch(e){}
+    }
   }
 
   /* ---------- Carrega Comandas do Supabase (com fallback ao mock) ---------- */
@@ -7261,6 +7338,7 @@
     renderProfissionais();
     modalProfissionalOverlay.classList.remove('open');
     showToast('Profissional adicionado com sucesso!');
+    salvarConfig('profissionais', profissionaisData);
   });
 
   /* ---------- Serviços ---------- */
@@ -7424,6 +7502,7 @@
     renderCategorias();
     modalCategoriaOverlay.classList.remove('open');
     showToast('Categoria criada com sucesso!');
+    salvarConfig('categorias', categoriasData);
   });
 
   /* ---------- Pacotes ---------- */
@@ -7518,6 +7597,7 @@
     renderPacotes();
     modalPacoteOverlay.classList.remove('open');
     showToast('Pacote criado com sucesso!');
+    salvarConfig('pacotes', pacotesData);
   });
 
   /* ---------- Expedientes ---------- */
@@ -7617,6 +7697,7 @@
     }
     renderExpedientes();
     modalExpedienteOverlay.classList.remove('open');
+    salvarConfig('expedientes', expedientesData);
   });
 
   /* ================= FORMULAÇÕES COSMÉTICAS MODULE ================= */
@@ -8262,6 +8343,7 @@
           card.querySelector('.fav-star-btn').addEventListener('click', () => {
             a.favorito = !a.favorito;
             renderAll();
+            salvarConfig('ativos_anotacoes', anotacoesAtivosParaSalvar());
           });
           grid.appendChild(card);
         });
@@ -8652,6 +8734,7 @@
     if(currentAtivoIdx >= 0){
       ativosData[currentAtivoIdx].anotacao = document.getElementById('ativoDetailAnotacao').value;
       showToast('Anotação salva com sucesso!');
+      salvarConfig('ativos_anotacoes', anotacoesAtivosParaSalvar());
     }
     modalAtivoOverlay.classList.remove('open');
   });
@@ -9101,7 +9184,15 @@
     await carregarIntegracaoGoogleAgendaReal();
     await loadPacientesFromSupabase();
     await loadAgendamentosFromSupabase();
-    await renderPreFichasDashboard();
+    await renderPreFichasDashboard().catch(e => console.warn('Pré-fichas:', e));
+    // Estes antes só eram carregados quando a página abria já logada; depois de um login
+    // novo continuavam mostrando os dados de exemplo, parecendo que o que foi salvo sumiu.
+    await Promise.all([
+      loadServicos(), loadProdutosFromSupabase(), loadComandasFromSupabase(),
+      loadMovimentosFromSupabase(), loadContasFromSupabase(),
+    ].map(pr => Promise.resolve(pr).catch(() => {})));
+    await loadAtivosFromSupabase().catch(() => {});
+    await carregarConfiguracoesSalvas().catch(() => {});
   }
 
   document.getElementById('authDemoLink').addEventListener('click', () => {
