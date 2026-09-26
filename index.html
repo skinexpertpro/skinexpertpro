@@ -1094,6 +1094,74 @@
   .produtos-com-ativo-item .pca-name{ font-weight:700; color: var(--text-dark); }
   .produtos-com-ativo-item .pca-brand{ color: var(--text-muted); font-size:12px; }
 
+  /* ---------- Lembretes ---------- */
+  .lemb-item{ border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-top:8px; background:#fff; }
+  .lemb-item.atrasado{ border-color:#f1c4c4; }
+  .lemb-topo{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px; }
+  .lemb-tipo{ font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:2px 8px; border-radius:10px; }
+  .lemb-tipo.pos{ background:#e8f0fb; color:#35609a; }
+  .lemb-tipo.retorno{ background:#e7f5ec; color:#23774a; }
+  .lemb-tipo.sumida{ background:#fdf0e3; color:#9a5a17; }
+  .lemb-tipo.manual{ background: var(--pink-light); color: var(--sidebar-bg); }
+  .lemb-quando{ font-size:11.5px; color: var(--text-muted); font-weight:700; margin-left:auto; }
+  .lemb-quando.atrasado{ color:#b42318; }
+  .lemb-paciente{ font-weight:700; color: var(--text-dark); font-size:14px; cursor:pointer; }
+  .lemb-paciente:hover{ text-decoration:underline; }
+  .lemb-texto{ font-size:13px; color: var(--text-dark); margin-top:1px; line-height:1.4; }
+  .lemb-acoes{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; position:relative; }
+  .lemb-btn{
+    border:1px solid var(--border); background:#fff; border-radius:8px; padding:6px 10px; font-size:12.5px;
+    font-weight:700; color: var(--text-dark); cursor:pointer; display:inline-flex; align-items:center; gap:5px;
+  }
+  .lemb-btn:hover{ background:#f7f8f9; }
+  .lemb-btn.whats{ background:#25d366; border-color:#25d366; color:#fff; }
+  .lemb-btn.whats:hover{ background:#1ebe5a; }
+  .lemb-adiar-menu{
+    position:absolute; top:calc(100% + 4px); z-index:30; background:#fff; border:1px solid var(--border);
+    border-radius:9px; box-shadow:0 8px 24px rgba(0,0,0,.12); overflow:hidden; min-width:150px;
+  }
+  .lemb-adiar-menu button{ display:block; width:100%; text-align:left; background:none; border:none; padding:9px 12px; font-size:13px; cursor:pointer; color: var(--text-dark); }
+  .lemb-adiar-menu button:hover{ background: var(--tag-bg); }
+  .lemb-rodape{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:12px; color: var(--text-muted); }
+  .lemb-rodape a{ color: var(--sidebar-bg); font-weight:700; cursor:pointer; text-decoration:underline; }
+
+  /* ---------- Aniversariantes do Dia ---------- */
+  .aniv-item{
+    display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--border);
+    border-radius:12px; margin-top:8px; cursor:pointer; background:#fff;
+  }
+  .aniv-item:hover{ border-color: var(--gold); background:#fafbfc; }
+  .aniv-avatar{
+    width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:13px; overflow:hidden;
+  }
+  .aniv-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .aniv-info{ flex:1; min-width:0; }
+  .aniv-nome{ font-weight:700; color: var(--text-dark); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .aniv-sub{ color: var(--text-muted); font-size:12px; }
+  .aniv-whats{
+    flex-shrink:0; border:none; border-radius:9px; padding:8px 11px; background:#25d366; color:#fff;
+    font-size:12.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .aniv-whats:hover{ background:#1ebe5a; }
+  .aniv-whats[disabled]{ background: var(--tag-bg); color: var(--text-muted); cursor:not-allowed; }
+  .aniv-proximos-titulo{ font-size:12px; font-weight:800; color: var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin:14px 0 2px 0; }
+  .aniv-item.proximo{ padding:8px 12px; }
+  .aniv-item.proximo .aniv-avatar{ width:30px; height:30px; font-size:11px; }
+  .aniv-item.hoje{ border-color: var(--pink); background: var(--pink-light); }
+  .aniv-item.hoje{ flex-wrap:wrap; }
+  .aniv-item.hoje .aniv-whats{ flex-basis:100%; justify-content:center; padding:9px 11px; }
+  .aniv-item.hoje .aniv-nome{ white-space:normal; }
+  .aniv-item.passou{ opacity:.6; }
+  .aniv-dia{
+    flex-shrink:0; width:40px; text-align:center; line-height:1.05;
+    font-weight:800; font-size:17px; color: var(--text-dark);
+  }
+  .aniv-dia small{ display:block; font-size:10px; font-weight:700; color: var(--text-muted); letter-spacing:.04em; }
+  .aniv-badge-hoje{ display:inline-block; font-size:10.5px; font-weight:800; color:#fff; background: var(--pink); border-radius:10px; padding:2px 7px; margin-left:6px; vertical-align:middle; }
+  .aniv-dica{ font-size:12px; color: var(--text-muted); margin-top:12px; line-height:1.45; }
+  .aniv-dica a{ color: var(--sidebar-bg); font-weight:700; cursor:pointer; text-decoration:underline; }
+
   .fav-star-btn{ background:none; border:none; cursor:pointer; padding:4px; color:#d8ccb8; display:flex; }
   .fav-star-btn.active{ color: var(--gold); }
   .fav-star-btn svg{ transition: fill .1s; }
@@ -1709,8 +1777,7 @@
                 Lembrete
               </button>
             </div>
-            <div class="table-header"><span>Paciente</span><span>Lembrete</span><span>Ação</span></div>
-            <div class="empty-state">Nenhum lembrete no momento.</div>
+            <div id="lembretesContainer"><div class="empty-state">Nenhum lembrete no momento.</div></div>
           </div>
 
           <div class="card">
@@ -1733,10 +1800,10 @@
 
           <div class="card">
             <div class="card-head">
-              <div class="card-title"><span class="dot"></span> Aniversariantes do Dia</div>
-              <div class="date-pill">22 JUL</div>
+              <div class="card-title"><span class="dot"></span> Aniversariantes do Mês</div>
+              <div class="date-pill" id="anivDatePill">—</div>
             </div>
-            <div class="empty-state">Nenhum aniversariante hoje.</div>
+            <div id="aniversariantesContainer"><div class="empty-state">Nenhum aniversariante este mês.</div></div>
           </div>
 
         </div>
@@ -3475,6 +3542,29 @@
   </div>
 </div>
 
+<!-- MODAL: novo lembrete -->
+<div class="modal-overlay" id="modalLembreteOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalLembreteTitulo" style="width:420px;">
+    <h3 id="modalLembreteTitulo">Novo Lembrete</h3>
+    <div class="modal-field">
+      <label for="lembreteTexto">Lembrete</label>
+      <textarea id="lembreteTexto" rows="3" placeholder="Ex: Trazer amostra do sérum de vitamina C"></textarea>
+    </div>
+    <div class="modal-field">
+      <label for="lembretePaciente">Paciente (opcional)</label>
+      <select id="lembretePaciente"></select>
+    </div>
+    <div class="modal-field">
+      <label for="lembreteData">Data</label>
+      <input id="lembreteData" type="date">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalLembreteCancelar">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalLembreteSalvar">Salvar lembrete</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: detalhes do atendimento (abre ao clicar num bloco da agenda) -->
 <div class="modal-overlay" id="modalApptDetOverlay">
   <div class="modal-box appt-det-box" role="dialog" aria-modal="true" aria-labelledby="apptDetNome">
@@ -4101,9 +4191,6 @@
     });
   });
 
-  document.getElementById('btnLembrete').addEventListener('click', () => {
-    alert('Abrir formulário de novo lembrete');
-  });
 
   /* ---------- Patients table ---------- */
   const patients = [
@@ -4124,7 +4211,163 @@
     return `<span class="pill-dash">--</span>`;
   }
 
+  // Modo demonstração: duas pacientes de exemplo com aniversário neste mês,
+  // para o cartão "Aniversariantes do Dia" aparecer preenchido. Contas reais usam a data da ficha.
+  (function(){
+    const h = new Date();
+    const iso = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const p2 = patients.find(p => p.id === 'p2');
+    if(p2 && !p2.dataNascimento) p2.dataNascimento = iso(new Date(h.getFullYear() - 24, h.getMonth(), h.getDate()));
+    const p4 = patients.find(p => p.id === 'p4');
+    if(p4 && !p4.dataNascimento){
+      const d = Math.min(h.getDate() + 3, new Date(h.getFullYear(), h.getMonth() + 1, 0).getDate());
+      p4.dataNascimento = iso(new Date(h.getFullYear() - 37, h.getMonth(), d));
+    }
+    const p5 = patients.find(p => p.id === 'p5');
+    if(p5 && !p5.dataNascimento && h.getDate() > 2) p5.dataNascimento = iso(new Date(h.getFullYear() - 45, h.getMonth(), 2));
+  })();
+
+  /* ================= ANIVERSARIANTES DO DIA ================= */
+  const MESES_CURTOS = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+  // Lê "AAAA-MM-DD" (formato do banco) ou "DD/MM/AAAA" e devolve { ano, mes (0-11), dia }.
+  function partesDataNascimento(str){
+    if(!str) return null;
+    let m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if(m) return { ano:+m[1], mes:+m[2]-1, dia:+m[3] };
+    m = String(str).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m) return { ano:+m[3], mes:+m[2]-1, dia:+m[1] };
+    return null;
+  }
+
+  // Data do aniversário num determinado ano (quem nasceu em 29/02 comemora em 28/02 nos anos não bissextos).
+  function aniversarioNoAno(n, ano){
+    const bissexto = (ano % 4 === 0 && ano % 100 !== 0) || ano % 400 === 0;
+    const dia = (n.mes === 1 && n.dia === 29 && !bissexto) ? 28 : n.dia;
+    return new Date(ano, n.mes, dia);
+  }
+
+  function linkWhatsapp(p, msg){
+    if(!p) return null;
+    const digitosNumero = String(p.phoneNumber || p.phone || '').replace(/\D/g, '');
+    if(digitosNumero.length < 8) return null;
+    let codigo = String(p.phoneCode || '').replace(/\D/g, '');
+    let numero = digitosNumero;
+    if(!codigo){
+      if(numero.length >= 12) codigo = '';
+      else codigo = (p.pais === 'Portugal') ? '351' : '55';
+    } else if(numero.startsWith(codigo) && numero.length > 11){
+      codigo = '';
+    }
+    return `https://wa.me/${codigo}${numero}` + (msg ? `?text=${encodeURIComponent(msg)}` : '');
+  }
+
+  function linkWhatsappAniversario(p){
+    const digitosNumero = String(p.phoneNumber || p.phone || '').replace(/\D/g, '');
+    if(digitosNumero.length < 8) return null;
+    let codigo = String(p.phoneCode || '').replace(/\D/g, '');
+    let numero = digitosNumero;
+    if(!codigo){
+      // Sem código do país: se o número já parece incluir (55… / 351…), usa como está; senão deduz pelo país.
+      if(numero.length >= 12) codigo = '';
+      else codigo = (p.pais === 'Portugal') ? '351' : '55';
+    } else if(numero.startsWith(codigo) && numero.length > 11){
+      codigo = '';
+    }
+    const primeiroNome = (p.name || '').trim().split(/\s+/)[0] || '';
+    const assinatura = (typeof perfilProfissional !== 'undefined' && perfilProfissional.nome) ? `\n\nCom carinho, ${perfilProfissional.nome}` : '';
+    const msg = `Feliz aniversário, ${primeiroNome}! 🎉 Desejo um novo ciclo cheio de saúde, alegria e muito autocuidado. Obrigada por confiar no meu trabalho!${assinatura}`;
+    return `https://wa.me/${codigo}${numero}?text=${encodeURIComponent(msg)}`;
+  }
+
+  function avatarAnivHTML(p){
+    if(p.foto_url) return `<div class="aniv-avatar"><img src="${p.foto_url}" alt=""></div>`;
+    return `<div class="aniv-avatar" style="background:${p.bg || '#eef0f2'}; color:${p.color || '#8a949a'};">${initialsFromName(p.name)}</div>`;
+  }
+
+  function renderAniversariantes(){
+    const container = document.getElementById('aniversariantesContainer');
+    const pill = document.getElementById('anivDatePill');
+    if(!container) return;
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
+    if(pill) pill.textContent = `${MESES_CURTOS[mesAtual]} ${anoAtual}`;
+
+    const doMes = [];
+    let semData = 0;
+    patients.forEach(p => {
+      const n = partesDataNascimento(p.dataNascimento);
+      if(!n){ semData++; return; }
+      const aniv = aniversarioNoAno(n, anoAtual);
+      if(aniv.getMonth() !== mesAtual) return;
+      const diasAte = Math.round((aniv - hoje) / 86400000);
+      doMes.push({ p, n, aniv, diasAte, idade: anoAtual - n.ano });
+    });
+    // Ordem: hoje primeiro, depois os próximos, e os que já passaram no fim.
+    doMes.sort((a, b) => {
+      const ga = a.diasAte === 0 ? 0 : (a.diasAte > 0 ? 1 : 2);
+      const gb = b.diasAte === 0 ? 0 : (b.diasAte > 0 ? 1 : 2);
+      return ga - gb || a.aniv - b.aniv;
+    });
+
+    container.innerHTML = '';
+    if(doMes.length === 0){
+      container.innerHTML = '<div class="empty-state">Nenhum aniversariante este mês.</div>';
+    }
+
+    const iconeWhats = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11 11 0 0 0 3.2 17.3L2 22l4.8-1.2A11 11 0 1 0 20.5 3.5zM12 20a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.7.8-2.8-.2-.3A8 8 0 1 1 12 20zm4.4-6c-.2-.1-1.4-.7-1.7-.8s-.4-.1-.5.1-.6.8-.8 1-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.5 2.5 0 0 0 1.7-1.2 2 2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3z"/></svg>';
+
+    doMes.forEach(({ p, n, aniv, diasAte, idade }) => {
+      const ehHoje = diasAte === 0;
+      const idadeOk = idade > 0 && idade < 130;
+      let quando;
+      if(ehHoje) quando = idadeOk ? `Faz ${idade} anos hoje` : 'Aniversário hoje';
+      else if(diasAte > 0) quando = (diasAte === 1 ? 'Amanhã' : `Em ${diasAte} dias`) + (idadeOk ? ` · fará ${idade} anos` : '');
+      else quando = (diasAte === -1 ? 'Foi ontem' : `Foi há ${-diasAte} dias`) + (idadeOk ? ` · fez ${idade} anos` : '');
+
+      const link = linkWhatsappAniversario(p);
+      const item = document.createElement('div');
+      item.className = 'aniv-item' + (ehHoje ? ' hoje' : (diasAte < 0 ? ' passou' : ''));
+      item.innerHTML = `
+        <div class="aniv-dia">${pad(aniv.getDate())}<small>${MESES_CURTOS[aniv.getMonth()]}</small></div>
+        ${avatarAnivHTML(p)}
+        <div class="aniv-info">
+          <div class="aniv-nome">${ehHoje ? '🎂 ' : ''}${p.name}${ehHoje ? '<span class="aniv-badge-hoje">HOJE</span>' : ''}</div>
+          <div class="aniv-sub">${quando}</div>
+        </div>
+        ${diasAte >= 0 ? `<button class="aniv-whats" ${link ? '' : 'disabled title="Paciente sem telefone cadastrado"'} title="${ehHoje ? 'Enviar parabéns pelo WhatsApp' : 'Abrir WhatsApp com mensagem de parabéns'}">${iconeWhats}${ehHoje ? ' Parabenizar' : ''}</button>` : ''}
+      `;
+      item.addEventListener('click', () => openPatientRegistro(p.id, 'dados'));
+      const btn = item.querySelector('.aniv-whats');
+      if(btn) btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(link) window.open(link, '_blank', 'noopener');
+      });
+      container.appendChild(item);
+    });
+
+    if(semData > 0 && patients.length > 0){
+      const dica = document.createElement('div');
+      dica.className = 'aniv-dica';
+      dica.innerHTML = `${semData} de ${patients.length} paciente${patients.length === 1 ? '' : 's'} ainda ${semData === 1 ? 'não tem' : 'não têm'} data de nascimento na ficha. <a id="anivVerPacientes">Completar cadastros</a>`;
+      container.appendChild(dica);
+      dica.querySelector('#anivVerPacientes').addEventListener('click', () => {
+        const nav = document.querySelector('.nav-item[data-view="pacientes"]');
+        if(nav) nav.click();
+      });
+    }
+  }
+
+  // Atualiza sozinho quando vira o dia com o app aberto.
+  (function agendarVirada(){
+    const agora = new Date();
+    const amanha = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + 1, 0, 0, 5);
+    setTimeout(() => { try{ renderAniversariantes(); }catch(e){} agendarVirada(); }, amanha - agora);
+  })();
+
   function renderPacientesTable(){
+    try{ renderAniversariantes(); }catch(e){ console.warn('Aniversariantes:', e); }
+    try{ renderLembretes(); }catch(e){}
     const termo = (document.getElementById('pacientesSearch').value || '').trim().toLowerCase();
     const statusFiltro = document.getElementById('pacientesFiltroStatus').value;
     const rotinaFiltro = document.getElementById('pacientesFiltroRotina').value;
@@ -6275,6 +6518,12 @@
   const sampleAppt = new Date(viewYear, viewMonth, Math.min(15, new Date(viewYear, viewMonth+1,0).getDate()));
   const sampleBlock = new Date(viewYear, viewMonth, Math.min(29, new Date(viewYear, viewMonth+1,0).getDate()));
   appointments[dateKey(sampleAppt)] = [{ id:1, time:'09:00', duration:60, label:'Paciente Teste 1', servico:'Limpeza de Pele', type:'appt', observacoes:'Pele sensível na região das bochechas — evitar extração agressiva.' }];
+  // Exemplos para os lembretes automáticos no modo demonstração: um atendimento há 2 dias
+  // (gera "pós-atendimento") e uma paciente que não vem há 70 dias (gera "paciente sumida").
+  [[2, 'Paciente Teste 3', 'Limpeza de Pele Profunda', 201], [70, 'Paciente Teste 5', 'Drenagem Linfática', 202]].forEach(([diasAtras, nome, serv, id]) => {
+    const d = new Date(today); d.setDate(d.getDate() - diasAtras);
+    (appointments[dateKey(d)] = appointments[dateKey(d)] || []).push({ id, time:'15:00', duration:60, label:nome, servico:serv, type:'appt', observacoes:'' });
+  });
   // Visitas anteriores de exemplo, para o painel de detalhes mostrar a recorrência no modo demonstração.
   [56, 28].forEach((diasAntes, i) => {
     const d = new Date(sampleAppt); d.setDate(d.getDate() - diasAntes);
@@ -6504,6 +6753,7 @@
   function renderCurrentView(){
     if(agendaViewMode === 'semanal') renderWeekSchedule();
     else renderSchedule();
+    try{ renderLembretes(); }catch(e){}
   }
 
   document.querySelectorAll('.view-mode-toggle button').forEach(btn => {
@@ -6926,6 +7176,242 @@
     }
   }
 
+  /* ================= LEMBRETES ================= */
+  // Prazos dos lembretes automáticos (em dias)
+  const LEMB_POS_DIAS = 2;        // pós-atendimento: perguntar como a pele reagiu
+  const LEMB_POS_VALIDADE = 7;    // depois disso o pós-atendimento some sozinho
+  const LEMB_SUMIDA_DIAS = 60;    // sem vir há X dias e nada marcado = paciente sumida
+  const LEMB_SUMIDA_LIMITE = 365; // não lembrar de quem não vem há mais de 1 ano
+
+  // manuais: [{ id, texto, pacienteId, pacienteNome, data }]
+  // dispensados: { idAutomatico: 'feito' | 'AAAA-MM-DD' (adiado até) }
+  var lembretesEstado = { manuais: [], dispensados: {} };
+  var lembretesMostrarFuturos = false;
+
+  function addDiasKey(key, dias){ const d = keyParaData(key); d.setDate(d.getDate() + dias); return dateKey(d); }
+  function primeiroNomeDe(nome){ return (nome || '').trim().split(/\s+/)[0] || ''; }
+
+  function salvarLembretes(){ salvarConfig('lembretes', lembretesEstado); }
+
+  // Gera os lembretes automáticos a partir dos atendimentos da agenda.
+  function lembretesAutomaticos(){
+    const hojeKey = dateKey(today);
+    const porPaciente = {};
+    Object.keys(appointments).forEach(k => {
+      (appointments[k] || []).forEach(a => {
+        if(a.type !== 'appt') return;
+        const chave = a.pacienteId != null ? 'id:' + a.pacienteId : 'nome:' + (a.label || '').trim().toLowerCase();
+        (porPaciente[chave] = porPaciente[chave] || []).push({ key:k, item:a });
+      });
+    });
+
+    const lista = [];
+    Object.keys(porPaciente).forEach(chave => {
+      const hist = porPaciente[chave].sort((x, y) => (x.key + x.item.time).localeCompare(y.key + y.item.time));
+      const passados = hist.filter(h => h.key < hojeKey);
+      const temFuturo = hist.some(h => h.key >= hojeKey);
+      if(!passados.length) return;
+      const ultimo = passados[passados.length - 1];
+      const nome = ultimo.item.label || 'Paciente';
+      const paciente = pacienteDoItem(ultimo.item);
+      const servico = ultimo.item.servico || '';
+      const diasDesde = diasEntre(ultimo.key, hojeKey);
+
+      // 1) Pós-atendimento
+      const posKey = addDiasKey(ultimo.key, LEMB_POS_DIAS);
+      if(diasDesde >= LEMB_POS_DIAS && diasDesde <= LEMB_POS_VALIDADE){
+        lista.push({
+          id: 'pos:' + ultimo.item.id, tipo:'pos', tipoLabel:'Pós-atendimento', data: posKey,
+          paciente, pacienteNome: nome,
+          texto: `Perguntar como a pele reagiu ${servico ? 'à ' + servico : 'ao atendimento'} de ${formatarDataBR(ultimo.key).slice(0,5)}.`,
+          msg: `Oi, ${primeiroNomeDe(nome)}! Tudo bem? Passando para saber como a sua pele reagiu ${servico ? 'à ' + servico : 'ao atendimento'} do dia ${formatarDataBR(ultimo.key).slice(0,5)}. Se notar qualquer vermelhidão ou tiver alguma dúvida, é só me chamar por aqui 💕`,
+        });
+      }
+      if(temFuturo) return; // já tem retorno marcado: nada de retorno/sumida
+
+      // 3) Paciente sumida
+      if(diasDesde >= LEMB_SUMIDA_DIAS && diasDesde <= LEMB_SUMIDA_LIMITE){
+        lista.push({
+          id: 'sumida:' + chave + ':' + ultimo.key, tipo:'sumida', tipoLabel:'Paciente sumida', data: addDiasKey(ultimo.key, LEMB_SUMIDA_DIAS),
+          paciente, pacienteNome: nome,
+          texto: `Não vem há ${descreverIntervalo(diasDesde).replace('há ', '')} (última visita em ${formatarDataBR(ultimo.key)}) e não tem nada marcado.`,
+          msg: `Oi, ${primeiroNomeDe(nome)}! Senti sua falta por aqui 💕 Que tal agendarmos um cuidado para a sua pele? Tenho horários disponíveis esta semana.`,
+        });
+        return;
+      }
+
+      // 2) Retorno em dia, pela frequência média da paciente
+      if(passados.length >= 2){
+        const media = Math.round(diasEntre(passados[0].key, ultimo.key) / (passados.length - 1));
+        if(media >= 7 && diasDesde >= media){
+          lista.push({
+            id: 'retorno:' + chave + ':' + ultimo.key, tipo:'retorno', tipoLabel:'Hora do retorno', data: addDiasKey(ultimo.key, media),
+            paciente, pacienteNome: nome,
+            texto: `Costuma vir ${descreverFrequencia(media)}; a última visita foi ${descreverIntervalo(diasDesde)}. Nada marcado ainda.`,
+            msg: `Oi, ${primeiroNomeDe(nome)}! Já está na época do seu retorno${servico ? ' de ' + servico : ''}. Quer que eu reserve um horário para você esta semana?`,
+          });
+        }
+      }
+    });
+    return lista;
+  }
+
+  function todosLembretes(){
+    const hojeKey = dateKey(today);
+    const auto = lembretesAutomaticos().filter(l => {
+      const d = lembretesEstado.dispensados[l.id];
+      if(d === 'feito') return false;
+      if(d) l.data = d; // adiado: volta a aparecer nessa data (até lá fica em "próximos dias")
+      return true;
+    });
+    const manuais = lembretesEstado.manuais.map(m => {
+      const paciente = m.pacienteId != null ? patients.find(p => String(p.id) === String(m.pacienteId)) : null;
+      return {
+        id: m.id, manual: true, tipo:'manual', tipoLabel:'Lembrete', data: m.data, texto: m.texto,
+        paciente, pacienteNome: paciente ? paciente.name : (m.pacienteNome || ''),
+        msg: paciente ? `Oi, ${primeiroNomeDe(paciente.name)}! ` : '',
+      };
+    });
+    return auto.concat(manuais).sort((a, b) => a.data.localeCompare(b.data));
+  }
+
+  function descreverQuando(dataKey){
+    const dias = diasEntre(dateKey(today), dataKey);
+    if(dias === 0) return { txt:'Hoje', atrasado:false };
+    if(dias === 1) return { txt:'Amanhã', atrasado:false };
+    if(dias > 1) return { txt: formatarDataBR(dataKey).slice(0,5), atrasado:false };
+    return { txt: dias === -1 ? 'Desde ontem' : `Há ${-dias} dias`, atrasado:true };
+  }
+
+  function concluirLembrete(l){
+    if(l.manual) lembretesEstado.manuais = lembretesEstado.manuais.filter(m => m.id !== l.id);
+    else lembretesEstado.dispensados[l.id] = 'feito';
+    salvarLembretes();
+    renderLembretes();
+    showUndoToast('Lembrete concluído', () => {
+      if(l.manual) lembretesEstado.manuais.push({ id:l.id, texto:l.texto, pacienteId: l.paciente ? l.paciente.id : null, pacienteNome: l.pacienteNome, data:l.data });
+      else delete lembretesEstado.dispensados[l.id];
+      salvarLembretes();
+      renderLembretes();
+    });
+  }
+
+  function adiarLembrete(l, dias){
+    const novaData = addDiasKey(dateKey(today), dias);
+    if(l.manual){
+      const m = lembretesEstado.manuais.find(x => x.id === l.id);
+      if(m) m.data = novaData;
+    } else {
+      lembretesEstado.dispensados[l.id] = novaData;
+    }
+    salvarLembretes();
+    renderLembretes();
+    showToast(`Lembrete adiado para ${formatarDataBR(novaData).slice(0,5)}`);
+  }
+
+  function renderLembretes(){
+    const container = document.getElementById('lembretesContainer');
+    if(!container) return;
+    const hojeKey = dateKey(today);
+    const todos = todosLembretes();
+    const pendentes = todos.filter(l => l.data <= hojeKey);
+    const futuros = todos.filter(l => l.data > hojeKey);
+    const visiveis = lembretesMostrarFuturos ? todos : pendentes;
+
+    container.innerHTML = '';
+    if(visiveis.length === 0){
+      container.innerHTML = `<div class="empty-state">${futuros.length ? 'Nenhum lembrete para hoje. 🎉' : 'Nenhum lembrete no momento.'}</div>`;
+    }
+
+    const iconeWhats = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11 11 0 0 0 3.2 17.3L2 22l4.8-1.2A11 11 0 1 0 20.5 3.5zM12 20a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.7.8-2.8-.2-.3A8 8 0 1 1 12 20zm4.4-6c-.2-.1-1.4-.7-1.7-.8s-.4-.1-.5.1-.6.8-.8 1-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.5 2.5 0 0 0 1.7-1.2 2 2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3z"/></svg>';
+
+    visiveis.forEach(l => {
+      const quando = descreverQuando(l.data);
+      const link = l.paciente ? linkWhatsapp(l.paciente, l.msg) : null;
+      const el = document.createElement('div');
+      el.className = 'lemb-item' + (quando.atrasado ? ' atrasado' : '');
+      el.innerHTML = `
+        <div class="lemb-topo">
+          <span class="lemb-tipo ${l.tipo}">${l.tipoLabel}</span>
+          <span class="lemb-quando ${quando.atrasado ? 'atrasado' : ''}">${quando.txt}</span>
+        </div>
+        ${l.pacienteNome ? `<div class="lemb-paciente">${l.pacienteNome}</div>` : ''}
+        <div class="lemb-texto"></div>
+        <div class="lemb-acoes">
+          ${link ? `<button class="lemb-btn whats" data-a="whats">${iconeWhats} WhatsApp</button>` : ''}
+          <button class="lemb-btn" data-a="ok">✓ Concluir</button>
+          <button class="lemb-btn" data-a="adiar">Adiar ▾</button>
+        </div>
+      `;
+      el.querySelector('.lemb-texto').textContent = l.texto; // texto livre: evita injetar HTML
+      const nomeEl = el.querySelector('.lemb-paciente');
+      if(nomeEl && l.paciente) nomeEl.addEventListener('click', () => openPatientRegistro(l.paciente.id, 'dados'));
+      else if(nomeEl) nomeEl.style.cursor = 'default';
+      const w = el.querySelector('[data-a="whats"]');
+      if(w) w.addEventListener('click', () => window.open(link, '_blank', 'noopener'));
+      el.querySelector('[data-a="ok"]').addEventListener('click', () => concluirLembrete(l));
+      el.querySelector('[data-a="adiar"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.lemb-adiar-menu').forEach(m => m.remove());
+        const menu = document.createElement('div');
+        menu.className = 'lemb-adiar-menu';
+        menu.style.left = e.currentTarget.offsetLeft + 'px';
+        [['Amanhã', 1], ['Em 3 dias', 3], ['Semana que vem', 7], ['Daqui a 1 mês', 30]].forEach(([rotulo, dias]) => {
+          const b = document.createElement('button');
+          b.textContent = rotulo;
+          b.addEventListener('click', () => { menu.remove(); adiarLembrete(l, dias); });
+          menu.appendChild(b);
+        });
+        el.querySelector('.lemb-acoes').appendChild(menu);
+      });
+      container.appendChild(el);
+    });
+
+    if(futuros.length){
+      const rod = document.createElement('div');
+      rod.className = 'lemb-rodape';
+      rod.innerHTML = lembretesMostrarFuturos
+        ? `<span></span><a>Mostrar só os de hoje</a>`
+        : `<span>${futuros.length} agendado${futuros.length === 1 ? '' : 's'} para os próximos dias</span><a>Ver todos</a>`;
+      rod.querySelector('a').addEventListener('click', () => { lembretesMostrarFuturos = !lembretesMostrarFuturos; renderLembretes(); });
+      container.appendChild(rod);
+    }
+  }
+  document.addEventListener('click', (e) => {
+    if(!e.target.closest('.lemb-adiar-menu')) document.querySelectorAll('.lemb-adiar-menu').forEach(m => m.remove());
+  });
+
+  /* ---------- Novo lembrete ---------- */
+  const modalLembreteOverlay = document.getElementById('modalLembreteOverlay');
+  document.getElementById('btnLembrete').addEventListener('click', () => {
+    const sel = document.getElementById('lembretePaciente');
+    const ordenadas = patients.slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt'));
+    sel.innerHTML = '<option value="">— Sem paciente —</option>' +
+      ordenadas.map(p => `<option value="${p.id}">${(p.name || '').replace(/</g, '&lt;')}</option>`).join('');
+    document.getElementById('lembreteTexto').value = '';
+    document.getElementById('lembreteData').value = dateKey(today);
+    modalLembreteOverlay.classList.add('open');
+    setTimeout(() => document.getElementById('lembreteTexto').focus(), 50);
+  });
+  document.getElementById('modalLembreteCancelar').addEventListener('click', () => modalLembreteOverlay.classList.remove('open'));
+  modalLembreteOverlay.addEventListener('click', (e) => { if(e.target === modalLembreteOverlay) modalLembreteOverlay.classList.remove('open'); });
+  document.getElementById('modalLembreteSalvar').addEventListener('click', () => {
+    const texto = document.getElementById('lembreteTexto').value.trim();
+    if(!texto){ showToast('Escreva o lembrete.'); return; }
+    const pacienteId = document.getElementById('lembretePaciente').value || null;
+    const paciente = pacienteId ? patients.find(p => String(p.id) === String(pacienteId)) : null;
+    const data = document.getElementById('lembreteData').value || dateKey(today);
+    lembretesEstado.manuais.push({
+      id: 'm-' + Date.now(), texto, data,
+      pacienteId: paciente ? paciente.id : null, pacienteNome: paciente ? paciente.name : '',
+    });
+    salvarLembretes();
+    modalLembreteOverlay.classList.remove('open');
+    if(data > dateKey(today)) lembretesMostrarFuturos = true;
+    renderLembretes();
+    showToast('Lembrete salvo!');
+  });
+
   /* init */
   renderCalendar();
   renderCurrentView();
@@ -7044,10 +7530,15 @@
   async function carregarConfiguracoesSalvas(){
     const user = await getUsuarioLogado();
     if(!user) return;
-    const [exp, profs, cats, pacs, ativosNotas] = await Promise.all([
+    const [exp, profs, cats, pacs, ativosNotas, lembs] = await Promise.all([
       lerConfig('expedientes'), lerConfig('profissionais'), lerConfig('categorias'),
-      lerConfig('pacotes'), lerConfig('ativos_anotacoes'),
+      lerConfig('pacotes'), lerConfig('ativos_anotacoes'), lerConfig('lembretes'),
     ]);
+    if(lembs && typeof lembs === 'object'){
+      lembretesEstado.manuais = Array.isArray(lembs.manuais) ? lembs.manuais : [];
+      lembretesEstado.dispensados = (lembs.dispensados && typeof lembs.dispensados === 'object') ? lembs.dispensados : {};
+      try{ renderLembretes(); }catch(e){}
+    }
     if(exp && exp.length){ substituirConteudo(expedientesData, exp); renderExpedientes(); }
     if(profs && profs.length){ substituirConteudo(profissionaisData, profs); atualizarProfissionalPrincipal(); renderProfissionais(); }
     if(cats && cats.length){ substituirConteudo(categoriasData, cats); renderCategorias(); }
