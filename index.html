@@ -494,6 +494,14 @@
   .foto-evolucao-lightbox-close{ position:absolute; top:20px; right:24px; color:#fff; font-size:28px; background:none; border:none; cursor:pointer; }
   .registro-panel.active{ display:block; }
 
+  /* ---------- Faixa fixa do modo demonstração ---------- */
+  body.modo-demo::after{
+    content:'Modo demonstração — nada do que você fizer aqui será salvo';
+    position:fixed; top:0; left:50%; transform:translateX(-50%); z-index:2500;
+    background:#b42318; color:#fff; font-size:12px; font-weight:700; padding:4px 14px; border-radius:0 0 10px 10px;
+    pointer-events:none; white-space:nowrap;
+  }
+
   /* ---------- Visualizar imagem em tela cheia ---------- */
   .img-zoomavel{ position:relative; cursor:zoom-in; }
   .img-zoomavel .img-zoom-hint{
@@ -7096,10 +7104,11 @@
       return null;
     }
 
-    const { data: userData } = await supabaseClient.auth.getUser();
-    if(userData && userData.user){
+    const usuario = await usuarioParaSalvar();
+    if(!usuario && !modoDemonstracao) return null; // sessão caiu: não cria só na tela
+    if(usuario){
       const { data, error } = await supabaseClient.from('pacientes')
-        .insert({ profissional_id: userData.user.id, nome: nome.trim(), status: 'Ativo', telefone_numero: telefoneNumero.trim() })
+        .insert({ profissional_id: usuario.id, nome: nome.trim(), status: 'Ativo', telefone_numero: telefoneNumero.trim() })
         .select().single();
       if(error){ showToast('Erro ao criar paciente: ' + error.message); return null; }
       await loadPacientesFromSupabase();
@@ -7364,8 +7373,8 @@
     const hora = apptTime.value || '09:00';
     const duracao = parseInt(apptDuration.value, 10);
 
-    const { data: userData } = await supabaseClient.auth.getUser();
-    const usuarioLogado = userData && userData.user;
+    const usuarioLogado = await usuarioParaSalvar();
+    if(!usuarioLogado && !modoDemonstracao) return; // sessão caiu: não salva só na tela
 
     if(usuarioLogado && modalMode === 'appt'){
       const pacienteId = apptPatientSelect.value;
@@ -7484,12 +7493,17 @@
 
       Object.keys(appointments).forEach(k => delete appointments[k]);
       data.forEach(row => {
+        let chaveData = String(row.data || '');
+        if(chaveData.includes('T')){ const d = new Date(chaveData); if(!isNaN(d)) chaveData = dateKey(d); }
+        chaveData = chaveData.slice(0, 10);
+        row.data = chaveData;
         if(!appointments[row.data]) appointments[row.data] = [];
         appointments[row.data].push({
           id: row.id,
           time: (row.hora || '00:00:00').slice(0,5),
           duration: row.duracao_min || row.duracao_minutos,
-          label: row.tipo === 'block' ? (row.motivo || 'Horário bloqueado') : (row.pacientes?.nome || 'Paciente sem nome'),
+          label: row.tipo === 'block' ? (row.motivo || 'Horário bloqueado')
+            : (row.pacientes?.nome || (patients.find(pp => String(pp.id) === String(row.paciente_id)) || {}).name || 'Paciente sem nome'),
           servico: row.servico_nome || null,
           type: row.tipo,
           pacienteId: row.paciente_id || null,
@@ -7802,6 +7816,40 @@
     return (userData && userData.user) ? userData.user : null;
   }
 
+  /* ---------- Modo demonstração x conta real ----------
+     Antes, se a checagem de login falhasse (sessão expirada ou internet oscilando), o app
+     achava que estava no modo demonstração e salvava só na memória da tela — e o dado sumia
+     ao recarregar. Agora o modo demonstração só existe quando a pessoa escolhe entrar nele. */
+  var modoDemonstracao = false;
+
+  // Devolve o usuário logado; se a sessão caiu numa conta real, avisa e devolve null.
+  async function usuarioParaSalvar(){
+    if(modoDemonstracao) return null;
+    let user = null;
+    try{ user = await getUsuarioLogado(); }catch(e){}
+    if(!user){
+      // sem resposta do servidor: tenta a sessão guardada no navegador
+      try{
+        const { data } = await supabaseClient.auth.getSession();
+        if(data && data.session && data.session.user) user = data.session.user;
+      }catch(e){}
+    }
+    if(!user) avisarSessaoExpirada();
+    return user;
+  }
+
+  function avisarSessaoExpirada(){
+    showToast('Sua sessão expirou e NADA foi salvo. Entre de novo na sua conta e repita a ação.');
+    setTimeout(() => {
+      if(confirm('Sua sessão expirou. Para não perder nada, é preciso entrar de novo. Ir para a tela de login agora?')){
+        supabaseClient.auth.signOut().finally(() => {
+          document.getElementById('appRoot').style.display = 'none';
+          document.getElementById('authScreen').style.display = 'flex';
+        });
+      }
+    }, 300);
+  }
+
   /* ---------- Configurações que precisam sobreviver a recarregar a página ----------
      Expedientes, profissionais, categorias, pacotes e anotações/favoritos de ativos
      antes ficavam só na memória do navegador e sumiam ao recarregar ou trocar de versão.
@@ -7811,8 +7859,9 @@
   function chaveLocalConfig(userId, chave){ return 'skinExpertCfg:' + userId + ':' + chave; }
 
   async function salvarConfig(chave, valor){
-    const user = await getUsuarioLogado();
-    if(!user) return true; // modo demonstração: não salva nada
+    if(modoDemonstracao) return true; // modo demonstração: não salva nada
+    const user = await usuarioParaSalvar();
+    if(!user) return false;
     try{ localStorage.setItem(chaveLocalConfig(user.id, chave), JSON.stringify(valor)); }catch(e){}
     const { error } = await supabaseClient.from('configuracoes_profissional').upsert({
       profissional_id: user.id, chave, valor, updated_at: new Date().toISOString(),
@@ -8273,8 +8322,8 @@
       duracao: document.getElementById('servDuracao').value,
     };
 
-    const { data: userData } = await supabaseClient.auth.getUser();
-    const usuarioReal = userData && userData.user;
+    const usuarioReal = await usuarioParaSalvar();
+    if(!usuarioReal && !modoDemonstracao) return; // sessão caiu: não salva só na tela
 
     if(editingServicoIndex >= 0){
       const existente = servicosData[editingServicoIndex];
@@ -9862,12 +9911,16 @@
       perfilProfissional.titulo = titulo || 'Esteticista e Cosmetóloga';
       perfilProfissional.telefone = telefone;
 
-      const { data: userData } = await supabaseClient.auth.getUser();
-      if(userData && userData.user){
+      const usuarioPerfil = await usuarioParaSalvar();
+      if(!usuarioPerfil && !modoDemonstracao) return; // sessão caiu: não finge que salvou
+      if(usuarioPerfil){
         try {
-          await supabaseClient.from('perfis').upsert({ id: userData.user.id, nome: perfilProfissional.nome, titulo: perfilProfissional.titulo, telefone: perfilProfissional.telefone });
+          const { error: erroPerfil } = await supabaseClient.from('perfis').upsert({ id: usuarioPerfil.id, nome: perfilProfissional.nome, titulo: perfilProfissional.titulo, telefone: perfilProfissional.telefone });
+          if(erroPerfil){ showToast('Não foi possível salvar seus dados: ' + erroPerfil.message); return; }
         } catch(err){
           console.warn('Não foi possível salvar Meus Dados Profissionais no Supabase.', err);
+          showToast('Não foi possível salvar seus dados. Verifique a internet e tente de novo.');
+          return;
         }
       } else {
         localStorage.setItem('skinExpertDemoNome', perfilProfissional.nome);
@@ -9888,11 +9941,12 @@
 
       integracaoWhatsapp = { provider: 'meta_cloud_api', phone_number_id: phoneId, access_token: token, numero_whatsapp: numero, ativo: true };
 
-      const { data: userData } = await supabaseClient.auth.getUser();
-      if(userData && userData.user){
+      const usuarioWhats = await usuarioParaSalvar();
+      if(!usuarioWhats && !modoDemonstracao) return;
+      if(usuarioWhats){
         try {
-          await supabaseClient.from('integracoes_whatsapp').upsert({
-            profissional_id: userData.user.id,
+          const { error: erroWhats } = await supabaseClient.from('integracoes_whatsapp').upsert({
+            profissional_id: usuarioWhats.id,
             provider: integracaoWhatsapp.provider,
             phone_number_id: integracaoWhatsapp.phone_number_id,
             access_token: integracaoWhatsapp.access_token,
@@ -9900,6 +9954,7 @@
             ativo: true,
             atualizado_em: new Date().toISOString()
           });
+          if(erroWhats) throw erroWhats;
         } catch(err){
           console.warn('Não foi possível salvar a integração de WhatsApp no Supabase.', err);
           showToast('Erro ao salvar a integração. Tente novamente.');
@@ -10068,6 +10123,8 @@
   });
 
   async function enterApp(){
+    modoDemonstracao = false;
+    document.body.classList.remove('modo-demo');
     authScreenEl.style.display = 'none';
     appRootEl.style.display = 'flex';
     await carregarPerfilProfissionalReal();
@@ -10087,6 +10144,8 @@
   }
 
   document.getElementById('authDemoLink').addEventListener('click', () => {
+    modoDemonstracao = true;
+    document.body.classList.add('modo-demo');
     authScreenEl.style.display = 'none';
     appRootEl.style.display = 'flex';
     carregarPerfilProfissionalDemo();
