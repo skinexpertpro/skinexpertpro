@@ -1204,7 +1204,48 @@
     cursor:pointer; padding:0; flex-shrink:0; white-space:nowrap;
   }
   .toast-undo:hover{ text-decoration:underline; }
-  .schedule-block, .week-block{ cursor:grab; }
+  .schedule-block, .week-block{ cursor:pointer; }
+  .schedule-block:hover, .week-block:hover{ filter: brightness(0.97); box-shadow:0 2px 8px rgba(0,0,0,0.12); }
+
+  /* ---------- Detalhes do atendimento ---------- */
+  .modal-field textarea{
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:9px; font-size:14px;
+    font-family:inherit; color: var(--text-dark); outline:none; resize:vertical; min-height:70px; box-sizing:border-box;
+  }
+  .modal-field textarea:focus{ border-color: var(--pink); }
+  .appt-det-box{ width:520px; max-height:88vh; overflow-y:auto; position:relative; }
+  .appt-det-close{
+    position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%; border:none;
+    background:transparent; font-size:20px; line-height:1; color: var(--text-muted); cursor:pointer;
+  }
+  .appt-det-close:hover{ background: var(--tag-bg); color: var(--text-dark); }
+  .appt-det-tag{
+    display:inline-block; font-size:11px; font-weight:800; letter-spacing:.4px; text-transform:uppercase;
+    padding:4px 10px; border-radius:20px; background: var(--pink-light); color: var(--sidebar-bg); margin-bottom:10px;
+  }
+  .appt-det-tag.block{ background:#fde8e8; color:#b42318; }
+  .appt-det-nome{ font-size:20px; font-weight:800; margin:0 36px 2px 0; color: var(--text-dark); }
+  .appt-det-servico{ font-size:14px; color: var(--text-muted); margin:0 0 16px 0; }
+  .appt-det-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px; }
+  .appt-det-item{ background:#f7f8f9; border-radius:10px; padding:10px 12px; }
+  .appt-det-item.full{ grid-column: 1 / -1; }
+  .appt-det-label{ font-size:11.5px; font-weight:700; color: var(--text-muted); text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px; }
+  .appt-det-valor{ font-size:14.5px; font-weight:700; color: var(--text-dark); }
+  .appt-det-sub{ font-size:12.5px; color: var(--text-muted); margin-top:2px; }
+  .appt-det-section{ font-size:13px; font-weight:800; color: var(--text-dark); margin:4px 0 8px 0; }
+  .appt-det-actions{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; margin-top:18px; }
+  .appt-det-actions .right{ display:flex; gap:10px; flex-wrap:wrap; }
+  .modal-btn-danger{
+    background:#fff; border:1px solid #f1c4c4; border-radius:9px; padding:10px 14px;
+    font-size:14px; font-weight:700; color:#b42318; cursor:pointer;
+  }
+  .modal-btn-danger:hover{ background:#fdf2f2; }
+  .appt-det-actions button{ white-space:nowrap; }
+  @media (max-width: 520px){
+    .appt-det-grid{ grid-template-columns: 1fr; }
+    .appt-det-actions, .appt-det-actions .right{ flex-direction:column; }
+    .appt-det-actions button{ width:100%; }
+  }
   .schedule-block.dragging, .week-block.dragging{
     cursor:grabbing; opacity:0.85; box-shadow:0 4px 14px rgba(0,0,0,0.22); z-index:5;
   }
@@ -3417,6 +3458,10 @@
         <option value="120">120 min</option>
       </select>
     </div>
+    <div class="modal-field" id="modalObsField">
+      <label>Observações (opcional)</label>
+      <textarea id="apptObs" rows="3" placeholder="Ex: pele sensível, trazer exames, alergia a algum ativo..."></textarea>
+    </div>
     <div class="modal-field" id="modalWhatsappField" style="display:none;">
       <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:var(--text-dark); cursor:pointer; margin:0;">
         <input type="checkbox" id="apptEnviarWhatsapp" style="width:16px; height:16px; accent-color:var(--sidebar-bg); cursor:pointer; flex-shrink:0; margin:0;">
@@ -3426,6 +3471,70 @@
     <div class="modal-actions">
       <button class="modal-btn-cancel" id="modalCancel">Cancelar</button>
       <button class="modal-btn-confirm" id="modalConfirm">Agendar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: detalhes do atendimento (abre ao clicar num bloco da agenda) -->
+<div class="modal-overlay" id="modalApptDetOverlay">
+  <div class="modal-box appt-det-box" role="dialog" aria-modal="true" aria-labelledby="apptDetNome">
+    <button class="appt-det-close" id="apptDetClose" aria-label="Fechar">&times;</button>
+    <span class="appt-det-tag" id="apptDetTag">Atendimento</span>
+    <h3 class="appt-det-nome" id="apptDetNome">—</h3>
+    <p class="appt-det-servico" id="apptDetServico">—</p>
+
+    <div class="appt-det-grid">
+      <div class="appt-det-item full">
+        <div class="appt-det-label">Data</div>
+        <div class="appt-det-valor" id="apptDetData">—</div>
+      </div>
+      <div class="appt-det-item">
+        <div class="appt-det-label">Horário</div>
+        <div class="appt-det-valor" id="apptDetHorario">—</div>
+      </div>
+      <div class="appt-det-item">
+        <div class="appt-det-label">Duração</div>
+        <div class="appt-det-valor" id="apptDetDuracao">—</div>
+      </div>
+    </div>
+
+    <div id="apptDetRecorrenciaWrap">
+      <div class="appt-det-section">Histórico da paciente</div>
+      <div class="appt-det-grid">
+        <div class="appt-det-item">
+          <div class="appt-det-label">Última visita</div>
+          <div class="appt-det-valor" id="apptDetUltima">—</div>
+          <div class="appt-det-sub" id="apptDetUltimaSub"></div>
+        </div>
+        <div class="appt-det-item">
+          <div class="appt-det-label">Frequência</div>
+          <div class="appt-det-valor" id="apptDetFrequencia">—</div>
+          <div class="appt-det-sub" id="apptDetFrequenciaSub"></div>
+        </div>
+        <div class="appt-det-item">
+          <div class="appt-det-label">Atendimentos</div>
+          <div class="appt-det-valor" id="apptDetTotal">—</div>
+          <div class="appt-det-sub" id="apptDetTotalSub"></div>
+        </div>
+        <div class="appt-det-item">
+          <div class="appt-det-label">Próximo agendamento</div>
+          <div class="appt-det-valor" id="apptDetProximo">—</div>
+          <div class="appt-det-sub" id="apptDetProximoSub"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-field" style="margin-bottom:0;">
+      <label for="apptDetObs">Observações</label>
+      <textarea id="apptDetObs" rows="3" placeholder="Nenhuma observação. Escreva aqui para adicionar."></textarea>
+    </div>
+
+    <div class="appt-det-actions">
+      <button class="modal-btn-danger" id="apptDetCancelar">Cancelar atendimento</button>
+      <div class="right">
+        <button class="modal-btn-cancel" id="apptDetFicha">Ver ficha</button>
+        <button class="modal-btn-confirm" id="apptDetSalvar">Salvar observação</button>
+      </div>
     </div>
   </div>
 </div>
@@ -5896,6 +6005,7 @@
         showToast('Erro ao remarcar: ' + error.message);
         return;
       }
+      sincronizarComGoogleAgenda(item.id);
     }
 
     showUndoToast(`Remarcado para ${formatarDataCurta(key)}, ${novaHora}`, async () => {
@@ -5903,12 +6013,224 @@
       rerenderFn();
       if(isAgendamentoReal(item)){
         await supabaseClient.from('agendamentos').update({ hora: horaAntiga }).eq('id', item.id);
+        sincronizarComGoogleAgenda(item.id);
       }
     });
   }
 
+  // Cancela um atendimento/bloqueio: pede confirmação, remove da lista local, exclui do Supabase
+  // (se for real) e apaga o evento correspondente na Google Agenda, se houver.
+  async function cancelarAtendimento(key, item, rerenderFn){
+    const tipoLabel = item.type === 'block' ? 'bloqueio de horário' : 'atendimento';
+    const confirmado = confirm(`Cancelar este ${tipoLabel} (${item.label}, ${item.time})?`);
+    if(!confirmado) return;
+
+    const lista = appointments[key] || [];
+    const idx = lista.findIndex(a => a.id === item.id);
+    if(idx !== -1) lista.splice(idx, 1);
+    rerenderFn();
+
+    if(isAgendamentoReal(item)){
+      const { error } = await supabaseClient.from('agendamentos').delete().eq('id', item.id);
+      if(error){
+        showToast('Erro ao cancelar: ' + error.message);
+        await loadAgendamentosFromSupabase();
+        rerenderFn();
+        return;
+      }
+      if(item.googleEventId){
+        supabaseClient.functions.invoke('cancelar-google-agenda', { body: { googleEventId: item.googleEventId } }).catch(()=>{});
+      }
+    }
+    showToast(tipoLabel.charAt(0).toUpperCase() + tipoLabel.slice(1) + ' cancelado.');
+  }
+
+  let suprimirCliqueAgenda = false;
+
+  /* ---------- Painel de detalhes do atendimento ---------- */
+  const modalApptDetOverlay = document.getElementById('modalApptDetOverlay');
+  let apptDetAtual = null; // { key, item, rerenderFn }
+
+  function keyParaData(key){ const [a,m,d] = key.split('-').map(Number); return new Date(a, m-1, d); }
+  function formatarDataBR(key){ const [a,m,d] = key.split('-'); return `${d}/${m}/${a}`; }
+  function diasEntre(keyA, keyB){ return Math.round((keyParaData(keyB) - keyParaData(keyA)) / 86400000); }
+  function descreverIntervalo(dias){
+    if(dias <= 0) return 'no mesmo dia';
+    if(dias === 1) return 'há 1 dia';
+    if(dias < 14) return `há ${dias} dias`;
+    if(dias < 60){ const s = Math.round(dias/7); return `há ${s} semana${s>1?'s':''}`; }
+    if(dias < 365){ const m = Math.round(dias/30); return `há ${m} ${m>1?'meses':'mês'}`; }
+    const anos = Math.floor(dias/365); const resto = Math.round((dias%365)/30);
+    return `há ${anos} ano${anos>1?'s':''}` + (resto ? ` e ${resto} ${resto>1?'meses':'mês'}` : '');
+  }
+  function descreverFrequencia(dias){
+    if(dias < 1) return 'várias vezes no mesmo dia';
+    if(dias <= 1) return 'a cada 1 dia';
+    if(dias < 14) return `a cada ${dias} dias`;
+    if(dias < 60){ const s = Math.round(dias/7); return `a cada ${s} semana${s>1?'s':''}`; }
+    const m = Math.round(dias/30); return `a cada ${m} ${m>1?'meses':'mês'}`;
+  }
+  function horaFim(inicio, duracaoMin){ return minutesToTimeStr(timeStrToMinutes(inicio) + (duracaoMin || 0)); }
+
+  function pacienteDoItem(item){
+    if(item.pacienteId != null){
+      const p = patients.find(x => String(x.id) === String(item.pacienteId));
+      if(p) return p;
+    }
+    return patients.find(x => (x.name || '').trim().toLowerCase() === (item.label || '').trim().toLowerCase()) || null;
+  }
+
+  // Todos os atendimentos (não bloqueios) da mesma paciente, em ordem cronológica.
+  function historicoDaPaciente(item){
+    const mesmo = (a) => (item.pacienteId != null && a.pacienteId != null)
+      ? String(a.pacienteId) === String(item.pacienteId)
+      : (a.label || '').trim().toLowerCase() === (item.label || '').trim().toLowerCase();
+    const lista = [];
+    Object.keys(appointments).forEach(k => {
+      (appointments[k] || []).forEach(a => { if(a.type === 'appt' && mesmo(a)) lista.push({ key:k, item:a }); });
+    });
+    lista.sort((x, y) => (x.key + x.item.time).localeCompare(y.key + y.item.time));
+    return lista;
+  }
+
+  function preencherRecorrencia(key, item){
+    const hist = historicoDaPaciente(item);
+    const idx = hist.findIndex(h => h.item === item);
+    const anteriores = idx > 0 ? hist.slice(0, idx) : [];
+    const posteriores = idx >= 0 ? hist.slice(idx + 1) : [];
+    const hojeKey = dateKey(today);
+    const set = (id, txt) => { document.getElementById(id).textContent = txt; };
+
+    // Última visita antes deste atendimento
+    if(anteriores.length){
+      const ult = anteriores[anteriores.length - 1];
+      const dias = diasEntre(ult.key, key);
+      set('apptDetUltima', descreverIntervalo(dias).replace(/^./, c => c.toUpperCase()));
+      set('apptDetUltimaSub', `em ${formatarDataBR(ult.key)}${ult.item.servico ? ' · ' + ult.item.servico : ''}`);
+    } else {
+      set('apptDetUltima', 'Primeira visita');
+      set('apptDetUltimaSub', 'Nenhum atendimento anterior na agenda');
+    }
+
+    // Frequência média entre visitas (até este atendimento)
+    const ate = hist.slice(0, idx + 1);
+    if(ate.length >= 2){
+      const totalDias = diasEntre(ate[0].key, ate[ate.length - 1].key);
+      const media = Math.round(totalDias / (ate.length - 1));
+      set('apptDetFrequencia', descreverFrequencia(media).replace(/^./, c => c.toUpperCase()));
+      set('apptDetFrequenciaSub', `média entre ${ate.length} visitas`);
+    } else {
+      set('apptDetFrequencia', '—');
+      set('apptDetFrequenciaSub', 'Precisa de 2+ visitas para calcular');
+    }
+
+    // Quantos atendimentos no total e qual é este
+    const realizados = hist.filter(h => h.key < hojeKey).length;
+    set('apptDetTotal', `${idx + 1}º atendimento`);
+    set('apptDetTotalSub', `${hist.length} no total · ${realizados} já realizado${realizados === 1 ? '' : 's'}`);
+
+    // Próximo agendamento depois deste
+    if(posteriores.length){
+      const prox = posteriores[0];
+      set('apptDetProximo', formatarDataBR(prox.key));
+      set('apptDetProximoSub', `${prox.item.time}${prox.item.servico ? ' · ' + prox.item.servico : ''}`);
+    } else {
+      set('apptDetProximo', 'Nenhum');
+      set('apptDetProximoSub', 'Sem retorno marcado');
+    }
+  }
+
+  function abrirDetalhesAtendimento(key, item, rerenderFn){
+    apptDetAtual = { key, item, rerenderFn };
+    const isBlock = item.type === 'block';
+    const data = keyParaData(key);
+
+    const tag = document.getElementById('apptDetTag');
+    tag.textContent = isBlock ? 'Horário bloqueado' : 'Atendimento';
+    tag.classList.toggle('block', isBlock);
+    document.getElementById('apptDetNome').textContent = isBlock ? (item.label || 'Horário bloqueado') : (item.label || 'Paciente sem nome');
+    document.getElementById('apptDetServico').textContent = isBlock
+      ? 'Horário indisponível para agendamentos'
+      : (item.servico || 'Serviço não informado');
+    document.getElementById('apptDetData').textContent =
+      `${weekdayFull[data.getDay()]}, ${data.getDate()} de ${monthNames[data.getMonth()]} de ${data.getFullYear()}`;
+    document.getElementById('apptDetHorario').textContent = `${item.time} – ${horaFim(item.time, item.duration)}`;
+    const dur = item.duration || 0;
+    document.getElementById('apptDetDuracao').textContent = dur >= 60
+      ? `${Math.floor(dur/60)}h${dur%60 ? pad(dur%60) : ''} (${dur} min)`
+      : `${dur} min`;
+
+    document.getElementById('apptDetRecorrenciaWrap').style.display = isBlock ? 'none' : 'block';
+    if(!isBlock) preencherRecorrencia(key, item);
+
+    document.getElementById('apptDetObs').value = item.observacoes || '';
+    document.getElementById('apptDetCancelar').textContent = isBlock ? 'Remover bloqueio' : 'Cancelar atendimento';
+    const paciente = isBlock ? null : pacienteDoItem(item);
+    const btnFicha = document.getElementById('apptDetFicha');
+    btnFicha.style.display = paciente ? '' : 'none';
+
+    modalApptDetOverlay.classList.add('open');
+  }
+
+  function fecharDetalhesAtendimento(){
+    modalApptDetOverlay.classList.remove('open');
+    apptDetAtual = null;
+  }
+
+  document.getElementById('apptDetClose').addEventListener('click', fecharDetalhesAtendimento);
+  modalApptDetOverlay.addEventListener('click', (e) => { if(e.target === modalApptDetOverlay) fecharDetalhesAtendimento(); });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && modalApptDetOverlay.classList.contains('open')) fecharDetalhesAtendimento();
+  });
+
+  document.getElementById('apptDetFicha').addEventListener('click', () => {
+    if(!apptDetAtual) return;
+    const paciente = pacienteDoItem(apptDetAtual.item);
+    fecharDetalhesAtendimento();
+    if(paciente) openPatientRegistro(paciente.id, 'dados');
+  });
+
+  document.getElementById('apptDetCancelar').addEventListener('click', async () => {
+    if(!apptDetAtual) return;
+    const { key, item, rerenderFn } = apptDetAtual;
+    const antes = (appointments[key] || []).length;
+    await cancelarAtendimento(key, item, () => { rerenderFn(); renderCalendar(); });
+    if((appointments[key] || []).length < antes) fecharDetalhesAtendimento();
+  });
+
+  document.getElementById('apptDetSalvar').addEventListener('click', async () => {
+    if(!apptDetAtual) return;
+    const { item } = apptDetAtual;
+    const novoTexto = document.getElementById('apptDetObs').value.trim();
+    const anterior = item.observacoes || '';
+    if(novoTexto === anterior){ fecharDetalhesAtendimento(); return; }
+
+    if(isAgendamentoReal(item)){
+      const { error } = await supabaseClient.from('agendamentos').update({ observacoes: novoTexto || null }).eq('id', item.id);
+      if(error){
+        showToast('Não foi possível salvar a observação: ' + error.message);
+        return;
+      }
+    }
+    item.observacoes = novoTexto;
+    fecharDetalhesAtendimento();
+    showToast('Observação salva!');
+  });
+
   // Ativa "arrastar para remarcar" em um bloco (.schedule-block ou .week-block) já posicionado.
+  // Clique com o botão direito (ou pressionar e segurar, no touch) abre a opção de cancelar.
   function attachDragToReschedule(block, item, key, rowH, rerenderFn){
+    block.title = 'Clique para ver detalhes · arraste para remarcar · botão direito para cancelar';
+    // Clique simples (sem arrastar) abre o painel com os detalhes do atendimento.
+    block.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(suprimirCliqueAgenda) return;
+      abrirDetalhesAtendimento(key, item, rerenderFn);
+    });
+    block.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      cancelarAtendimento(key, item, rerenderFn);
+    });
     block.addEventListener('mousedown', (e) => {
       if(e.button !== 0) return;
       e.preventDefault();
@@ -5928,6 +6250,9 @@
         document.removeEventListener('mouseup', onUp);
         block.classList.remove('dragging');
         if(!moved){ block.style.top = originalTop + 'px'; return; }
+        // Evita que o "click" disparado ao soltar o mouse abra detalhes ou um novo atendimento.
+        suprimirCliqueAgenda = true;
+        setTimeout(() => { suprimirCliqueAgenda = false; }, 0);
         const delta = ev.clientY - startY;
         const deltaMinutes = snapMinutes((delta/rowH)*30, 15);
         const novoTotal = Math.max(0, Math.min(23*60+45, timeStrToMinutes(item.time) + deltaMinutes));
@@ -5949,7 +6274,12 @@
   const appointments = {};
   const sampleAppt = new Date(viewYear, viewMonth, Math.min(15, new Date(viewYear, viewMonth+1,0).getDate()));
   const sampleBlock = new Date(viewYear, viewMonth, Math.min(29, new Date(viewYear, viewMonth+1,0).getDate()));
-  appointments[dateKey(sampleAppt)] = [{ id:1, time:'09:00', duration:60, label:'Paciente Teste 1', type:'appt' }];
+  appointments[dateKey(sampleAppt)] = [{ id:1, time:'09:00', duration:60, label:'Paciente Teste 1', servico:'Limpeza de Pele', type:'appt', observacoes:'Pele sensível na região das bochechas — evitar extração agressiva.' }];
+  // Visitas anteriores de exemplo, para o painel de detalhes mostrar a recorrência no modo demonstração.
+  [56, 28].forEach((diasAntes, i) => {
+    const d = new Date(sampleAppt); d.setDate(d.getDate() - diasAntes);
+    (appointments[dateKey(d)] = appointments[dateKey(d)] || []).push({ id: 100 + i, time:'10:00', duration:60, label:'Paciente Teste 1', servico: i === 0 ? 'Drenagem Linfática' : 'Limpeza de Pele', type:'appt', observacoes:'' });
+  });
   appointments[dateKey(sampleBlock)] = [{ id:2, time:'12:00', duration:120, label:'Almoço', type:'block' }];
 
   const calMonthLabel = document.getElementById('calMonthLabel');
@@ -6048,6 +6378,7 @@
   // Clicar em um horário vazio da grade abre "Novo Atendimento" já com a hora preenchida,
   // do mesmo jeito que o Google Agenda faz.
   scheduleRows.addEventListener('click', (e) => {
+    if(suprimirCliqueAgenda) return;
     if(e.target.closest('.schedule-block')) return;
     const rect = scheduleRows.getBoundingClientRect();
     const offsetY = e.clientY - rect.top;
@@ -6154,6 +6485,7 @@
 
       // Clicar em um horário vazio dessa coluna abre "Novo Atendimento" nesse dia e hora.
       rowsWrap.addEventListener('click', (e) => {
+        if(suprimirCliqueAgenda) return;
         if(e.target.closest('.week-block')) return;
         const rect = rowsWrap.getBoundingClientRect();
         const offsetY = e.clientY - rect.top;
@@ -6394,6 +6726,8 @@
     limparSelecaoPaciente();
     apptTime.value = prefillTime || '09:00';
     apptDuration.value = '60';
+    document.getElementById('apptObs').value = '';
+    document.getElementById('modalObsField').style.display = mode === 'appt' ? 'block' : 'none';
     if(mode === 'appt'){
       modalTitle.textContent = 'Novo Atendimento';
       modalPatientLabel.textContent = 'Paciente';
@@ -6461,8 +6795,9 @@
       if(!pacienteSelecionado){ showToast('Selecione uma paciente.'); return; }
       const servicosSelecionados = getServicosSelecionados();
       const servicoNome = servicosSelecionados.length ? servicosSelecionados.join(', ') : null;
+      const observacoes = document.getElementById('apptObs').value.trim() || null;
 
-      const { data: inserted, error } = await supabaseClient.from('agendamentos').insert({
+      const registro = {
         profissional_id: usuarioLogado.id,
         paciente_id: pacienteSelecionado.id,
         data: key,
@@ -6471,14 +6806,25 @@
         duracao_minutos: duracao,
         tipo: 'appt',
         servico_nome: servicoNome,
-      }).select().single();
+      };
+      if(observacoes) registro.observacoes = observacoes;
+      let { data: inserted, error } = await supabaseClient.from('agendamentos').insert(registro).select().single();
+      let obsNaoSalva = false;
+      // Se a coluna "observacoes" ainda não existir no banco, salva o atendimento mesmo assim.
+      if(error && observacoes && /observacoes/i.test(error.message || '')){
+        delete registro.observacoes;
+        ({ data: inserted, error } = await supabaseClient.from('agendamentos').insert(registro).select().single());
+        obsNaoSalva = true;
+      }
 
       if(error){ showToast('Erro ao salvar atendimento: ' + error.message); return; }
 
       appointments[key].push({
         id: inserted.id, time: hora, duration: duracao,
         label: pacienteSelecionado.name, servico: servicoNome, type: 'appt',
+        pacienteId: pacienteSelecionado.id, observacoes: observacoes || '',
       });
+      if(obsNaoSalva) console.warn('Coluna "observacoes" não existe na tabela agendamentos — observação mantida só nesta sessão.');
       closeModal();
       renderCalendar();
       renderCurrentView();
@@ -6522,11 +6868,14 @@
       showToast('Selecione uma paciente.');
       return;
     }
+    const pacienteDemoObj = modalMode === 'appt' ? patients.find(p => String(p.id) === String(apptPatientSelect.value)) : null;
     const pacienteDemo = modalMode === 'appt'
-      ? (patients.find(p => String(p.id) === String(apptPatientSelect.value))?.name || 'Paciente sem nome')
+      ? (pacienteDemoObj?.name || 'Paciente sem nome')
       : (apptPatient.value.trim() || 'Horário bloqueado');
     appointments[key].push({
       id: Date.now(),
+      pacienteId: pacienteDemoObj ? pacienteDemoObj.id : null,
+      observacoes: modalMode === 'appt' ? document.getElementById('apptObs').value.trim() : '',
       time: hora,
       duration: duracao,
       label: pacienteDemo,
@@ -6544,9 +6893,10 @@
       const { data: userData } = await supabaseClient.auth.getUser();
       if(!userData || !userData.user) return; // não logado: mantém os dados de exemplo locais
 
-      const { data, error } = await supabaseClient
-        .from('agendamentos')
-        .select('id, data, hora, duracao_min, duracao_minutos, tipo, motivo, servico_nome, paciente_id, pacientes ( nome )');
+      const camposBase = 'id, data, hora, duracao_min, duracao_minutos, tipo, motivo, servico_nome, paciente_id, google_event_id, pacientes ( nome )';
+      let { data, error } = await supabaseClient.from('agendamentos').select(camposBase + ', observacoes');
+      // Compatível com bancos que ainda não têm a coluna "observacoes".
+      if(error){ ({ data, error } = await supabaseClient.from('agendamentos').select(camposBase)); }
 
       if(error || !data) return;
 
@@ -6560,6 +6910,9 @@
           label: row.tipo === 'block' ? (row.motivo || 'Horário bloqueado') : (row.pacientes?.nome || 'Paciente sem nome'),
           servico: row.servico_nome || null,
           type: row.tipo,
+          pacienteId: row.paciente_id || null,
+          observacoes: row.observacoes || '',
+          googleEventId: row.google_event_id || null,
         });
       });
       renderCalendar();
