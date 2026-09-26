@@ -10221,11 +10221,12 @@
     publicScreenEl.style.display = 'block';
 
     (async () => {
-      const { data: linkRow, error } = await supabaseClient
-        .from('links_anamnese')
-        .select('*')
-        .eq('token', anamneseToken)
-        .single();
+      // Busca SÓ o link deste código, por uma função segura do banco (a tabela não fica aberta ao público).
+      let { data: linkRow, error } = await supabaseClient.rpc('anamnese_link_por_token', { p_token: anamneseToken });
+      if(error && /anamnese_link_por_token|function|schema cache/i.test(error.message || '')){
+        // compatibilidade: banco ainda sem a função nova
+        ({ data: linkRow, error } = await supabaseClient.from('links_anamnese').select('*').eq('token', anamneseToken).single());
+      }
 
       if(error || !linkRow || linkRow.respondida){
         document.getElementById('publicFormContent').style.display = 'none';
@@ -10338,7 +10339,10 @@
           return;
         }
 
-        await supabaseClient.from('links_anamnese').update({ respondida: true }).eq('token', anamneseToken);
+        const { error: erroMarcar } = await supabaseClient.rpc('marcar_link_respondido', { p_token: anamneseToken });
+        if(erroMarcar && /marcar_link_respondido|function|schema cache/i.test(erroMarcar.message || '')){
+          await supabaseClient.from('links_anamnese').update({ respondida: true }).eq('token', anamneseToken);
+        }
 
         document.getElementById('publicFormContent').style.display = 'none';
         document.getElementById('publicSubmittedMsg').style.display = 'block';
