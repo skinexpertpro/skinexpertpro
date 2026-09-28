@@ -1555,6 +1555,16 @@
   }
   .modal-btn-danger:hover{ background:#fdf2f2; }
   .appt-det-actions button{ white-space:nowrap; }
+  .appt-det-actions .left{ display:flex; gap:10px; flex-wrap:wrap; }
+  .modal-btn-danger.suave{ border-color: var(--border); color: var(--text-muted); font-weight:600; }
+  .pill-inativa{ background: #eeeeee; color: #8a8a8a; text-decoration: line-through; }
+  select.select-box{ appearance:auto; font-family:inherit; }
+  .comanda-apagar{
+    background:none; border:1px solid transparent; border-radius:8px; padding:6px; cursor:pointer;
+    color: var(--text-muted); display:inline-flex; align-items:center;
+  }
+  .comanda-apagar:hover{ border-color:#f1c4c4; color:#b42318; background:#fff5f5; }
+  .comanda-servicos{ color: var(--text-muted); font-size:13px; max-width:220px; }
   @media (max-width: 520px){
     .appt-det-grid{ grid-template-columns: 1fr; }
     .appt-det-actions, .appt-det-actions .right{ flex-direction:column; }
@@ -3462,14 +3472,17 @@
           <div class="fin-filter-bar">
             <div class="search-input" style="min-width:220px;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="Procurar por cliente ou código...">
+              <input type="text" id="comandasBusca" placeholder="Procurar por cliente ou código...">
             </div>
             <div class="fin-date-field"><label>De:</label><input type="date" id="comandasDateFrom"></div>
             <div class="fin-date-field"><label>Até:</label><input type="date" id="comandasDateTo"></div>
-            <div class="select-box">
-              Fechadas e Em Aberto
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
+            <select class="select-box" id="comandasFiltroStatus" aria-label="Filtrar por status">
+              <option value="ativas">Fechadas e Em Aberto</option>
+              <option value="Em Aberto">Em Aberto</option>
+              <option value="Fechada">Fechadas</option>
+              <option value="Inativa">Inativas (canceladas)</option>
+              <option value="todas">Todas</option>
+            </select>
             <div class="spacer-flex"></div>
             <button class="btn-primary" id="btnNovaComanda">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -3481,7 +3494,7 @@
             <div class="card-head"><div class="card-title">Lista de Comandas</div></div>
             <table>
               <thead>
-                <tr><th>Código</th><th>Data</th><th>Cliente</th><th>Valor (R$)</th><th>Saldo (R$)</th><th>Pagamento</th><th>Status</th></tr>
+                <tr><th>Código</th><th>Data</th><th>Cliente</th><th>Serviço(s)</th><th>Valor</th><th>Saldo</th><th>Pagamento</th><th>Status</th><th></th></tr>
               </thead>
               <tbody id="comandasBody"></tbody>
             </table>
@@ -3774,6 +3787,10 @@
       <div id="apptServicosContainer" style="display:none;"></div>
     </div>
     <div class="modal-field">
+      <label for="apptDate">Data</label>
+      <input id="apptDate" type="date">
+    </div>
+    <div class="modal-field">
       <label>Horário</label>
       <input id="apptTime" type="time" value="09:00">
     </div>
@@ -3881,9 +3898,13 @@
     </div>
 
     <div class="appt-det-actions">
-      <button class="modal-btn-danger" id="apptDetCancelar">Cancelar atendimento</button>
+      <div class="left">
+        <button class="modal-btn-danger" id="apptDetCancelar" title="A paciente cancelou: sai da agenda e a comanda fica inativa">Cancelar atendimento</button>
+        <button class="modal-btn-danger suave" id="apptDetExcluir" title="Desmarcar/excluir: apaga o atendimento e a comanda">Excluir</button>
+      </div>
       <div class="right">
         <button class="modal-btn-cancel" id="apptDetFicha">Ver ficha</button>
+        <button class="modal-btn-cancel" id="apptDetEditar">Editar</button>
         <button class="modal-btn-confirm" id="apptDetSalvar">Salvar observação</button>
       </div>
     </div>
@@ -6633,20 +6654,59 @@
 
   // Cancela um atendimento/bloqueio: pede confirmação, remove da lista local, exclui do Supabase
   // (se for real) e apaga o evento correspondente na Google Agenda, se houver.
+  // "Cancelar" = a paciente cancelou: o atendimento sai da agenda mas fica registrado,
+  // e a comanda fica Inativa. (Bloqueios não têm comanda: cancelar um bloqueio = remover.)
   async function cancelarAtendimento(key, item, rerenderFn){
-    const tipoLabel = item.type === 'block' ? 'bloqueio de horário' : 'atendimento';
-    const confirmado = confirm(`Cancelar este ${tipoLabel} (${item.label}, ${item.time})?`);
+    if(item.type === 'block') return excluirAtendimento(key, item, rerenderFn);
+    if(!confirm(`Cancelar o atendimento de ${item.label} (${formatarDataBR(key)}, ${item.time})?\n\nEle sai da agenda e a comanda fica inativa.`)) return;
+
+    if(isAgendamentoReal(item)){
+      const usuario = await usuarioParaSalvar();
+      if(!usuario) return;
+      const { error } = await supabaseClient.from('agendamentos').update({ status: 'cancelado' }).eq('id', item.id);
+      if(error){
+        showToast(/status/i.test(error.message || '')
+          ? 'Para cancelar mantendo o registro, rode o arquivo comandas-agenda.sql no Supabase. (Você pode usar "Excluir".)'
+          : 'Erro ao cancelar: ' + error.message);
+        return;
+      }
+      if(item.googleEventId){
+        supabaseClient.functions.invoke('cancelar-google-agenda', { body: { googleEventId: item.googleEventId } }).catch(()=>{});
+      }
+    }
+    const lista = appointments[key] || [];
+    const idx = lista.indexOf(item);
+    if(idx !== -1) lista.splice(idx, 1);
+    rerenderFn();
+    inativarComandaDoAgendamento(item.id).catch(e => console.warn('Comanda:', e));
+    showToast('Atendimento cancelado. A comanda ficou inativa.');
+  }
+
+  // "Excluir" = desmarcar/apagar: remove o atendimento de vez e apaga a comanda dele.
+  async function excluirAtendimento(key, item, rerenderFn){
+    const isBlock = item.type === 'block';
+    const tipoLabel = isBlock ? 'bloqueio de horário' : 'atendimento';
+    const confirmado = confirm(isBlock
+      ? `Remover este bloqueio (${item.label}, ${item.time})?`
+      : `Excluir o atendimento de ${item.label} (${formatarDataBR(key)}, ${item.time})?\n\nEle será apagado da agenda e a comanda também.`);
     if(!confirmado) return;
+    if(isAgendamentoReal(item)){
+      const usuario = await usuarioParaSalvar();
+      if(!usuario) return;
+    }
 
     const lista = appointments[key] || [];
     const idx = lista.findIndex(a => a.id === item.id);
     if(idx !== -1) lista.splice(idx, 1);
     rerenderFn();
 
+    // A comanda vai antes (se o banco ligar comanda → atendimento, o atendimento não fica preso).
+    if(!isBlock) await apagarComandaDoAgendamento(item.id).catch(e => console.warn('Comanda:', e));
+
     if(isAgendamentoReal(item)){
       const { error } = await supabaseClient.from('agendamentos').delete().eq('id', item.id);
       if(error){
-        showToast('Erro ao cancelar: ' + error.message);
+        showToast('Erro ao excluir: ' + error.message);
         await loadAgendamentosFromSupabase();
         rerenderFn();
         return;
@@ -6655,7 +6715,7 @@
         supabaseClient.functions.invoke('cancelar-google-agenda', { body: { googleEventId: item.googleEventId } }).catch(()=>{});
       }
     }
-    showToast(tipoLabel.charAt(0).toUpperCase() + tipoLabel.slice(1) + ' cancelado.');
+    showToast(isBlock ? 'Bloqueio removido.' : 'Atendimento excluído e comanda apagada.');
   }
 
   let suprimirCliqueAgenda = false;
@@ -6778,6 +6838,7 @@
 
     document.getElementById('apptDetObs').value = item.observacoes || '';
     document.getElementById('apptDetCancelar').textContent = isBlock ? 'Remover bloqueio' : 'Cancelar atendimento';
+    document.getElementById('apptDetExcluir').style.display = isBlock ? 'none' : '';
     const paciente = isBlock ? null : pacienteDoItem(item);
     const btnFicha = document.getElementById('apptDetFicha');
     btnFicha.style.display = paciente ? '' : 'none';
@@ -6811,6 +6872,14 @@
     if((appointments[key] || []).length < antes) fecharDetalhesAtendimento();
   });
 
+  document.getElementById('apptDetExcluir').addEventListener('click', async () => {
+    if(!apptDetAtual) return;
+    const { key, item, rerenderFn } = apptDetAtual;
+    const antes = (appointments[key] || []).length;
+    await excluirAtendimento(key, item, () => { rerenderFn(); renderCalendar(); });
+    if((appointments[key] || []).length < antes) fecharDetalhesAtendimento();
+  });
+
   document.getElementById('apptDetSalvar').addEventListener('click', async () => {
     if(!apptDetAtual) return;
     const { item } = apptDetAtual;
@@ -6833,7 +6902,7 @@
   // Ativa "arrastar para remarcar" em um bloco (.schedule-block ou .week-block) já posicionado.
   // Clique com o botão direito (ou pressionar e segurar, no touch) abre a opção de cancelar.
   function attachDragToReschedule(block, item, key, rowH, rerenderFn){
-    block.title = 'Clique para ver detalhes · arraste para remarcar · botão direito para cancelar';
+    block.title = 'Clique para ver detalhes, editar ou cancelar · arraste para remarcar';
     // Clique simples (sem arrastar) abre o painel com os detalhes do atendimento.
     block.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -6842,7 +6911,7 @@
     });
     block.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      cancelarAtendimento(key, item, rerenderFn);
+      abrirDetalhesAtendimento(key, item, rerenderFn); // lá dá para escolher Cancelar ou Excluir
     });
     block.addEventListener('mousedown', (e) => {
       if(e.button !== 0) return;
@@ -7456,8 +7525,13 @@
     if(totalMinutos) seletorDuracaoAtendimento.definir(totalMinutos);
   });
 
+  const apptDate = document.getElementById('apptDate');
+  let edicaoAtual = null; // { key, item } quando o modal está editando um atendimento existente
+
   function openModal(mode, prefillTime){
     modalMode = mode;
+    edicaoAtual = null;
+    apptDate.value = dateKey(selectedDate);
     apptPatient.value = '';
     apptPatientSearch.value = '';
     apptPatientResults.classList.remove('open');
@@ -7490,7 +7564,102 @@
     }
     modalOverlay.classList.add('open');
   }
-  function closeModal(){ modalOverlay.classList.remove('open'); }
+  function closeModal(){ modalOverlay.classList.remove('open'); edicaoAtual = null; }
+
+  // Abre o mesmo formulário do "Novo Atendimento", já preenchido, para editar.
+  function abrirEdicaoAtendimento(key, item){
+    const isBlock = item.type === 'block';
+    openModal(isBlock ? 'block' : 'appt', item.time);
+    edicaoAtual = { key, item };
+    apptDate.value = key;
+    if(isBlock){
+      apptPatient.value = item.label && item.label !== 'Horário bloqueado' ? item.label : '';
+      modalTitle.textContent = 'Editar Bloqueio';
+    } else {
+      const paciente = pacienteDoItem(item);
+      if(paciente) selecionarPacienteNoModal(paciente);
+      else apptPatientSearch.value = item.label || '';
+      // Serviços: marca os que já estavam no atendimento (mesmo que tenham saído do cadastro)
+      (item.servico || '').split(',').map(s => s.trim()).filter(Boolean).forEach(nome => {
+        let cb = checkboxesServicos().find(c => c.value === nome);
+        if(!cb){
+          const lbl = document.createElement('label');
+          cb = document.createElement('input');
+          cb.type = 'checkbox'; cb.className = 'appt-servico-check'; cb.value = nome; cb.dataset.duracao = '';
+          lbl.appendChild(cb);
+          apptServicosContainer.appendChild(lbl);
+        }
+        cb.checked = true;
+      });
+      renderChipsServicos();
+      document.getElementById('apptObs').value = item.observacoes || '';
+      modalTitle.textContent = 'Editar Atendimento';
+    }
+    seletorDuracaoAtendimento.definir(parseInt(item.duration, 10) || 60);
+    modalConfirm.textContent = 'Salvar alterações';
+  }
+
+  async function salvarEdicaoAtendimento(){
+    const { key: keyAntiga, item } = edicaoAtual;
+    const isBlock = item.type === 'block';
+    const novaKey = apptDate.value || keyAntiga;
+    const hora = apptTime.value || item.time;
+    const duracao = parseInt(apptDuration.value, 10) || item.duration || 60;
+
+    let pacienteId = item.pacienteId, label = item.label, servicoNome = item.servico || null, observacoes = item.observacoes || '';
+    if(isBlock){
+      label = apptPatient.value.trim() || 'Horário bloqueado';
+    } else {
+      const sel = patients.find(p => String(p.id) === String(apptPatientSelect.value));
+      if(sel){ pacienteId = sel.id; label = sel.name; }
+      else if(apptPatientSearch.value.trim() !== (item.label || '')){ showToast('Selecione uma paciente da lista.'); return; }
+      const servicos = getServicosSelecionados();
+      servicoNome = servicos.length ? servicos.join(', ') : null;
+      observacoes = document.getElementById('apptObs').value.trim();
+    }
+
+    if(isAgendamentoReal(item)){
+      const usuario = await usuarioParaSalvar();
+      if(!usuario) return;
+      const alteracoes = { data: novaKey, hora, duracao_min: duracao, duracao_minutos: duracao };
+      if(isBlock) alteracoes.motivo = label;
+      else { alteracoes.paciente_id = pacienteId; alteracoes.servico_nome = servicoNome; alteracoes.observacoes = observacoes || null; }
+      modalConfirm.disabled = true;
+      let { error } = await supabaseClient.from('agendamentos').update(alteracoes).eq('id', item.id);
+      if(error && 'observacoes' in alteracoes && /observacoes/i.test(error.message || '')){
+        delete alteracoes.observacoes;
+        ({ error } = await supabaseClient.from('agendamentos').update(alteracoes).eq('id', item.id));
+      }
+      modalConfirm.disabled = false;
+      if(error){ showToast('Não foi possível salvar as alterações: ' + error.message); return; }
+    } else if(!modoDemonstracao){
+      showToast('Este atendimento não está salvo no banco. Recarregue a página.'); return;
+    }
+
+    Object.assign(item, { time: hora, duration: duracao, label, servico: servicoNome, pacienteId, observacoes });
+    if(novaKey !== keyAntiga){
+      const antiga = appointments[keyAntiga] || [];
+      const i = antiga.indexOf(item);
+      if(i !== -1) antiga.splice(i, 1);
+      (appointments[novaKey] = appointments[novaKey] || []).push(item);
+    }
+    closeModal();
+    renderCalendar();
+    renderCurrentView();
+    if(isAgendamentoReal(item)) sincronizarComGoogleAgenda(item.id);
+    if(!isBlock){
+      atualizarComandaDoAgendamento(item.id, { key: novaKey, pacienteId, cliente: label, servicoNome })
+        .catch(e => console.warn('Comanda:', e));
+    }
+    showToast(isBlock ? 'Bloqueio atualizado!' : 'Atendimento atualizado!');
+  }
+
+  document.getElementById('apptDetEditar').addEventListener('click', () => {
+    if(!apptDetAtual) return;
+    const { key, item } = apptDetAtual;
+    fecharDetalhesAtendimento();
+    abrirEdicaoAtendimento(key, item);
+  });
 
   document.getElementById('btnNovoAtendimento').addEventListener('click', () => openModal('appt'));
   document.getElementById('btnBloquearHorarios').addEventListener('click', () => openModal('block'));
@@ -7522,7 +7691,8 @@
   }
 
   modalConfirm.addEventListener('click', async () => {
-    const key = dateKey(selectedDate);
+    if(edicaoAtual) return salvarEdicaoAtendimento();
+    const key = apptDate.value || dateKey(selectedDate);
     if(!appointments[key]) appointments[key] = [];
     const hora = apptTime.value || '09:00';
     const duracao = parseInt(apptDuration.value, 10);
@@ -7570,6 +7740,9 @@
       renderCalendar();
       renderCurrentView();
 
+      criarComandaDoAgendamento({ agendamentoId: inserted.id, key, pacienteId: pacienteSelecionado.id, cliente: pacienteSelecionado.name, servicoNome })
+        .catch(e => console.warn('Comanda:', e));
+
       sincronizarComGoogleAgenda(inserted.id);
 
       if(apptEnviarWhatsapp.checked){
@@ -7613,8 +7786,13 @@
     const pacienteDemo = modalMode === 'appt'
       ? (pacienteDemoObj?.name || 'Paciente sem nome')
       : (apptPatient.value.trim() || 'Horário bloqueado');
+    const idDemo = Date.now();
+    if(modalMode === 'appt'){
+      criarComandaDoAgendamento({ agendamentoId: idDemo, key, pacienteId: pacienteDemoObj ? pacienteDemoObj.id : null,
+        cliente: pacienteDemo, servicoNome: getServicosSelecionados().join(', ') || null });
+    }
     appointments[key].push({
-      id: Date.now(),
+      id: idDemo,
       pacienteId: pacienteDemoObj ? pacienteDemoObj.id : null,
       observacoes: modalMode === 'appt' ? document.getElementById('apptObs').value.trim() : '',
       time: hora,
@@ -7645,7 +7823,7 @@
   // completo é recusado inteiro; antes isso fazia a agenda aparecer vazia ao recarregar.
   async function buscarAgendamentosUmaVez(){
     const consultas = [
-      'id, data, hora, duracao_min, duracao_minutos, tipo, motivo, servico_nome, paciente_id, google_event_id, observacoes, pacientes ( nome )',
+      'id, data, hora, duracao_min, duracao_minutos, tipo, motivo, servico_nome, paciente_id, google_event_id, observacoes, status, pacientes ( nome )',
       '*, pacientes ( nome )',
       '*',
     ];
@@ -7701,6 +7879,7 @@
 
       Object.keys(appointments).forEach(k => delete appointments[k]);
       data.forEach(row => {
+        if(row.status === 'cancelado') return; // cancelados ficam no banco (histórico), fora da agenda
         let chaveData = String(row.data || '');
         if(chaveData.includes('T')){ const d = new Date(chaveData); if(!isNaN(d)) chaveData = dateKey(d); }
         chaveData = chaveData.slice(0, 10);
@@ -7989,29 +8168,176 @@
   ];
 
   function statusPillHTML(status){
-    return status === 'Fechada'
-      ? `<span class="status-active">Fechada</span>`
-      : `<span class="pill pill-gray">Em Aberto</span>`;
+    if(status === 'Fechada') return `<span class="status-active">Fechada</span>`;
+    if(status === 'Inativa') return `<span class="pill pill-inativa" title="Atendimento cancelado">Inativa</span>`;
+    return `<span class="pill pill-gray">Em Aberto</span>`;
+  }
+
+  function dataComandaISO(c){
+    if(c.dataISO) return c.dataISO;
+    const m = String(c.data || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
+  }
+  function valorComanda(v, c){
+    const simbolo = { BRL: 'R$', USD: '$', EUR: '€' }[c.moeda || moedaPreferidaAtual()] || 'R$';
+    return `${simbolo} ${(Number(v) || 0).toFixed(2).replace('.', ',')}`;
+  }
+
+  function comandasFiltradas(){
+    const busca = semAcento((document.getElementById('comandasBusca') || {}).value || '').trim();
+    const de = (document.getElementById('comandasDateFrom') || {}).value || '';
+    const ate = (document.getElementById('comandasDateTo') || {}).value || '';
+    const status = (document.getElementById('comandasFiltroStatus') || {}).value || 'ativas';
+    return comandasData.filter(c => {
+      if(status === 'ativas' && c.status === 'Inativa') return false;
+      if(status !== 'ativas' && status !== 'todas' && c.status !== status) return false;
+      const iso = dataComandaISO(c);
+      if(de && iso && iso < de) return false;
+      if(ate && iso && iso > ate) return false;
+      if(busca && !semAcento((c.cliente || '') + ' ' + (c.codigo || '') + ' ' + (c.servicos || '')).includes(busca)) return false;
+      return true;
+    });
   }
 
   function renderComandas(){
     const body = document.getElementById('comandasBody');
     body.innerHTML = '';
-    comandasData.forEach(c => {
+    const lista = comandasFiltradas();
+    if(!lista.length){
+      body.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:28px;">${comandasData.length ? 'Nenhuma comanda com esses filtros.' : 'Nenhuma comanda ainda. Elas são criadas automaticamente quando você agenda um atendimento.'}</td></tr>`;
+      return;
+    }
+    lista.forEach(c => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${c.codigo}</td>
-        <td>${c.data}</td>
-        <td>${c.cliente}</td>
-        <td>${formatPrice(c.valor)}</td>
-        <td>${formatPrice(c.saldo)}</td>
-        <td>${c.pagamento}</td>
+        <td>${escHTML(c.codigo)}</td>
+        <td>${escHTML(c.data)}</td>
+        <td>${escHTML(c.cliente)}</td>
+        <td class="comanda-servicos">${escHTML(c.servicos || '—')}</td>
+        <td>${valorComanda(c.valor, c)}</td>
+        <td>${valorComanda(c.saldo, c)}</td>
+        <td>${escHTML(c.pagamento || '—')}</td>
         <td>${statusPillHTML(c.status)}</td>
+        <td style="text-align:right;"><button type="button" class="comanda-apagar" title="Apagar comanda" aria-label="Apagar comanda ${escHTML(c.codigo)}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        </button></td>
       `;
+      tr.querySelector('.comanda-apagar').addEventListener('click', () => apagarComanda(c));
       body.appendChild(tr);
     });
   }
   renderComandas();
+  ['comandasBusca', 'comandasDateFrom', 'comandasDateTo', 'comandasFiltroStatus'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', renderComandas);
+  });
+
+  function ehComandaDoBanco(c){ return typeof c.id === 'string' && c.id.includes('-') && !c.id.startsWith('demo-'); }
+
+  async function apagarComanda(c){
+    if(!confirm(`Apagar a comanda ${c.codigo} (${c.cliente})?\n\nIsso não pode ser desfeito.`)) return;
+    if(ehComandaDoBanco(c)){
+      const user = await usuarioParaSalvar();
+      if(!user) return;
+      const { error } = await supabaseClient.from('comandas').delete().eq('id', c.id);
+      if(error){ showToast('Não foi possível apagar a comanda: ' + error.message); return; }
+    }
+    comandasData = comandasData.filter(x => x !== c);
+    renderComandas();
+    showToast(`Comanda ${c.codigo} apagada.`);
+  }
+
+  /* ---------- Comandas geradas automaticamente pela agenda ----------
+     Agendou → cria comanda "Em Aberto" · editou → atualiza (se ainda em aberto)
+     cancelou → comanda "Inativa" · excluiu/desmarcou → comanda apagada. */
+  let avisoComandaSemTabela = false;
+  function avisarComandaNaoSalva(error){
+    console.warn('Comanda não salva:', error && error.message);
+    if(avisoComandaSemTabela) return;
+    avisoComandaSemTabela = true;
+    showToast('Atendimento salvo, mas a comanda não foi criada (' + String(error && error.message || '').slice(0, 70) + '). Rode o arquivo comandas-agenda.sql no Supabase.');
+  }
+  function itensDaComanda(servicoNome){
+    return String(servicoNome || '').split(',').map(t => t.trim()).filter(Boolean).map(nome => {
+      const s = servicosData.find(x => x.nome === nome);
+      return { nome, preco: s ? (Number(s.preco) || 0) : 0 };
+    });
+  }
+  function moedaDaComanda(itens){
+    const s = servicosData.find(x => x.moeda && itens.some(i => i.nome === x.nome));
+    return (s && s.moeda) || moedaPreferidaAtual();
+  }
+  function proximoCodigoComanda(){
+    const max = comandasData.reduce((m, c) => Math.max(m, parseInt(String(c.codigo || '').replace(/\D/g, ''), 10) || 0), 0);
+    return '#' + String(max + 1).padStart(4, '0');
+  }
+  function comandaDoAgendamento(agendamentoId){
+    return comandasData.find(c => c.agendamentoId != null && String(c.agendamentoId) === String(agendamentoId));
+  }
+
+  async function criarComandaDoAgendamento({ agendamentoId, key, pacienteId, cliente, servicoNome }){
+    const itens = itensDaComanda(servicoNome);
+    const valor = Math.round(itens.reduce((s, i) => s + i.preco, 0) * 100) / 100;
+    const nova = {
+      id: null, codigo: proximoCodigoComanda(), data: dataDbParaExibicao(key), dataISO: key,
+      cliente: cliente || 'Paciente sem nome', servicos: servicoNome || '', valor, saldo: valor,
+      pagamento: '—', status: 'Em Aberto', agendamentoId, pacienteId, moeda: moedaDaComanda(itens),
+    };
+    if(!modoDemonstracao && isAgendamentoReal({ id: agendamentoId })){
+      const user = await getUsuarioLogado().catch(() => null);
+      if(!user) return null;
+      const { data, error } = await supabaseClient.from('comandas').insert({
+        profissional_id: user.id, codigo: nova.codigo, data: key, cliente: nova.cliente,
+        servicos: nova.servicos || null, itens, valor, saldo: valor, pagamento: null, status: 'Em Aberto',
+        agendamento_id: agendamentoId, paciente_id: pacienteId != null ? String(pacienteId) : null, moeda: nova.moeda,
+      }).select().single();
+      if(error){ avisarComandaNaoSalva(error); return null; }
+      nova.id = data.id;
+    } else {
+      nova.id = 'demo-' + Date.now();
+    }
+    comandasData.unshift(nova);
+    renderComandas();
+    return nova;
+  }
+
+  async function atualizarComandaDoAgendamento(agendamentoId, { key, pacienteId, cliente, servicoNome }){
+    const c = comandaDoAgendamento(agendamentoId);
+    if(c && c.status !== 'Em Aberto') return; // fechada/inativa não muda
+    const itens = itensDaComanda(servicoNome);
+    const valor = Math.round(itens.reduce((s, i) => s + i.preco, 0) * 100) / 100;
+    const moeda = moedaDaComanda(itens);
+    if(!modoDemonstracao && isAgendamentoReal({ id: agendamentoId })){
+      const { error } = await supabaseClient.from('comandas').update({
+        data: key, cliente, servicos: servicoNome || null, itens, valor, saldo: valor, moeda,
+        paciente_id: pacienteId != null ? String(pacienteId) : null,
+      }).eq('agendamento_id', agendamentoId).eq('status', 'Em Aberto');
+      if(error){ console.warn('Comanda não atualizada:', error.message); return; }
+    }
+    if(c){
+      Object.assign(c, { data: dataDbParaExibicao(key), dataISO: key, cliente, servicos: servicoNome || '', valor, saldo: valor, moeda, pacienteId });
+      renderComandas();
+    }
+  }
+
+  async function inativarComandaDoAgendamento(agendamentoId){
+    if(!modoDemonstracao && isAgendamentoReal({ id: agendamentoId })){
+      const { error } = await supabaseClient.from('comandas').update({ status: 'Inativa' }).eq('agendamento_id', agendamentoId);
+      if(error) console.warn('Comanda não inativada:', error.message);
+    }
+    const c = comandaDoAgendamento(agendamentoId);
+    if(c){ c.status = 'Inativa'; renderComandas(); }
+  }
+
+  async function apagarComandaDoAgendamento(agendamentoId){
+    if(!modoDemonstracao && isAgendamentoReal({ id: agendamentoId })){
+      const { error } = await supabaseClient.from('comandas').delete().eq('agendamento_id', agendamentoId);
+      if(error) console.warn('Comanda não apagada:', error.message);
+    }
+    const antes = comandasData.length;
+    comandasData = comandasData.filter(c => !(c.agendamentoId != null && String(c.agendamentoId) === String(agendamentoId)));
+    if(comandasData.length !== antes) renderComandas();
+  }
 
   /* ---------- Helpers de data (Supabase 'YYYY-MM-DD' <-> exibição 'DD/MM/YYYY') ---------- */
   function dataDbParaExibicao(iso){
@@ -8153,15 +8479,19 @@
       const user = await getUsuarioLogado();
       if(!user) return;
       const { data, error } = await supabaseClient.from('comandas').select('*').eq('profissional_id', user.id).order('data', { ascending:false });
-      if(error || !data || data.length === 0) return;
+      // Conta real: nunca mostrar as comandas de exemplo ("Paciente Teste"), mesmo sem nenhuma comanda ainda.
+      if(error){ console.warn('Comandas:', error.message); comandasData = []; renderComandas(); return; }
 
-      comandasData = data.map(c => ({
-        id: c.id, codigo: c.codigo, data: dataDbParaExibicao(c.data), cliente: c.cliente,
+      comandasData = (data || []).map(c => ({
+        id: c.id, codigo: c.codigo, data: dataDbParaExibicao(c.data), dataISO: c.data ? String(c.data).slice(0, 10) : '',
+        cliente: c.cliente, servicos: c.servicos || '',
         valor: parseFloat(c.valor) || 0, saldo: parseFloat(c.saldo) || 0,
         pagamento: c.pagamento || '—', status: c.status || 'Em Aberto',
+        agendamentoId: c.agendamento_id || null, pacienteId: c.paciente_id || null, moeda: c.moeda || null,
       }));
+      comandasData.sort((a, b) => (b.dataISO || '').localeCompare(a.dataISO || '') || String(b.codigo || '').localeCompare(String(a.codigo || '')));
       renderComandas();
-    } catch(e){ /* mantém mock em caso de falha */ }
+    } catch(e){ console.warn('Comandas:', e); }
   }
   loadComandasFromSupabase();
 
