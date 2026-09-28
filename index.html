@@ -7629,19 +7629,73 @@
     showToast(modalMode === 'appt' ? 'Atendimento agendado! (modo demonstração, sem envio de WhatsApp)' : 'Horário bloqueado!');
   });
 
-  async function loadAgendamentosFromSupabase(){
+  // Carrega a agenda do Supabase.
+  // - Só um carregamento por vez: se a página e o login pedirem ao mesmo tempo, os dois usam o mesmo.
+  // - Se der erro (ex.: a sessão estava sendo renovada naquele instante), tenta de novo até 3 vezes.
+  // - O aviso só aparece se todas as tentativas falharem, e mostra o motivo.
+  let carregamentoAgendaEmAndamento = null;
+  function loadAgendamentosFromSupabase(){
+    if(carregamentoAgendaEmAndamento) return carregamentoAgendaEmAndamento;
+    carregamentoAgendaEmAndamento = carregarAgendaComTentativas().finally(() => { carregamentoAgendaEmAndamento = null; });
+    return carregamentoAgendaEmAndamento;
+  }
+
+  // Tenta do pedido mais completo ao mais simples. Se o banco não tiver alguma coluna
+  // (ex.: google_event_id, observacoes) ou a ligação agendamentos → pacientes, o pedido
+  // completo é recusado inteiro; antes isso fazia a agenda aparecer vazia ao recarregar.
+  async function buscarAgendamentosUmaVez(){
+    const consultas = [
+      'id, data, hora, duracao_min, duracao_minutos, tipo, motivo, servico_nome, paciente_id, google_event_id, observacoes, pacientes ( nome )',
+      '*, pacientes ( nome )',
+      '*',
+    ];
+    let data = null, error = null;
+    for(const campos of consultas){
+      ({ data, error } = await supabaseClient.from('agendamentos').select(campos));
+      if(!error && data) return { data, error: null };
+      console.warn('Agenda: consulta "' + campos + '" falhou:', error && error.message);
+      // Erro de sessão/rede: não adianta simplificar a consulta, volta para tentar de novo.
+      if(error && /jwt|token|fetch|network|timeout|failed/i.test(error.message || '')) break;
+    }
+    return { data, error };
+  }
+
+  // Preenche o nome da paciente a partir da lista de pacientes quando a agenda veio sem ele.
+  function completarNomesAgenda(){
+    let mudou = false;
+    Object.keys(appointments).forEach(k => (appointments[k] || []).forEach(a => {
+      if(a.type === 'appt' && a.pacienteId != null && (!a.label || a.label === 'Paciente sem nome')){
+        const p = patients.find(pp => String(pp.id) === String(a.pacienteId));
+        if(p && p.name){ a.label = p.name; mudou = true; }
+      }
+    }));
+    if(mudou){ renderCalendar(); renderCurrentView(); }
+  }
+
+  async function carregarAgendaComTentativas(){
     try{
       const { data: userData } = await supabaseClient.auth.getUser();
       if(!userData || !userData.user) return; // não logado: mantém os dados de exemplo locais
 
-      const camposBase = 'id, data, hora, duracao_min, duracao_minutos, tipo, motivo, servico_nome, paciente_id, google_event_id, pacientes ( nome )';
-      let { data, error } = await supabaseClient.from('agendamentos').select(camposBase + ', observacoes');
-      // Compatível com bancos que ainda não têm a coluna "observacoes".
-      if(error){ ({ data, error } = await supabaseClient.from('agendamentos').select(camposBase)); }
+      let data = null, error = null;
+      for(let tentativa = 1; tentativa <= 3; tentativa++){
+        try{
+          ({ data, error } = await buscarAgendamentosUmaVez());
+        } catch(e){
+          data = null; error = e;
+        }
+        if(!error && data) break;
+        console.warn(`Agenda: tentativa ${tentativa} de 3 falhou.`, error);
+        if(tentativa < 3) await new Promise(r => setTimeout(r, 900 * tentativa));
+      }
 
       if(error || !data){
-        showToast('Não foi possível carregar sua agenda agora. Recarregue a página antes de fazer alterações.');
-        console.warn('Erro ao carregar agendamentos:', error);
+        // Conta real: nunca deixar os atendimentos de exemplo (modo demonstração) na tela.
+        Object.keys(appointments).forEach(k => delete appointments[k]);
+        renderCalendar();
+        renderCurrentView();
+        const motivo = (error && (error.message || error.error_description || String(error))) || 'sem resposta do servidor';
+        showToast('Não foi possível carregar sua agenda (' + motivo.slice(0, 90) + '). Recarregue a página antes de fazer alterações.');
         return;
       }
 
@@ -7655,11 +7709,11 @@
         appointments[row.data].push({
           id: row.id,
           time: (row.hora || '00:00:00').slice(0,5),
-          duration: row.duracao_min || row.duracao_minutos,
+          duration: parseInt(row.duracao_min || row.duracao_minutos, 10) || 60,
           label: row.tipo === 'block' ? (row.motivo || 'Horário bloqueado')
             : (row.pacientes?.nome || (patients.find(pp => String(pp.id) === String(row.paciente_id)) || {}).name || 'Paciente sem nome'),
           servico: row.servico_nome || null,
-          type: row.tipo,
+          type: row.tipo === 'block' ? 'block' : 'appt',
           pacienteId: row.paciente_id || null,
           observacoes: row.observacoes || '',
           googleEventId: row.google_event_id || null,
@@ -7668,7 +7722,8 @@
       renderCalendar();
       renderCurrentView();
     } catch(e){
-      // mantém os dados de exemplo locais em caso de falha
+      console.warn('Agenda: erro inesperado ao montar a agenda.', e);
+      showToast('Não foi possível montar sua agenda (' + String(e && e.message || e).slice(0, 90) + '). Recarregue a página.');
     }
   }
 
@@ -10508,6 +10563,7 @@
     await carregarIntegracaoGoogleAgendaReal();
     await loadPacientesFromSupabase();
     await loadAgendamentosFromSupabase();
+    completarNomesAgenda();
     await renderPreFichasDashboard().catch(e => console.warn('Pré-fichas:', e));
     // Estes antes só eram carregados quando a página abria já logada; depois de um login
     // novo continuavam mostrando os dados de exemplo, parecendo que o que foi salvo sumiu.
