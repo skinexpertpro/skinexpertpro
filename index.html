@@ -6623,11 +6623,51 @@
   }
   function isAgendamentoReal(item){ return typeof item.id === 'string' && item.id.includes('-'); }
 
+  /* ---------- Nada de dois agendamentos no mesmo horário ----------
+     Vale para atendimentos e bloqueios. "ignorar" é o próprio item quando ele está sendo
+     editado/arrastado (não conflita consigo mesmo). */
+  function conflitoDeHorario(key, hora, duracao, ignorar){
+    const ini = timeStrToMinutes(hora), fim = ini + (parseInt(duracao, 10) || 60);
+    return (appointments[key] || []).find(a => {
+      if(a === ignorar || (ignorar && a.id != null && a.id === ignorar.id)) return false;
+      const aIni = timeStrToMinutes(a.time || '00:00'), aFim = aIni + (parseInt(a.duration, 10) || 60);
+      return ini < aFim && aIni < fim;
+    }) || null;
+  }
+  function mensagemConflito(key, a){
+    const oque = a.type === 'block' ? `um bloqueio (${a.label || 'Horário bloqueado'})` : `o atendimento de ${a.label || 'outra paciente'}`;
+    return `Horário ocupado: em ${formatarDataBR(key)} já existe ${oque} das ${a.time} às ${horaFim(a.time, parseInt(a.duration, 10) || 60)}. Escolha outro horário.`;
+  }
+  // Avisa se já existem horários com dois agendamentos (feitos antes desta regra), de hoje em diante.
+  function avisarHorariosDuplicados(){
+    const hojeKey = dateKey(today);
+    const choques = [];
+    Object.keys(appointments).filter(k => k >= hojeKey).sort().forEach(k => {
+      const lista = (appointments[k] || []).slice().sort((x, y) => (x.time || '').localeCompare(y.time || ''));
+      lista.forEach((a, i) => {
+        const outro = conflitoDeHorario(k, a.time, a.duration, a);
+        if(outro && lista.indexOf(outro) > i) choques.push(`${formatarDataBR(k)} ${a.time} (${a.label} × ${outro.label})`);
+      });
+    });
+    if(!choques.length) return;
+    console.warn('Horários com dois agendamentos:', choques);
+    showToast(`Atenção: ${choques.length} horário${choques.length > 1 ? 's' : ''} com dois agendamentos — ${choques.slice(0, 3).join('; ')}${choques.length > 3 ? '…' : ''}. Remarque um deles.`);
+  }
+
+  // Traduz o erro do banco quando a regra de "horário ocupado" (SQL) barrar o salvamento.
+  function mensagemErroAgenda(error, prefixo){
+    const msg = (error && error.message) || '';
+    if(/HORARIO_OCUPADO/i.test(msg)) return 'Horário ocupado: já existe outro agendamento nesse horário. Escolha outro horário.';
+    return (prefixo || 'Erro: ') + msg;
+  }
+
   // Move um atendimento/bloqueio para um novo horário, persiste (se for um registro real
   // do Supabase) e mostra um toast com opção de "Desfazer", no estilo do Google Agenda.
   async function reagendarItem(key, item, novaHora, rerenderFn){
     const horaAntiga = item.time;
     if(novaHora === horaAntiga) return;
+    const conflito = conflitoDeHorario(key, novaHora, item.duration, item);
+    if(conflito){ rerenderFn(); showToast(mensagemConflito(key, conflito)); return; }
     item.time = novaHora;
     rerenderFn();
 
@@ -6636,13 +6676,14 @@
       if(error){
         item.time = horaAntiga;
         rerenderFn();
-        showToast('Erro ao remarcar: ' + error.message);
+        showToast(mensagemErroAgenda(error, 'Erro ao remarcar: '));
         return;
       }
       sincronizarComGoogleAgenda(item.id);
     }
 
     showUndoToast(`Remarcado para ${formatarDataCurta(key)}, ${novaHora}`, async () => {
+      if(conflitoDeHorario(key, horaAntiga, item.duration, item)){ showToast('Não dá para desfazer: o horário anterior foi ocupado.'); return; }
       item.time = horaAntiga;
       rerenderFn();
       if(isAgendamentoReal(item)){
@@ -7605,6 +7646,8 @@
     const novaKey = apptDate.value || keyAntiga;
     const hora = apptTime.value || item.time;
     const duracao = parseInt(apptDuration.value, 10) || item.duration || 60;
+    const conflito = conflitoDeHorario(novaKey, hora, duracao, item);
+    if(conflito){ showToast(mensagemConflito(novaKey, conflito)); return; }
 
     let pacienteId = item.pacienteId, label = item.label, servicoNome = item.servico || null, observacoes = item.observacoes || '';
     if(isBlock){
@@ -7631,7 +7674,7 @@
         ({ error } = await supabaseClient.from('agendamentos').update(alteracoes).eq('id', item.id));
       }
       modalConfirm.disabled = false;
-      if(error){ showToast('Não foi possível salvar as alterações: ' + error.message); return; }
+      if(error){ showToast(mensagemErroAgenda(error, 'Não foi possível salvar as alterações: ')); return; }
     } else if(!modoDemonstracao){
       showToast('Este atendimento não está salvo no banco. Recarregue a página.'); return;
     }
@@ -7697,6 +7740,9 @@
     const hora = apptTime.value || '09:00';
     const duracao = parseInt(apptDuration.value, 10);
 
+    const conflito = conflitoDeHorario(key, hora, duracao, null);
+    if(conflito){ showToast(mensagemConflito(key, conflito)); return; }
+
     const usuarioLogado = await usuarioParaSalvar();
     if(!usuarioLogado && !modoDemonstracao) return; // sessão caiu: não salva só na tela
 
@@ -7728,7 +7774,7 @@
         obsNaoSalva = true;
       }
 
-      if(error){ showToast('Erro ao salvar atendimento: ' + error.message); return; }
+      if(error){ showToast(mensagemErroAgenda(error, 'Erro ao salvar atendimento: ')); return; }
 
       appointments[key].push({
         id: inserted.id, time: hora, duration: duracao,
@@ -7766,7 +7812,7 @@
         motivo: motivo,
       }).select().single();
 
-      if(error){ showToast('Erro ao bloquear horário: ' + error.message); return; }
+      if(error){ showToast(mensagemErroAgenda(error, 'Erro ao bloquear horário: ')); return; }
 
       appointments[key].push({ id: inserted.id, time: hora, duration: duracao, label: motivo, type: 'block' });
       closeModal();
@@ -7874,8 +7920,10 @@
         renderCurrentView();
         const motivo = (error && (error.message || error.error_description || String(error))) || 'sem resposta do servidor';
         showToast('Não foi possível carregar sua agenda (' + motivo.slice(0, 90) + '). Recarregue a página antes de fazer alterações.');
+        agendaCarregadaOk = false;
         return;
       }
+      agendaCarregadaOk = true;
 
       Object.keys(appointments).forEach(k => delete appointments[k]);
       data.forEach(row => {
@@ -8301,6 +8349,53 @@
     return nova;
   }
 
+  // Cria as comandas que faltam para os atendimentos que já estão na agenda
+  // (marcados antes das comandas existirem, ou pelo link de agendamento).
+  var comandasCarregadasOk = false, agendaCarregadaOk = false, garantindoComandas = null;
+  function garantirComandasDaAgenda(){
+    if(garantindoComandas) return garantindoComandas;
+    garantindoComandas = (async () => {
+      if(modoDemonstracao || !comandasCarregadasOk || !agendaCarregadaOk) return 0;
+      const user = await getUsuarioLogado().catch(() => null);
+      if(!user) return 0;
+      const faltando = [];
+      Object.keys(appointments).forEach(k => (appointments[k] || []).forEach(a => {
+        if(a.type === 'appt' && isAgendamentoReal(a) && !comandaDoAgendamento(a.id)) faltando.push({ key: k, a });
+      }));
+      if(!faltando.length) return 0;
+      faltando.sort((x, y) => (x.key + x.a.time).localeCompare(y.key + y.a.time));
+      let proximo = parseInt(proximoCodigoComanda().replace(/\D/g, ''), 10);
+      const registros = faltando.map(({ key, a }) => {
+        const itens = itensDaComanda(a.servico);
+        const valor = Math.round(itens.reduce((s, i) => s + i.preco, 0) * 100) / 100;
+        return {
+          profissional_id: user.id, codigo: '#' + String(proximo++).padStart(4, '0'), data: key,
+          cliente: a.label || 'Paciente sem nome', servicos: a.servico || null, itens, valor, saldo: valor,
+          pagamento: null, status: 'Em Aberto', agendamento_id: a.id,
+          paciente_id: a.pacienteId != null ? String(a.pacienteId) : null, moeda: moedaDaComanda(itens),
+        };
+      });
+      const { data, error } = await supabaseClient.from('comandas').insert(registros).select();
+      if(error){
+        console.warn('Comandas da agenda não criadas:', error.message);
+        if(/duplicate|unique/i.test(error.message || '')) await loadComandasFromSupabase(); // outra aba já criou
+        else avisarComandaNaoSalva(error);
+        return 0;
+      }
+      (data || registros).forEach(c => comandasData.push({
+        id: c.id, codigo: c.codigo, data: dataDbParaExibicao(c.data), dataISO: c.data, cliente: c.cliente,
+        servicos: c.servicos || '', valor: Number(c.valor) || 0, saldo: Number(c.saldo) || 0, pagamento: '—',
+        status: 'Em Aberto', agendamentoId: c.agendamento_id, pacienteId: c.paciente_id, moeda: c.moeda,
+      }));
+      comandasData.sort((a, b) => (b.dataISO || '').localeCompare(a.dataISO || '') || String(b.codigo || '').localeCompare(String(a.codigo || '')));
+      renderComandas();
+      showToast(`${registros.length} comanda${registros.length > 1 ? 's criadas' : ' criada'} para atendimentos que já estavam na agenda.`);
+      return registros.length;
+    })().catch(e => { console.warn('Comandas da agenda:', e); return 0; })
+       .finally(() => { garantindoComandas = null; });
+    return garantindoComandas;
+  }
+
   async function atualizarComandaDoAgendamento(agendamentoId, { key, pacienteId, cliente, servicoNome }){
     const c = comandaDoAgendamento(agendamentoId);
     if(c && c.status !== 'Em Aberto') return; // fechada/inativa não muda
@@ -8490,6 +8585,7 @@
         agendamentoId: c.agendamento_id || null, pacienteId: c.paciente_id || null, moeda: c.moeda || null,
       }));
       comandasData.sort((a, b) => (b.dataISO || '').localeCompare(a.dataISO || '') || String(b.codigo || '').localeCompare(String(a.codigo || '')));
+      comandasCarregadasOk = true;
       renderComandas();
     } catch(e){ console.warn('Comandas:', e); }
   }
@@ -10901,6 +10997,8 @@
       loadServicos(), loadProdutosFromSupabase(), loadComandasFromSupabase(),
       loadMovimentosFromSupabase(), loadContasFromSupabase(),
     ].map(pr => Promise.resolve(pr).catch(() => {})));
+    const comandasCriadas = await garantirComandasDaAgenda();
+    setTimeout(avisarHorariosDuplicados, comandasCriadas ? 5000 : 0); // não cobre o aviso das comandas
     await loadAtivosFromSupabase().catch(() => {});
     await carregarConfiguracoesSalvas().catch(() => {});
   }
