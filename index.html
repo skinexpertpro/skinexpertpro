@@ -1203,6 +1203,19 @@
     .comanda-acoes .right{ justify-content:stretch; } .comanda-acoes .right button{ flex:1; }
   }
 
+
+  /* ---------- Descontos (comandas e pacotes) ---------- */
+  .desconto-row{ display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .desconto-row label{ font-size:12.5px; font-weight:700; color: var(--text-muted); margin:0 4px 0 0; }
+  .desconto-row select, .desconto-row input{ padding:9px 11px; border:1px solid var(--border); border-radius:9px; font:inherit; font-size:13.5px; background:#fff; }
+  .desconto-row select{ flex:1 1 170px; }
+  .desconto-row input{ width:110px; text-align:right; }
+  .desconto-row input:disabled{ background: var(--gray-pill-bg); }
+  .desconto-resumo{ font-size:13px; color: var(--text-muted); margin-top:6px; min-height:0; }
+  .desconto-resumo strong{ color: var(--block-red); }
+  .desconto-tag{ display:inline-block; margin-left:6px; font-size:11px; font-weight:700; color: var(--block-red); background:#fbe9e4; border-radius:10px; padding:1px 7px; white-space:nowrap; }
+  .valor-riscado{ text-decoration:line-through; color: var(--text-muted); font-size:12.5px; margin-right:6px; }
+
   /* ================= LOGIN / CADASTRO ================= */
   .auth-screen{
     min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--bg); padding:20px;
@@ -3561,7 +3574,7 @@
             <div class="fin-summary-card pending"><div class="fin-summary-label">Em aberto</div><div class="fin-summary-value" id="sumComandasAberto">—</div><div class="fin-summary-sub" id="sumComandasAbertoN"></div></div>
             <div class="fin-summary-card in"><div class="fin-summary-label">Recebido</div><div class="fin-summary-value" id="sumComandasRecebido">—</div><div class="fin-summary-sub" id="sumComandasRecebidoN"></div></div>
             <div class="fin-summary-card"><div class="fin-summary-label">Total das comandas</div><div class="fin-summary-value" id="sumComandasTotal">—</div><div class="fin-summary-sub" id="sumComandasTotalN"></div></div>
-            <div class="fin-summary-card"><div class="fin-summary-label">Ticket médio</div><div class="fin-summary-value" id="sumComandasTicket">—</div><div class="fin-summary-sub">por comanda (sem as inativas)</div></div>
+            <div class="fin-summary-card out"><div class="fin-summary-label">Descontos concedidos</div><div class="fin-summary-value" id="sumComandasDescontos">—</div><div class="fin-summary-sub" id="sumComandasTicket"></div></div>
           </div>
 
           <div class="fin-filter-bar">
@@ -3801,7 +3814,7 @@
           <div class="fin-filter-bar">
             <div class="search-input" style="min-width:220px;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="Procurar por nome do pacote...">
+              <input type="text" id="pacotesBusca" placeholder="Procurar por nome do pacote ou serviço...">
             </div>
             <div class="spacer-flex"></div>
             <button class="btn-primary" id="btnNovoPacote">
@@ -3813,7 +3826,7 @@
             <div class="card-head"><div class="card-title">Lista de Pacotes</div></div>
             <table>
               <thead>
-                <tr><th>Pacote</th><th>Serviços Inclusos</th><th>Valor</th></tr>
+                <tr><th>Pacote</th><th>Serviços Inclusos</th><th>Valor</th><th></th></tr>
               </thead>
               <tbody id="pacotesBody"></tbody>
             </table>
@@ -4118,6 +4131,18 @@
       <button type="button" class="btn-outline" id="btnComandaAddItem">Adicionar</button>
     </div>
 
+    <div class="desconto-row" id="comandaDescontoRow">
+      <label for="comandaDescontoTipo">Desconto</label>
+      <select id="comandaDescontoTipo">
+        <option value="">Sem desconto</option>
+        <option value="percent">Em porcentagem (%)</option>
+        <option value="valor">Em valor</option>
+      </select>
+      <input id="comandaDescontoValor" type="text" inputmode="decimal" placeholder="0" aria-label="Valor do desconto" disabled>
+      <button type="button" class="btn-outline" id="btnComandaAplicarDesconto">Aplicar</button>
+    </div>
+    <div class="desconto-resumo" id="comandaResumoDesconto"></div>
+
     <div class="comanda-totais">
       <div><span>Total</span><strong id="comandaTotal">—</strong></div>
       <div><span>Pago</span><strong id="comandaPago">—</strong></div>
@@ -4262,7 +4287,7 @@
 <!-- MODAL: novo pacote -->
 <div class="modal-overlay" id="modalPacoteOverlay">
   <div class="modal-box wide">
-    <h3>Criar Novo Pacote</h3>
+    <h3 id="modalPacoteTitle">Criar Novo Pacote</h3>
     <div class="modal-field">
       <label>Nome do Pacote</label>
       <input id="pacoteNome" type="text" placeholder="Ex: Ritual Facial Completo">
@@ -4273,6 +4298,16 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Adicionar Serviço
     </button>
+    <div class="desconto-row">
+      <label for="pacoteDescontoTipo">Desconto</label>
+      <select id="pacoteDescontoTipo">
+        <option value="">Sem desconto</option>
+        <option value="percent">Em porcentagem (%)</option>
+        <option value="valor">Em valor</option>
+      </select>
+      <input id="pacoteDescontoValor" type="text" inputmode="decimal" placeholder="0" aria-label="Valor do desconto" disabled>
+    </div>
+    <div class="desconto-resumo" id="pacoteResumo"></div>
     <div class="pacote-total-row">
       <span class="pacote-total-label">Preço do Pacote</span>
       <span class="pacote-total-value" id="pacoteTotalValue">R$ 0,00</span>
@@ -4353,7 +4388,7 @@
       <div id="ativoProdutosContainer"></div>
     </div>
     <div class="form-field">
-      <label>Minha Anotação</label>
+      <label for="ativoDetailAnotacao">Minha Anotação <span style="font-weight:600; color:var(--text-muted); font-size:12px;">· pessoal, só você vê</span></label>
       <textarea id="ativoDetailAnotacao" placeholder="Anote observações pessoais sobre o uso deste ativo..." style="width:100%; min-height:70px; padding:11px 14px; border:1px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; color:var(--text-dark); outline:none; resize:vertical;"></textarea>
     </div>
     <div class="modal-actions">
@@ -5336,8 +5371,14 @@
     }
     showToast(copiado ? 'Link copiado!' : 'Não foi possível copiar automaticamente — selecione e copie manualmente.');
   });
+  let salvandoAnamnese = false;
   document.getElementById('btnSalvarAnamnese').addEventListener('click', async () => {
+    if(salvandoAnamnese) return; // clique duplo não grava duas vezes
     if(!currentPatient){ showToast('Nenhuma paciente selecionada.'); return; }
+    salvandoAnamnese = true;
+    const btnSalvarAn = document.getElementById('btnSalvarAnamnese');
+    btnSalvarAn.disabled = true;
+    try{
 
     const principalQueixa = document.getElementById('paPrincipalQueixa').value.trim();
     if(!principalQueixa){ showToast('Preencha a Principal Queixa — esse campo é obrigatório.'); return; }
@@ -5444,6 +5485,10 @@
     renderAnamnesesRespondidas().then(updateHistoricoCountBadge);
     atualizarHeaderPaciente(currentPatient);
     showToast('Anamnese salva com sucesso!');
+    } finally {
+      salvandoAnamnese = false;
+      btnSalvarAn.disabled = false;
+    }
   });
 
   /* Anamnese Integrativa - dynamic questions */
@@ -8564,7 +8609,7 @@
     const msg = (error && error.message) || String(error || '');
     console.warn('Financeiro:', acao, msg);
     if(/column|relation|does not exist|schema cache|violates check/i.test(msg)){
-      if(!avisoFinSql){ avisoFinSql = true; showToast('Falta atualizar o banco: rode o arquivo financeiro.sql no Supabase. (' + msg.slice(0, 70) + ')'); }
+      if(!avisoFinSql){ avisoFinSql = true; showToast('Falta atualizar o banco: rode no Supabase os arquivos SQL do Financeiro (financeiro.sql e descontos.sql). (' + msg.slice(0, 60) + ')'); }
     } else {
       showToast(acao + ': ' + msg.slice(0, 90));
     }
@@ -8664,13 +8709,23 @@
     document.getElementById('finCategoriasLista').innerHTML = [...cats].map(c => `<option value="${escHTML(c)}"></option>`).join('');
     let servs = [];
     try{ servs = servicosData.map(s => s.nome); }catch(e){}
-    document.getElementById('finServicosLista').innerHTML = servs.map(n => `<option value="${escHTML(n)}"></option>`).join('');
+    let pacs = [];
+    try{ pacs = pacotesData.map(p => 'Pacote: ' + p.nome); }catch(e){}
+    document.getElementById('finServicosLista').innerHTML = servs.concat(pacs).map(n => `<option value="${escHTML(n)}"></option>`).join('');
     let nomes = [];
     try{ nomes = patients.map(p => p.name).filter(Boolean); }catch(e){}
     document.getElementById('finPacientesLista').innerHTML = [...new Set(nomes)].map(n => `<option value="${escHTML(n)}"></option>`).join('');
   }
   function precoDoServico(nome){
+    const pac = pacoteDoNomeItem(nome);
+    if(pac) return pac.valor;
     try{ const s = servicosData.find(x => semAcento(x.nome) === semAcento(nome)); return s ? (Number(s.preco) || 0) : null; }catch(e){ return null; }
+  }
+  // "Pacote: Nome" na comanda → o pacote (preço já com o desconto do pacote)
+  function pacoteDoNomeItem(nome){
+    const m = String(nome || '').match(/^Pacote:\s*(.+)$/i);
+    if(!m) return null;
+    try{ return pacotesData.find(p => semAcento(p.nome) === semAcento(m[1].trim())) || null; }catch(e){ return null; }
   }
 
   /* ================= COMANDAS ================= */
@@ -8688,10 +8743,23 @@
     comandaExemplo('#0004', '2026-08-11', 'Paciente Teste 5', [{ nome: 'Massagem Relaxante', preco: 99.9, origem: 'servico' }], [{ id: 'p3', data: '2026-08-11', forma: 'Dinheiro', valor: 99.9 }]),
   ];
 
+  // Desconto { tipo: 'percent' | 'valor', valor } sobre um subtotal. Nunca passa do subtotal.
+  function calcularDesconto(subtotal, desconto){
+    if(!desconto || !(Number(desconto.valor) > 0) || !(subtotal > 0)) return 0;
+    const v = Number(desconto.valor);
+    return arred(desconto.tipo === 'percent' ? subtotal * Math.min(v, 100) / 100 : Math.min(v, subtotal));
+  }
+  function textoDesconto(desconto){
+    if(!desconto || !(Number(desconto.valor) > 0)) return '';
+    return desconto.tipo === 'percent' ? `${String(desconto.valor).replace('.', ',')}%` : fmtMoeda(desconto.valor);
+  }
+
   function recalcularComanda(c){
     c.itens = Array.isArray(c.itens) ? c.itens : [];
     c.pagamentos = Array.isArray(c.pagamentos) ? c.pagamentos : [];
-    c.valor = arred(c.itens.reduce((s, i) => s + (Number(i.preco) || 0), 0));
+    c.subtotal = arred(c.itens.reduce((s, i) => s + (Number(i.preco) || 0), 0));
+    c.descontoAplicado = calcularDesconto(c.subtotal, c.desconto);
+    c.valor = arred(c.subtotal - c.descontoAplicado); // total a pagar (já com desconto) — é o que entra no financeiro
     const pago = arred(c.pagamentos.reduce((s, p) => s + (Number(p.valor) || 0), 0));
     c.pago = pago;
     c.saldo = Math.max(0, arred(c.valor - pago));
@@ -8708,6 +8776,7 @@
       pagamento: c.pagamento === '—' ? null : c.pagamento, status: c.status,
       moeda: c.moeda || moedaPreferidaAtual(),
       agendamento_id: c.agendamentoId || null, paciente_id: c.pacienteId != null ? String(c.pacienteId) : null,
+      ...(c.desconto !== undefined ? { desconto: c.desconto, subtotal: c.subtotal } : {}),
     };
   }
   function comandaDoBanco(r){
@@ -8725,6 +8794,7 @@
       itens, pagamentos, status: r.status || 'Em Aberto', agendamentoId: r.agendamento_id || null,
       pacienteId: r.paciente_id || null, moeda: r.moeda || null,
     };
+    if('desconto' in r) c.desconto = (r.desconto && Number(r.desconto.valor) > 0) ? { tipo: r.desconto.tipo === 'percent' ? 'percent' : 'valor', valor: Number(r.desconto.valor) } : null;
     return recalcularComanda(c);
   }
 
@@ -8769,7 +8839,8 @@
     setTxt('sumComandasRecebidoN', 'pagamentos registrados');
     setTxt('sumComandasTotal', fmtMoeda(total));
     setTxt('sumComandasTotalN', `${validas.length} comanda${validas.length === 1 ? '' : 's'}`);
-    setTxt('sumComandasTicket', validas.length ? fmtMoeda(total / validas.length) : '—');
+    setTxt('sumComandasDescontos', fmtMoeda(validas.reduce((s, c) => s + (c.descontoAplicado || 0), 0)));
+    setTxt('sumComandasTicket', validas.length ? `ticket médio ${fmtMoeda(total / validas.length)}` : '');
 
     if(!lista.length){
       body.innerHTML = `<tr><td colspan="9" class="fin-vazio">${comandasData.length ? 'Nenhuma comanda com esses filtros.' : 'Nenhuma comanda ainda. Elas são criadas sozinhas quando você agenda um atendimento — ou use "Nova Comanda".'}</td></tr>`;
@@ -8783,7 +8854,7 @@
         <td>${escHTML(c.data)}</td>
         <td>${escHTML(c.cliente)}</td>
         <td class="comanda-servicos">${escHTML(c.servicos || '—')}</td>
-        <td class="num">${fmtMoeda(c.valor)}</td>
+        <td class="num">${c.descontoAplicado > 0 ? `<span class="desconto-tag" title="Desconto de ${textoDesconto(c.desconto)} (${fmtMoeda(c.descontoAplicado)})">–${textoDesconto(c.desconto)}</span> ` : ''}${fmtMoeda(c.valor)}</td>
         <td class="num">${fmtMoeda(c.saldo)}</td>
         <td>${escHTML(c.pagamento || '—')}</td>
         <td>${statusPillHTML(c.status)}</td>
@@ -8893,6 +8964,17 @@
       }
       box.appendChild(row);
     });
+    // Desconto
+    const selDesc = document.getElementById('comandaDescontoTipo'), inpDesc = document.getElementById('comandaDescontoValor');
+    document.getElementById('comandaDescontoRow').style.display = inativa ? 'none' : 'flex';
+    if(document.activeElement !== inpDesc && document.activeElement !== selDesc){
+      selDesc.value = c.desconto && c.desconto.valor > 0 ? c.desconto.tipo : '';
+      inpDesc.value = c.desconto && c.desconto.valor > 0 ? String(c.desconto.valor).replace('.', ',') : '';
+      inpDesc.disabled = !selDesc.value;
+    }
+    document.getElementById('comandaResumoDesconto').innerHTML = c.descontoAplicado > 0
+      ? `Subtotal ${fmtMoeda(c.subtotal)} · Desconto <strong>– ${fmtMoeda(c.descontoAplicado)}</strong>${c.desconto.tipo === 'percent' ? ` (${textoDesconto(c.desconto)})` : ''}`
+      : '';
     document.getElementById('comandaTotal').textContent = fmtMoeda(c.valor);
     document.getElementById('comandaPago').textContent = fmtMoeda(c.pago || 0);
     document.getElementById('comandaSaldo').textContent = fmtMoeda(c.saldo);
@@ -8932,6 +9014,34 @@
     return true;
   }
 
+  document.getElementById('comandaDescontoTipo').addEventListener('change', (e) => {
+    const inp = document.getElementById('comandaDescontoValor');
+    inp.disabled = !e.target.value;
+    if(!e.target.value){ aplicarDescontoComanda(); } else { inp.focus(); inp.select(); }
+  });
+  async function aplicarDescontoComanda(){
+    const c = comandaAtual;
+    if(!c) return;
+    const tipo = document.getElementById('comandaDescontoTipo').value;
+    const valor = lerValor(document.getElementById('comandaDescontoValor').value);
+    const novo = tipo && valor > 0 ? { tipo, valor } : null;
+    if(novo && tipo === 'percent' && valor > 100){ showToast('O desconto em porcentagem vai até 100%.'); return; }
+    if(novo && tipo === 'valor' && valor > c.subtotal){ showToast(`O desconto passa do subtotal (${fmtMoeda(c.subtotal)}).`); return; }
+    const novoTotal = arred(c.subtotal - calcularDesconto(c.subtotal, novo));
+    if(novoTotal < (c.pago || 0) - 0.001){
+      showToast(`Com esse desconto o total (${fmtMoeda(novoTotal)}) fica menor que o que já foi pago (${fmtMoeda(c.pago)}). Desfaça um pagamento antes.`);
+      return;
+    }
+    const anterior = c.desconto;
+    c.desconto = novo;
+    document.getElementById('comandaDescontoValor').blur();
+    if(!await salvarComandaAtual()){ c.desconto = anterior; recalcularComanda(c); renderItensComanda(); return; }
+    renderFinanceiro();
+    if(!comandaNova) showToast(novo ? `Desconto de ${textoDesconto(novo)} aplicado. Total: ${fmtMoeda(c.valor)}.` : 'Desconto removido.');
+  }
+  document.getElementById('btnComandaAplicarDesconto').addEventListener('click', aplicarDescontoComanda);
+  document.getElementById('comandaDescontoValor').addEventListener('keydown', (e) => { if(e.key === 'Enter'){ e.preventDefault(); aplicarDescontoComanda(); } });
+
   document.getElementById('comandaCliente').addEventListener('change', async (e) => {
     if(!comandaAtual) return;
     comandaAtual.cliente = e.target.value.trim() || comandaAtual.cliente;
@@ -8953,7 +9063,7 @@
     const nome = nomeEl.value.trim();
     if(!nome){ nomeEl.focus(); return; }
     const preco = valEl.value.trim() ? lerValor(valEl.value) : (precoDoServico(nome) || 0);
-    const ehServico = precoDoServico(nome) != null;
+    const ehServico = !pacoteDoNomeItem(nome) && precoDoServico(nome) != null; // pacote entra como item extra
     comandaAtual.itens.push({ nome, preco, origem: ehServico ? 'servico' : 'extra' });
     nomeEl.value = ''; valEl.value = '';
     await salvarComandaAtual();
@@ -9881,6 +9991,7 @@
     const lista = servicosData.filter(s =>
       (!busca || semAcento(s.nome).includes(busca)) &&
       (!cat || semAcento(s.categoria) === semAcento(cat)));
+    try{ renderPacotes(); }catch(e){} // preço dos pacotes acompanha o dos serviços
     if(!lista.length){
       body.innerHTML = `<tr><td colspan="5" class="fin-vazio">${servicosData.length ? 'Nenhum serviço com esses filtros.' : 'Nenhum serviço cadastrado. Use "Novo Serviço".'}</td></tr>`;
       return;
@@ -10165,40 +10276,82 @@
   renderServicos();
 
   /* ---------- Pacotes ---------- */
+  // { nome, servicos:[{nome, qtd}], subtotal, desconto:{tipo:'percent'|'valor', valor}|null, valor (preço final) }
   const pacotesData = [];
+
+  function precoServicoPorNome(nome){
+    const sv = servicosData.find(x => x.nome === nome);
+    return sv ? (Number(sv.preco) || 0) : 0;
+  }
+  // Recalcula a partir dos serviços (se o preço de um serviço mudar, o pacote acompanha)
+  function recalcularPacote(p){
+    const temPrecos = (p.servicos || []).some(sv => servicosData.some(x => x.nome === sv.nome));
+    if(temPrecos) p.subtotal = arred((p.servicos || []).reduce((t, sv) => t + precoServicoPorNome(sv.nome) * (parseInt(sv.qtd, 10) || 1), 0));
+    else if(p.subtotal == null) p.subtotal = Number(p.valor) || 0; // pacote antigo sem os serviços cadastrados
+    p.descontoAplicado = calcularDesconto(p.subtotal, p.desconto);
+    p.valor = arred(p.subtotal - p.descontoAplicado);
+    return p;
+  }
 
   function renderPacotes(){
     const body = document.getElementById('pacotesBody');
     body.innerHTML = '';
     if(pacotesData.length === 0){
-      body.innerHTML = `<tr><td colspan="3"><div class="empty-state">Nenhum pacote criado ainda.</div></td></tr>`;
+      body.innerHTML = `<tr><td colspan="4"><div class="empty-state">Nenhum pacote criado ainda.</div></td></tr>`;
       return;
     }
-    pacotesData.forEach(p => {
+    const busca = semAcento((document.getElementById('pacotesBusca') || {}).value || '').trim();
+    let mostrados = 0;
+    pacotesData.forEach((p, idx) => {
+      recalcularPacote(p);
+      if(busca && !semAcento(p.nome + ' ' + (p.servicos || []).map(sv => sv.nome).join(' ')).includes(busca)) return;
+      mostrados++;
       const tr = document.createElement('tr');
+      tr.className = 'clicavel';
+      tr.style.cursor = 'pointer';
+      const servs = (p.servicos || []).map(sv => `${(parseInt(sv.qtd, 10) || 1) > 1 ? sv.qtd + '× ' : ''}${escHTML(sv.nome)}`).join(', ');
       tr.innerHTML = `
-        <td style="font-weight:700; color:var(--text-dark);">${p.nome}</td>
-        <td>${p.servicos.map(s => s.nome).join(', ')}</td>
-        <td>${formatPrice(p.valor)}</td>
+        <td style="font-weight:700; color:var(--text-dark);">${escHTML(p.nome)}</td>
+        <td>${servs || '—'}</td>
+        <td style="white-space:nowrap;">${p.descontoAplicado > 0 ? `<span class="valor-riscado">${formatPrice(p.subtotal)}</span>` : ''}<strong>${formatPrice(p.valor)}</strong>${p.descontoAplicado > 0 ? `<span class="desconto-tag">–${textoDesconto(p.desconto)}</span>` : ''}</td>
+        <td><div class="fin-acoes">
+          <button class="icon-btn" type="button" title="Editar" aria-label="Editar pacote ${escHTML(p.nome)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+          <button class="comanda-apagar" type="button" title="Apagar pacote" aria-label="Apagar pacote ${escHTML(p.nome)}">${ICONE_LIXEIRA}</button>
+        </div></td>
       `;
+      const [bEditar, bApagar] = tr.querySelectorAll('button');
+      bEditar.addEventListener('click', (e) => { e.stopPropagation(); abrirPacote(idx); });
+      bApagar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(!confirm(`Apagar o pacote "${p.nome}"?`)) return;
+        pacotesData.splice(idx, 1);
+        salvarConfig('pacotes', pacotesData);
+        renderPacotes();
+        showToast('Pacote apagado.');
+      });
+      tr.addEventListener('click', () => abrirPacote(idx));
       body.appendChild(tr);
     });
+    if(!mostrados) body.innerHTML = `<tr><td colspan="4" class="fin-vazio">Nenhum pacote com esse nome.</td></tr>`;
   }
-  renderPacotes();
+  document.getElementById('pacotesBusca').addEventListener('input', renderPacotes);
 
   const modalPacoteOverlay = document.getElementById('modalPacoteOverlay');
   const pacoteServicosContainer = document.getElementById('pacoteServicosContainer');
+  let editingPacoteIndex = -1;
 
-  function addPacoteServicoRow(){
+  function addPacoteServicoRow(nomeInicial, qtdInicial){
     const row = document.createElement('div');
     row.className = 'pacote-row';
-    const options = servicosData.map(s => `<option value="${s.nome}" data-preco="${s.preco}">${s.nome}</option>`).join('');
+    const nomes = servicosData.map(x => x.nome);
+    if(nomeInicial && !nomes.includes(nomeInicial)) nomes.push(nomeInicial); // serviço que saiu do cadastro
+    const options = nomes.map(n => `<option value="${escHTML(n)}" data-preco="${precoServicoPorNome(n)}">${escHTML(n)}</option>`).join('');
     row.innerHTML = `
       <select class="ps-servico"><option value="">Selecione o Serviço</option>${options}</select>
-      <input type="text" class="ps-valor" placeholder="R$ 0,00" readonly>
-      <input type="number" class="ps-qtd" value="1" min="1">
-      <input type="text" class="ps-total" placeholder="R$ 0,00" readonly>
-      <button class="icon-btn trash" title="Remover">
+      <input type="text" class="ps-valor" placeholder="0,00" readonly aria-label="Preço unitário">
+      <input type="number" class="ps-qtd" value="1" min="1" aria-label="Quantidade">
+      <input type="text" class="ps-total" placeholder="0,00" readonly aria-label="Total do serviço">
+      <button class="icon-btn trash" type="button" title="Remover">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
       </button>
     `;
@@ -10214,50 +10367,91 @@
     row.querySelector('.ps-qtd').addEventListener('input', recalcRow);
     row.querySelector('.icon-btn.trash').addEventListener('click', () => { row.remove(); recalcPacoteTotal(); });
     pacoteServicosContainer.appendChild(row);
+    if(nomeInicial){ row.querySelector('.ps-servico').value = nomeInicial; row.querySelector('.ps-qtd').value = qtdInicial || 1; }
+    recalcRow();
   }
 
-  function recalcPacoteTotal(){
+  function descontoDoFormularioPacote(){
+    const tipo = document.getElementById('pacoteDescontoTipo').value;
+    const valor = lerValor(document.getElementById('pacoteDescontoValor').value);
+    return tipo && valor > 0 ? { tipo, valor } : null;
+  }
+  function subtotalDoFormularioPacote(){
     let total = 0;
     pacoteServicosContainer.querySelectorAll('.pacote-row').forEach(row => {
       const sel = row.querySelector('.ps-servico');
       const preco = parseFloat(sel.selectedOptions[0]?.dataset.preco || 0);
       const qtd = parseInt(row.querySelector('.ps-qtd').value, 10) || 1;
-      total += preco * qtd;
+      if(sel.value) total += preco * qtd;
     });
-    document.getElementById('pacoteTotalValue').textContent = formatPrice(total);
+    return arred(total);
   }
+  function recalcPacoteTotal(){
+    const subtotal = subtotalDoFormularioPacote();
+    const desc = descontoDoFormularioPacote();
+    const aplicado = calcularDesconto(subtotal, desc);
+    document.getElementById('pacoteResumo').innerHTML = aplicado > 0
+      ? `Subtotal ${formatPrice(subtotal)} · Desconto <strong>– ${formatPrice(aplicado)}</strong>${desc.tipo === 'percent' ? ` (${textoDesconto(desc)})` : ''}` : '';
+    document.getElementById('pacoteTotalValue').textContent = formatPrice(subtotal - aplicado);
+  }
+  document.getElementById('pacoteDescontoTipo').addEventListener('change', (e) => {
+    const inp = document.getElementById('pacoteDescontoValor');
+    inp.disabled = !e.target.value;
+    if(!e.target.value) inp.value = ''; else inp.focus();
+    recalcPacoteTotal();
+  });
+  document.getElementById('pacoteDescontoValor').addEventListener('input', recalcPacoteTotal);
 
-  document.getElementById('btnAddPacoteServico').addEventListener('click', addPacoteServicoRow);
-
-  document.getElementById('btnNovoPacote').addEventListener('click', () => {
-    document.getElementById('pacoteNome').value = '';
+  function abrirPacote(idx){
+    editingPacoteIndex = idx;
+    const p = idx >= 0 ? pacotesData[idx] : null;
+    document.getElementById('modalPacoteTitle').textContent = p ? 'Editar Pacote' : 'Criar Novo Pacote';
+    document.getElementById('pacoteNome').value = p ? p.nome : '';
     pacoteServicosContainer.innerHTML = '';
-    addPacoteServicoRow();
+    if(p && (p.servicos || []).length) p.servicos.forEach(sv => addPacoteServicoRow(sv.nome, sv.qtd));
+    else addPacoteServicoRow();
+    const d = p && p.desconto && p.desconto.valor > 0 ? p.desconto : null;
+    document.getElementById('pacoteDescontoTipo').value = d ? d.tipo : '';
+    document.getElementById('pacoteDescontoValor').value = d ? String(d.valor).replace('.', ',') : '';
+    document.getElementById('pacoteDescontoValor').disabled = !d;
     recalcPacoteTotal();
     modalPacoteOverlay.classList.add('open');
-  });
-  document.getElementById('modalPacoteCancel').addEventListener('click', () => modalPacoteOverlay.classList.remove('open'));
-  modalPacoteOverlay.addEventListener('click', (e) => { if(e.target === modalPacoteOverlay) modalPacoteOverlay.classList.remove('open'); });
+  }
+  function fecharPacote(){ modalPacoteOverlay.classList.remove('open'); editingPacoteIndex = -1; }
+
+  document.getElementById('btnAddPacoteServico').addEventListener('click', () => addPacoteServicoRow());
+  document.getElementById('btnNovoPacote').addEventListener('click', () => abrirPacote(-1));
+  document.getElementById('modalPacoteCancel').addEventListener('click', fecharPacote);
+  modalPacoteOverlay.addEventListener('click', (e) => { if(e.target === modalPacoteOverlay) fecharPacote(); });
   document.getElementById('modalPacoteConfirm').addEventListener('click', () => {
     const nome = document.getElementById('pacoteNome').value.trim();
     if(!nome){ showToast('Informe o nome do pacote'); return; }
+    const duplicado = pacotesData.find((x, i) => i !== editingPacoteIndex && semAcento(x.nome) === semAcento(nome));
+    if(duplicado){ showToast(`Já existe um pacote chamado "${duplicado.nome}".`); return; }
     const servicosEscolhidos = [];
-    let total = 0;
     pacoteServicosContainer.querySelectorAll('.pacote-row').forEach(row => {
       const sel = row.querySelector('.ps-servico');
       if(!sel.value) return;
-      const preco = parseFloat(sel.selectedOptions[0]?.dataset.preco || 0);
       const qtd = parseInt(row.querySelector('.ps-qtd').value, 10) || 1;
-      servicosEscolhidos.push({ nome: sel.value, qtd });
-      total += preco * qtd;
+      const ja = servicosEscolhidos.find(x => x.nome === sel.value);
+      if(ja) ja.qtd += qtd; else servicosEscolhidos.push({ nome: sel.value, qtd });
     });
     if(servicosEscolhidos.length === 0){ showToast('Adicione pelo menos um serviço ao pacote'); return; }
-    pacotesData.push({ nome, servicos: servicosEscolhidos, valor: total });
-    renderPacotes();
-    modalPacoteOverlay.classList.remove('open');
-    showToast('Pacote criado com sucesso!');
+    const desconto = descontoDoFormularioPacote();
+    const subtotal = subtotalDoFormularioPacote();
+    if(desconto && desconto.tipo === 'percent' && desconto.valor > 100){ showToast('O desconto em porcentagem vai até 100%.'); return; }
+    if(desconto && desconto.tipo === 'valor' && desconto.valor > subtotal){ showToast(`O desconto passa do valor dos serviços (${formatPrice(subtotal)}).`); return; }
+    const pacote = recalcularPacote({ nome, servicos: servicosEscolhidos, subtotal, desconto });
+    const editando = editingPacoteIndex >= 0;
+    if(editando) pacotesData[editingPacoteIndex] = pacote; else pacotesData.push(pacote);
     salvarConfig('pacotes', pacotesData);
+    renderPacotes();
+    fecharPacote();
+    showToast(editando ? 'Pacote atualizado!' : 'Pacote criado com sucesso!');
   });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modalPacoteOverlay.classList.contains('open')) fecharPacote(); });
+
+  renderPacotes();
 
   /* ---------- Expedientes ---------- */
   const diasCurtos = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
@@ -11611,11 +11805,15 @@
 
   document.getElementById('modalAtivoClose').addEventListener('click', () => modalAtivoOverlay.classList.remove('open'));
   modalAtivoOverlay.addEventListener('click', (e) => { if(e.target === modalAtivoOverlay) modalAtivoOverlay.classList.remove('open'); });
-  document.getElementById('modalAtivoSalvarAnotacao').addEventListener('click', () => {
+  document.getElementById('modalAtivoSalvarAnotacao').addEventListener('click', async () => {
     if(currentAtivoIdx >= 0){
-      ativosData[currentAtivoIdx].anotacao = document.getElementById('ativoDetailAnotacao').value;
-      showToast('Anotação salva com sucesso!');
-      salvarConfig('ativos_anotacoes', anotacoesAtivosParaSalvar());
+      const ativo = ativosData[currentAtivoIdx];
+      ativo.anotacao = document.getElementById('ativoDetailAnotacao').value;
+      // Fica nas configurações DA SUA conta (tabela configuracoes_profissional, protegida por RLS):
+      // nunca no ativo, que é compartilhado com todas as profissionais.
+      const ok = await salvarConfig('ativos_anotacoes', anotacoesAtivosParaSalvar());
+      if(ok) showToast(modoDemonstracao ? 'Anotação guardada só nesta tela (modo demonstração).' : 'Anotação salva — só você vê.');
+      else return; // salvarConfig já avisou o motivo (sessão expirada ou banco)
     }
     modalAtivoOverlay.classList.remove('open');
   });
@@ -11634,7 +11832,7 @@
         .eq('paciente_id', currentPatient.id)
         .order('respondida_em', { ascending: false });
       if(error || !rows) return;
-      data = rows;
+      data = semAnamnesesRepetidas(rows);
     } else {
       data = demoAnamnesesPorPaciente[currentPatient.id] || [];
     }
@@ -12021,33 +12219,69 @@
   });
   document.getElementById('btnBaixarPdfPlano').addEventListener('click', () => window.print());
 
-  async function renderPreFichasDashboard(){
-    const container = document.getElementById('preFichasContainer');
-    const { data, error } = await supabaseClient
-      .from('anamneses')
-      .select('*, pacientes(nome)')
-      .order('respondida_em', { ascending: false })
-      .limit(5);
-
-    if(error || !data || data.length === 0) return;
-
-    container.innerHTML = '';
-    data.forEach(a => {
-      const dt = new Date(a.respondida_em);
-      const dataFormatada = `${pad(dt.getDate())}/${pad(dt.getMonth()+1)}`;
-      const nome = a.pacientes ? a.pacientes.nome : 'Paciente';
-      const item = document.createElement('div');
-      item.className = 'produtos-com-ativo-item';
-      item.innerHTML = `
-        <div><div class="pca-name">${nome}</div><div class="pca-brand">Respondida em ${dataFormatada}</div></div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-      `;
-      item.addEventListener('click', () => {
-        const p = patients.find(x => x.id === a.paciente_id);
-        if(p) openPatientRegistro(p.id, 'historico');
-      });
-      container.appendChild(item);
+  // Assinatura do conteúdo de uma anamnese: duas com a mesma assinatura (mesma paciente) são repetição.
+  function assinaturaAnamnese(a){
+    const campos = ['paciente_id', 'principal_queixa', 'tratamentos_anteriores', 'autopercepcao', 'integrativa',
+                    'sistemica', 'estilo_vida', 'skincare', 'investimento', 'observacoes'];
+    return JSON.stringify(campos.map(c => a[c] == null ? null : a[c]));
+  }
+  // Remove repetições: mesmo link (token) ou mesmo conteúdo da mesma paciente em até 24h.
+  // Fica a primeira enviada. A lista deve vir da mais recente para a mais antiga.
+  function semAnamnesesRepetidas(lista){
+    const porToken = new Set(), porConteudo = new Map(), saida = [];
+    lista.slice().reverse().forEach(a => { // da mais antiga para a mais recente
+      if(a.token){
+        const t = String(a.token);
+        if(porToken.has(t)) return;
+        porToken.add(t);
+      }
+      const sig = assinaturaAnamnese(a);
+      const quando = new Date(a.respondida_em || 0).getTime();
+      const anterior = porConteudo.get(sig);
+      if(anterior != null && Math.abs(quando - anterior) < 24 * 3600 * 1000) return;
+      porConteudo.set(sig, quando);
+      saida.push(a);
     });
+    return saida.reverse();
+  }
+
+  let renderPreFichasEmAndamento = null;
+  function renderPreFichasDashboard(){
+    if(renderPreFichasEmAndamento) return renderPreFichasEmAndamento; // evita montar a lista duas vezes ao mesmo tempo
+    renderPreFichasEmAndamento = (async () => {
+      const container = document.getElementById('preFichasContainer');
+      const { data, error } = await supabaseClient
+        .from('anamneses')
+        .select('*, pacientes(nome)')
+        .not('token', 'is', null)             // só as respondidas pela paciente pelo link
+        .order('respondida_em', { ascending: false })
+        .limit(60);
+      if(error || !data) return;
+
+      const lista = semAnamnesesRepetidas(data.filter(a => a.token)).slice(0, 5);
+      container.innerHTML = '';
+      if(!lista.length){
+        container.innerHTML = '<div class="empty-state">Nenhuma pré-ficha respondida.</div>';
+        return;
+      }
+      lista.forEach(a => {
+        const dt = new Date(a.respondida_em);
+        const dataFormatada = `${pad(dt.getDate())}/${pad(dt.getMonth()+1)}`;
+        const nome = a.pacientes ? a.pacientes.nome : ((patients.find(x => String(x.id) === String(a.paciente_id)) || {}).name || 'Paciente');
+        const item = document.createElement('div');
+        item.className = 'produtos-com-ativo-item';
+        item.innerHTML = `
+          <div><div class="pca-name">${escHTML(nome)}</div><div class="pca-brand">Respondida em ${dataFormatada}</div></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        `;
+        item.addEventListener('click', () => {
+          const p = patients.find(x => String(x.id) === String(a.paciente_id));
+          if(p) openPatientRegistro(p.id, 'historico');
+        });
+        container.appendChild(item);
+      });
+    })().catch(e => console.warn('Pré-fichas:', e)).finally(() => { renderPreFichasEmAndamento = null; });
+    return renderPreFichasEmAndamento;
   }
 
   /* ================= AUTENTICAÇÃO (LOGIN / CADASTRO) ================= */
@@ -12330,7 +12564,10 @@
         btn.textContent = 'Enviando...';
 
         const { error: insertError } = await supabaseClient.from('anamneses').insert(payload);
-        if(insertError){
+        // Este link já tinha sido enviado (o banco não aceita duas respostas para o mesmo link):
+        // mostra como enviado, sem criar outra pré-ficha.
+        const jaEnviada = insertError && (insertError.code === '23505' || /duplicate|unique/i.test(insertError.message || ''));
+        if(insertError && !jaEnviada){
           showToast('Erro ao enviar: ' + insertError.message);
           btn.disabled = false;
           btn.textContent = 'Enviar Respostas';
