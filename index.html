@@ -5056,11 +5056,128 @@
     } catch(e){ /* mantém a moeda padrão em caso de falha */ }
   }
 
+  /* ---------- Troca de paciente: nada da paciente anterior pode ficar nos formulários ----------
+     Antes, Anamnese Clínica, Avaliação Cutânea e Plano de SkinCare eram preenchidos na tela
+     e nunca limpos: ao abrir outra paciente, os dados da anterior continuavam lá (e podiam
+     ser salvos na ficha errada). */
+  function limparFormulariosDaPaciente(){
+    ['panel-anamnese', 'panel-avaliacao', 'panel-planoskincare'].forEach(id => {
+      const painel = document.getElementById(id);
+      if(!painel) return;
+      painel.querySelectorAll('input, textarea, select').forEach(el => {
+        if(el.type === 'checkbox' || el.type === 'radio') el.checked = el.defaultChecked;
+        else if(el.tagName === 'SELECT'){
+          let algum = false;
+          Array.from(el.options).forEach(o => { o.selected = o.defaultSelected; algum = algum || o.defaultSelected; });
+          if(!algum) el.selectedIndex = 0;
+        }
+        else if(!['button', 'submit', 'hidden', 'file'].includes(el.type)) el.value = el.defaultValue;
+      });
+    });
+    // Anamnese: produtos de skincare e perguntas da integrativa
+    ['skincareAtualContainer', 'skincareParadoContainer'].forEach(id => { const c = document.getElementById(id); if(c) c.innerHTML = ''; });
+    const perguntas = document.getElementById('questionsContainer');
+    if(perguntas){ perguntas.innerHTML = ''; addQuestionRow(); }
+    const moedaInv = document.getElementById('paInvestimentoMoeda');
+    if(moedaInv) moedaInv.dispatchEvent(new Event('change')); // refaz as faixas de investimento
+    // Avaliação: cartões e chips marcados, seções abertas, Baumann
+    document.querySelectorAll('#panel-avaliacao .selected').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('#panel-avaliacao .switch input[data-toggle-target]').forEach(inp => {
+      const alvo = document.getElementById(inp.dataset.toggleTarget);
+      if(alvo) alvo.classList.toggle('hidden', !inp.checked);
+    });
+    updateBaumannResult();
+    const aviso = document.getElementById('avUltimaAviso');
+    if(aviso) aviso.style.display = 'none';
+    // Plano de SkinCare: rotina montada e filtros do assistente
+    routineEntries.splice(0, routineEntries.length);
+    skcAtivosDesejados.clear();
+    document.querySelectorAll('#panel-planoskincare .chip.selected').forEach(el => el.classList.remove('selected'));
+    try{ renderSkcAtivosDesejadosChips(); }catch(e){}
+    try{ renderSkcProdutosEncontrados(); }catch(e){}
+    renderJornada();
+    updateSkincareMeta();
+  }
+
+  // Coloca no formulário a última avaliação cutânea salva DESTA paciente (para consultar/atualizar).
+  let seqAvaliacaoCarregada = 0;
+  async function carregarUltimaAvaliacao(p){
+    const minhaVez = ++seqAvaliacaoCarregada;
+    if(!isPacienteReal(p)) return;
+    let av = null;
+    try{
+      const { data, error } = await supabaseClient.from('avaliacoes_cutaneas').select('*')
+        .eq('paciente_id', p.id).order('data_avaliacao', { ascending: false }).limit(1);
+      if(error || !data || !data.length) return;
+      av = data[0];
+    }catch(e){ return; }
+    // se nesse meio tempo abriu outra paciente, não preenche
+    if(minhaVez !== seqAvaliacaoCarregada || !currentPatient || String(currentPatient.id) !== String(p.id)) return;
+
+    const marcar = (grupo, valor) => {
+      if(valor == null || valor === '') return;
+      const el = Array.from(document.querySelectorAll(`#panel-avaliacao [data-group="${grupo}"]`)).find(x => x.dataset.value === String(valor));
+      if(el) el.classList.add('selected');
+    };
+    const marcarChips = (grupo, lista) => (lista || []).forEach(txt => {
+      const el = Array.from(document.querySelectorAll(`#panel-avaliacao .chip[data-chip-group="${grupo}"]`)).find(c => c.textContent.trim() === txt);
+      if(el) el.classList.add('selected');
+    });
+    const ligar = (alvoId, ligado) => {
+      const inp = document.querySelector(`#panel-avaliacao [data-toggle-target="${alvoId}"]`);
+      if(!inp) return;
+      inp.checked = !!ligado;
+      const alvo = document.getElementById(alvoId);
+      if(alvo) alvo.classList.toggle('hidden', !inp.checked);
+    };
+    const marcarPorTexto = (seletor, textos) => {
+      const lista = Array.isArray(textos) ? textos : (textos ? [textos] : []);
+      document.querySelectorAll(seletor).forEach(inp => {
+        const item = inp.closest('.checkbox-item');
+        if(item && lista.includes(item.textContent.trim())) inp.checked = true;
+      });
+    };
+
+    marcar('fitzpatrick', av.fitzpatrick);
+    const letras = String(av.baumann || '');
+    ['oleosidade', 'sensibilidade', 'pigmentacao', 'envelhecimento'].forEach((g, i) => marcar(g, letras[i]));
+    marcar('glogau', av.glogau);
+    marcar('hidratacao', av.hidratacao);
+    marcarPorTexto('#panel-avaliacao .av-integridade', av.integridade);
+    marcarPorTexto('#panel-avaliacao input[name="textura"]', av.textura);
+    marcarPorTexto('#panel-avaliacao input[name="poros"]', av.poros);
+    const ole = av.oleosidade || {}, acne = av.acne || {}, ros = av.rosacea || {}, dis = av.discromias || {}, olh = av.olheiras || {};
+    ligar('oleosidadeBody', ole.presente); marcarChips('areas-oleosas', ole.areas); marcar('intensidade-oleosidade', ole.intensidade);
+    ligar('acneBody', acne.presente); marcar('grau-acne', acne.grau); marcarChips('licoes-acne', acne.licoes);
+    ligar('rosaceaBody', ros.presente); marcar('rosacea-subtipo', ros.subtipo);
+    ligar('discromiasBody', dis.presente); marcarChips('discromias', dis.tipos);
+    ligar('olheirasBody', olh.presente); marcar('olheiras-tipo', olh.tipo);
+    document.getElementById('avObservacoes').value = av.observacoes || '';
+    updateBaumannResult();
+    updateSkincareMeta();
+
+    let aviso = document.getElementById('avUltimaAviso');
+    if(!aviso){
+      aviso = document.createElement('div');
+      aviso.id = 'avUltimaAviso';
+      aviso.className = 'comanda-aviso';
+      document.getElementById('panel-avaliacao').prepend(aviso);
+    }
+    const dt = av.data_avaliacao ? new Date(av.data_avaliacao) : null;
+    aviso.textContent = `Mostrando a última avaliação de ${p.name}${dt && !isNaN(dt) ? ' (' + dt.toLocaleDateString('pt-BR') + ')' : ''}. Ao salvar, uma nova avaliação é registrada no histórico.`;
+    aviso.style.display = 'block';
+  }
+
   function openPatientRegistro(patientId, tab){
     const p = patients.find(x => x.id === patientId);
     if(!p) return;
     pushNavHistory();
+    const trocouDePaciente = !currentPatient || String(currentPatient.id) !== String(p.id);
     currentPatient = p;
+    if(trocouDePaciente){
+      limparFormulariosDaPaciente();
+      carregarUltimaAvaliacao(p);
+    }
     carregarMoedaAnamnese(p);
 
     document.getElementById('regBreadcrumbName').textContent = p.name;
