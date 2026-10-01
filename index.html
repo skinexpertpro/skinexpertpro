@@ -1456,6 +1456,8 @@
   .lemb-tipo.retorno{ background:#e7f5ec; color:#23774a; }
   .lemb-tipo.sumida{ background:#fdf0e3; color:#9a5a17; }
   .lemb-tipo.manual{ background: var(--pink-light); color: var(--sidebar-bg); }
+  .lemb-tipo.vespera{ background:#f3ecfb; color:#6a3fa0; }
+  .lemb-tipo.aniversario{ background:#fdeef3; color:#b0336a; }
   .lemb-quando{ font-size:11.5px; color: var(--text-muted); font-weight:700; margin-left:auto; }
   .lemb-quando.atrasado{ color:#b42318; }
   .lemb-paciente{ font-weight:700; color: var(--text-dark); font-size:14px; cursor:pointer; }
@@ -8683,9 +8685,42 @@
     return lista;
   }
 
+  // Lembretes do dia que não dependem do histórico: véspera de atendimento e aniversário.
+  function lembretesDoDia(){
+    const hojeKey = dateKey(today);
+    const amanhaKey = addDiasKey(hojeKey, 1);
+    const lista = [];
+    (appointments[amanhaKey] || []).filter(a => a.type === 'appt').sort((a, b) => (a.time || '').localeCompare(b.time || '')).forEach(a => {
+      const paciente = pacienteDoItem(a);
+      const ctx = { key: amanhaKey, hora: a.time, servico: a.servico };
+      lista.push({
+        id: 'vespera:' + a.id + ':' + amanhaKey, tipo: 'vespera', tipoLabel: 'Confirmar amanhã', data: hojeKey,
+        paciente, pacienteNome: a.label || (paciente && paciente.name) || 'Paciente', ctx, modelo: 'lembrete',
+        texto: `Atendimento amanhã às ${a.time}${a.servico ? ' · ' + a.servico : ''}. Confirmar a presença.`,
+        msg: msgDoModelo('lembrete', { paciente: paciente || { name: a.label }, ...ctx }),
+      });
+    });
+    try{
+      const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+      patients.forEach(p => {
+        const n = partesDataNascimento(p.dataNascimento);
+        if(!n) return;
+        const aniv = aniversarioNoAno(n, hoje.getFullYear());
+        if(aniv.getMonth() !== hoje.getMonth() || aniv.getDate() !== hoje.getDate()) return;
+        lista.push({
+          id: 'aniv:' + p.id + ':' + hoje.getFullYear(), tipo: 'aniversario', tipoLabel: 'Aniversário', data: hojeKey,
+          paciente: p, pacienteNome: p.name, ctx: {}, modelo: 'aniversario',
+          texto: `Faz ${hoje.getFullYear() - n.ano} anos hoje 🎉`,
+          msg: msgDoModelo('aniversario', { paciente: p }),
+        });
+      });
+    }catch(e){}
+    return lista;
+  }
+
   function todosLembretes(){
     const hojeKey = dateKey(today);
-    const auto = lembretesAutomaticos().filter(l => {
+    const auto = lembretesAutomaticos().concat(lembretesDoDia()).filter(l => {
       const d = lembretesEstado.dispensados[l.id];
       if(d === 'feito') return false;
       if(d) l.data = d; // adiado: volta a aparecer nessa data (até lá fica em "próximos dias")
@@ -8790,6 +8825,7 @@
     if(mensagensHistorico.length > 300) mensagensHistorico.length = 300;
     salvarConfig('mensagens_historico', mensagensHistorico);
     try{ renderCentroMensagens(); }catch(e){}
+    try{ renderLembretes(); }catch(e){}
   }
   function jaEnviadoHoje(paciente, modeloId){
     const hoje = dateKey(new Date());
@@ -8821,6 +8857,7 @@
     document.getElementById('msgTitulo').textContent = msgCtx.paciente ? `Mensagem para ${primeiroNomeDe(msgCtx.paciente.name)}` : 'Enviar mensagem';
     preencherSelectModelos(document.getElementById('msgModelo'), msgCtx.modelo || (escolherPaciente ? 'boasvindas' : 'confirmacao'));
     atualizarPreviaMsg();
+    if(msgCtx.textoInicial) document.getElementById('msgTexto').value = msgCtx.textoInicial;
     modalMsgOverlay.classList.add('open');
     setTimeout(() => { if(!modalMsgOverlay.contains(document.activeElement)) document.getElementById(escolherPaciente ? 'msgPaciente' : 'msgTexto').focus(); }, 50);
   }
@@ -8856,33 +8893,14 @@
 
   /* ---------- "Enviar hoje": o que vale mandar hoje ---------- */
   function itensParaEnviarHoje(){
-    const itens = [];
-    const amanha = dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1));
-    (appointments[amanha] || []).filter(a => a.type === 'appt').sort((a, b) => (a.time || '').localeCompare(b.time || '')).forEach(a => {
-      const p = pacienteDoItem(a);
-      if(p) itens.push({ grupo: 'Lembretes de amanhã', modelo: 'lembrete', paciente: p, ctx: { key: amanha, hora: a.time, servico: a.servico }, det: `Amanhã às ${a.time}${a.servico ? ' · ' + a.servico : ''}` });
-    });
-    try{
-      const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
-      patients.forEach(p => {
-        const n = partesDataNascimento(p.dataNascimento);
-        if(!n) return;
-        const aniv = aniversarioNoAno(n, hoje.getFullYear());
-        if(aniv.getMonth() === hoje.getMonth() && aniv.getDate() === hoje.getDate())
-          itens.push({ grupo: 'Aniversariantes de hoje', modelo: 'aniversario', paciente: p, ctx: {}, det: `Faz ${hoje.getFullYear() - n.ano} anos hoje 🎉` });
-      });
-    }catch(e){}
-    try{
-      const dispensados = (lembretesEstado && lembretesEstado.dispensados) || {};
-      const hojeKey = dateKey(today);
-      lembretesAutomaticos().forEach(l => {
-        const d = dispensados[l.id];
-        if(d === 'feito' || (d && d > hojeKey) || !l.paciente) return;
-        const grupo = l.tipo === 'pos' ? 'Pós-atendimento' : l.tipo === 'retorno' ? 'Hora do retorno' : 'Pacientes sumidas';
-        itens.push({ grupo, modelo: l.tipo === 'pos' ? 'pos' : l.tipo, paciente: l.paciente, ctx: l.ctx || {}, det: l.texto });
-      });
-    }catch(e){}
-    return itens;
+    // Mesma lista do painel (Dashboard): o que vence até hoje e não foi concluído
+    const hojeKey = dateKey(today);
+    const grupos = { vespera: 'Lembretes de amanhã', aniversario: 'Aniversariantes de hoje', pos: 'Pós-atendimento', retorno: 'Hora do retorno', sumida: 'Pacientes sumidas' };
+    const ordem = ['vespera', 'aniversario', 'pos', 'retorno', 'sumida'];
+    return todosLembretes()
+      .filter(l => l.data <= hojeKey && l.paciente && grupos[l.tipo])
+      .sort((x, y) => ordem.indexOf(x.tipo) - ordem.indexOf(y.tipo))
+      .map(l => ({ grupo: grupos[l.tipo], modelo: l.modelo || l.tipo, paciente: l.paciente, ctx: l.ctx || {}, det: l.texto }));
   }
 
   function renderCentroMensagens(){
@@ -9009,6 +9027,7 @@
         <div class="lemb-topo">
           <span class="lemb-tipo ${l.tipo}">${l.tipoLabel}</span>
           <span class="lemb-quando ${quando.atrasado ? 'atrasado' : ''}">${quando.txt}</span>
+          ${(() => { try{ const mod = l.modelo || ({ pos:'pos', retorno:'retorno', sumida:'sumida' })[l.tipo]; return mod && l.paciente && jaEnviadoHoje(l.paciente, mod) ? '<span class="msg-enviado" style="margin-left:auto;">✓ enviado</span>' : ''; }catch(e){ return ''; } })()}
         </div>
         ${l.pacienteNome ? `<div class="lemb-paciente">${l.pacienteNome}</div>` : ''}
         <div class="lemb-texto"></div>
@@ -9023,7 +9042,11 @@
       if(nomeEl && l.paciente) nomeEl.addEventListener('click', () => openPatientRegistro(l.paciente.id, 'dados'));
       else if(nomeEl) nomeEl.style.cursor = 'default';
       const w = el.querySelector('[data-a="whats"]');
-      if(w) w.addEventListener('click', () => window.open(link, '_blank', 'noopener'));
+      if(w) w.addEventListener('click', () => {
+        const modelo = l.modelo || ({ pos: 'pos', retorno: 'retorno', sumida: 'sumida' })[l.tipo];
+        try{ abrirEnvioMensagem({ paciente: l.paciente, modelo, ...(l.ctx || {}), textoInicial: modelo ? null : l.msg }); }
+        catch(e){ window.open(link, '_blank', 'noopener'); }
+      });
       el.querySelector('[data-a="ok"]').addEventListener('click', () => concluirLembrete(l));
       el.querySelector('[data-a="adiar"]').addEventListener('click', (e) => {
         e.stopPropagation();
