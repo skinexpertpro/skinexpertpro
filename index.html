@@ -1223,6 +1223,37 @@
   .desconto-tag{ display:inline-block; margin-left:6px; font-size:11px; font-weight:700; color: var(--block-red); background:#fbe9e4; border-radius:10px; padding:1px 7px; white-space:nowrap; }
   .valor-riscado{ text-decoration:line-through; color: var(--text-muted); font-size:12.5px; margin-right:6px; }
 
+
+  /* ---------- Centro de Mensagens ---------- */
+  .msg-painel{ display:none; }
+  .msg-painel.ativo{ display:block; }
+  .msg-contador{ display:inline-block; min-width:18px; padding:0 6px; margin-left:4px; border-radius:10px; background: var(--gold); color:#fff; font-size:11px; line-height:18px; text-align:center; }
+  .msg-contador:empty{ display:none; }
+  .msg-grupo{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color: var(--text-muted); margin:14px 0 6px 0; }
+  .msg-grupo:first-child{ margin-top:0; }
+  .msg-item{ display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid var(--border); }
+  .msg-item:first-of-type{ border-top:none; }
+  .msg-item .info{ flex:1; min-width:0; }
+  .msg-item .nome{ font-weight:700; font-size:14px; color: var(--text-dark); }
+  .msg-item .det{ font-size:12.5px; color: var(--text-muted); margin-top:2px; }
+  .msg-enviado{ font-size:11.5px; font-weight:700; color: var(--green-text); background: var(--green-bg); border-radius:10px; padding:2px 8px; white-space:nowrap; }
+  .msg-vazio{ color: var(--text-muted); font-size:13.5px; padding:14px 0; }
+  .msg-variaveis{ font-size:12.5px; color: var(--text-muted); margin-bottom:12px; line-height:1.9; }
+  .msg-variaveis code{ background: var(--gray-pill-bg); color: var(--text-dark); border-radius:6px; padding:1px 6px; font-size:12px; }
+  .msg-modelo{ border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:10px; background:#fff; }
+  .msg-modelo-topo{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .msg-modelo-topo input{ flex:1; font-weight:700; font-size:14px; border:1px solid transparent; border-radius:8px; padding:5px 8px; font-family:inherit; color: var(--text-dark); background:transparent; }
+  .msg-modelo-topo input:focus{ border-color: var(--border); outline:none; background:#fff; }
+  .msg-modelo-topo .tag{ font-size:11px; font-weight:700; color: var(--tag-text); background: var(--tag-bg); border-radius:10px; padding:2px 8px; white-space:nowrap; }
+  .msg-modelo textarea{ width:100%; min-height:86px; border:1px solid var(--border); border-radius:9px; padding:9px 11px; font:inherit; font-size:13.5px; resize:vertical; box-sizing:border-box; }
+  .msg-modelo-acoes{ display:flex; gap:8px; justify-content:flex-end; margin-top:8px; flex-wrap:wrap; }
+  .msg-hist-item{ display:flex; gap:12px; padding:10px 0; border-top:1px solid var(--border); font-size:13.5px; }
+  .msg-hist-item:first-child{ border-top:none; }
+  .msg-hist-item .quando{ color: var(--text-muted); white-space:nowrap; font-size:12.5px; min-width:92px; }
+  .msg-hist-item .txt{ color: var(--text-muted); font-size:12.5px; margin-top:2px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .msg-para{ font-size:13px; color: var(--text-muted); margin:-4px 0 12px 0; }
+  #msgTexto{ width:100%; box-sizing:border-box; font:inherit; font-size:14px; line-height:1.5; }
+
   /* ================= LOGIN / CADASTRO ================= */
   .auth-screen{
     min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--bg); padding:20px;
@@ -3451,6 +3482,31 @@
         </div>
         </div>
 
+        <!-- ---------- CENTRO DE MENSAGENS ---------- -->
+        <div class="registro-card" id="centroMensagensCard" style="margin-bottom:20px;">
+          <div class="anamnese-title" style="margin-bottom:6px;">Centro de Mensagens</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Seus modelos de WhatsApp para confirmação, lembrete, pós-atendimento e mais. Você revisa o texto e envia com um clique — pelo seu próprio WhatsApp.</p>
+          <div class="fin-tabs" id="msgAbas" style="margin-bottom:16px; align-items:center;">
+            <div class="fin-tab active" data-msgaba="hoje">Enviar hoje <span class="msg-contador" id="msgContadorHoje"></span></div>
+            <div class="fin-tab" data-msgaba="modelos">Modelos</div>
+            <div class="fin-tab" data-msgaba="historico">Histórico</div>
+            <button class="btn-outline" type="button" id="btnMsgNova" style="margin-left:auto;">Enviar para uma paciente</button>
+          </div>
+          <div class="msg-painel ativo" id="msgPainel-hoje"><div id="msgHojeLista"></div></div>
+          <div class="msg-painel" id="msgPainel-modelos">
+            <div class="msg-variaveis">Variáveis: <code>{nome}</code> primeiro nome · <code>{nome_completo}</code> · <code>{servico}</code> · <code>{dia}</code> ex.: quinta-feira, 02/10 · <code>{data}</code> 02/10 · <code>{hora}</code> · <code>{profissional}</code> seu nome</div>
+            <div id="msgModelosLista"></div>
+            <button class="btn-dashed" type="button" id="btnMsgNovoModelo" style="margin-top:10px;">+ Novo modelo</button>
+          </div>
+          <div class="msg-painel" id="msgPainel-historico">
+            <div class="search-input" style="max-width:320px; margin-bottom:12px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="msgHistoricoBusca" placeholder="Procurar por paciente ou modelo...">
+            </div>
+            <div id="msgHistoricoLista"></div>
+          </div>
+        </div>
+
         <div class="registro-card" style="max-width:560px;">
           <div class="anamnese-title" style="margin-bottom:6px;">Preferências da Conta</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">A moeda vale para o Financeiro (comandas, controle, contas), os pacotes e o destaque das faixas de preço do Catálogo e do Plano de SkinCare.</p>
@@ -4013,7 +4069,7 @@
       </div>
       <div class="right">
         <button class="modal-btn-cancel" id="apptDetFicha">Ver ficha</button>
-        <button class="modal-btn-cancel" id="apptDetWhatsapp" title="Abre o WhatsApp da paciente com a confirmação pronta">WhatsApp</button>
+        <button class="modal-btn-cancel" id="apptDetWhatsapp" title="Escolher um modelo e enviar pelo WhatsApp">WhatsApp</button>
         <button class="modal-btn-cancel" id="apptDetEditar">Editar</button>
         <button class="modal-btn-confirm" id="apptDetSalvar">Salvar observação</button>
       </div>
@@ -4051,6 +4107,31 @@
     <div class="modal-actions">
       <button class="modal-btn-cancel" id="npCancelar">Cancelar</button>
       <button class="modal-btn-confirm" id="npSalvar">Cadastrar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: enviar mensagem (Centro de Mensagens) -->
+<div class="modal-overlay" id="modalMsgOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="msgTitulo" style="width:520px;">
+    <h3 id="msgTitulo">Enviar mensagem</h3>
+    <div class="modal-field" id="msgCampoPaciente">
+      <label for="msgPaciente">Paciente</label>
+      <input id="msgPaciente" type="text" list="finPacientesLista" placeholder="Nome da paciente" autocomplete="off">
+    </div>
+    <div class="msg-para" id="msgPara"></div>
+    <div class="modal-field">
+      <label for="msgModelo">Modelo</label>
+      <select id="msgModelo"></select>
+    </div>
+    <div class="modal-field">
+      <label for="msgTexto">Mensagem <span style="font-weight:500; color:var(--text-muted);">· pode ajustar antes de enviar</span></label>
+      <textarea id="msgTexto" rows="7"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="msgCancelar">Cancelar</button>
+      <button class="modal-btn-confirm" id="msgEnviar">Abrir no WhatsApp</button>
     </div>
   </div>
 </div>
@@ -4851,9 +4932,7 @@
     } else if(numero.startsWith(codigo) && numero.length > 11){
       codigo = '';
     }
-    const primeiroNome = (p.name || '').trim().split(/\s+/)[0] || '';
-    const assinatura = (typeof perfilProfissional !== 'undefined' && perfilProfissional.nome) ? `\n\nCom carinho, ${perfilProfissional.nome}` : '';
-    const msg = `Feliz aniversário, ${primeiroNome}! 🎉 Desejo um novo ciclo cheio de saúde, alegria e muito autocuidado. Obrigada por confiar no meu trabalho!${assinatura}`;
+    const msg = msgDoModelo('aniversario', { paciente: p });
     return `https://wa.me/${codigo}${numero}?text=${encodeURIComponent(msg)}`;
   }
 
@@ -7357,9 +7436,11 @@
     if(!apptDetAtual) return;
     const { key, item } = apptDetAtual;
     const paciente = pacienteDoItem(item);
-    const url = paciente ? linkWhatsapp(paciente, mensagemConfirmacaoWhatsapp(paciente.name, key, item.time, item.servico)) : '';
-    if(!url){ showToast('Esta paciente não tem telefone cadastrado para o WhatsApp.'); return; }
-    window.open(url, '_blank', 'noopener');
+    if(!paciente || !numeroWhatsappDaPaciente(paciente)){ showToast('Esta paciente não tem telefone cadastrado para o WhatsApp.'); return; }
+    const hojeK = dateKey(today), amanhaK = addDiasKey(hojeK, 1);
+    const modelo = key < hojeK ? 'pos' : key === amanhaK ? 'lembrete' : 'confirmacao';
+    fecharDetalhesAtendimento();
+    abrirEnvioMensagem({ paciente, key, hora: item.time, servico: item.servico, modelo });
   });
 
   document.getElementById('apptDetFicha').addEventListener('click', () => {
@@ -8294,9 +8375,10 @@
       dispararConfirmacaoWhatsapp(r.id);
       return;
     }
-    const url = linkWhatsapp(r.paciente, mensagemConfirmacaoWhatsapp(r.paciente.name, r.key, r.hora, r.servicos));
+    const textoConf = msgDoModelo('confirmacao', { paciente: r.paciente, key: r.key, hora: r.hora, servico: r.servicos }) || mensagemConfirmacaoWhatsapp(r.paciente.name, r.key, r.hora, r.servicos);
+    const url = linkWhatsapp(r.paciente, textoConf);
     if(!url){ showToast('Atendimento agendado! Esta paciente não tem telefone cadastrado para o WhatsApp.'); return; }
-    if(janela){ janela.location.href = url; showToast('Atendimento agendado! Confira e envie a mensagem no WhatsApp.'); }
+    if(janela){ janela.location.href = url; try{ registrarEnvio(r.paciente, 'confirmacao', textoConf); }catch(e){} showToast('Atendimento agendado! Confira e envie a mensagem no WhatsApp.'); }
     else showToast('Atendimento agendado! Para enviar a confirmação, abra o atendimento e toque em "WhatsApp".');
   });
 
@@ -8532,6 +8614,8 @@
   function primeiroNomeDe(nome){ return (nome || '').trim().split(/\s+/)[0] || ''; }
 
   function salvarLembretes(){ salvarConfig('lembretes', lembretesEstado); }
+  // Texto de um modelo do Centro de Mensagens já preenchido (vazio se ainda não carregou)
+  function msgDoModelo(id, ctx){ try{ return preencherModelo(modeloPorId(id).texto, ctx); }catch(e){ return ''; } }
 
   // Gera os lembretes automáticos a partir dos atendimentos da agenda.
   function lembretesAutomaticos(){
@@ -8564,7 +8648,8 @@
           id: 'pos:' + ultimo.item.id, tipo:'pos', tipoLabel:'Pós-atendimento', data: posKey,
           paciente, pacienteNome: nome,
           texto: `Perguntar como a pele reagiu ${servico ? 'à ' + servico : 'ao atendimento'} de ${formatarDataBR(ultimo.key).slice(0,5)}.`,
-          msg: `Oi, ${primeiroNomeDe(nome)}! Tudo bem? Passando para saber como a sua pele reagiu ${servico ? 'à ' + servico : 'ao atendimento'} do dia ${formatarDataBR(ultimo.key).slice(0,5)}. Se notar qualquer vermelhidão ou tiver alguma dúvida, é só me chamar por aqui 💕`,
+          ctx: { key: ultimo.key, hora: ultimo.item.time, servico },
+          msg: msgDoModelo('pos', { paciente: paciente || { name: nome }, key: ultimo.key, hora: ultimo.item.time, servico }),
         });
       }
       if(temFuturo) return; // já tem retorno marcado: nada de retorno/sumida
@@ -8575,7 +8660,8 @@
           id: 'sumida:' + chave + ':' + ultimo.key, tipo:'sumida', tipoLabel:'Paciente sumida', data: addDiasKey(ultimo.key, LEMB_SUMIDA_DIAS),
           paciente, pacienteNome: nome,
           texto: `Não vem há ${descreverIntervalo(diasDesde).replace('há ', '')} (última visita em ${formatarDataBR(ultimo.key)}) e não tem nada marcado.`,
-          msg: `Oi, ${primeiroNomeDe(nome)}! Senti sua falta por aqui 💕 Que tal agendarmos um cuidado para a sua pele? Tenho horários disponíveis esta semana.`,
+          ctx: { key: ultimo.key, servico },
+          msg: msgDoModelo('sumida', { paciente: paciente || { name: nome }, key: ultimo.key, servico }),
         });
         return;
       }
@@ -8588,7 +8674,8 @@
             id: 'retorno:' + chave + ':' + ultimo.key, tipo:'retorno', tipoLabel:'Hora do retorno', data: addDiasKey(ultimo.key, media),
             paciente, pacienteNome: nome,
             texto: `Costuma vir ${descreverFrequencia(media)}; a última visita foi ${descreverIntervalo(diasDesde)}. Nada marcado ainda.`,
-            msg: `Oi, ${primeiroNomeDe(nome)}! Já está na época do seu retorno${servico ? ' de ' + servico : ''}. Quer que eu reserve um horário para você esta semana?`,
+            ctx: { key: ultimo.key, servico },
+            msg: msgDoModelo('retorno', { paciente: paciente || { name: nome }, key: ultimo.key, servico }),
           });
         }
       }
@@ -8648,6 +8735,254 @@
     renderLembretes();
     showToast(`Lembrete adiado para ${formatarDataBR(novaData).slice(0,5)}`);
   }
+
+  /* ================= CENTRO DE MENSAGENS (Configurações) =================
+     Modelos editáveis + "Enviar hoje" + histórico. O envio abre o WhatsApp da paciente com o
+     texto pronto (wa.me): seguro para o número e sem configuração. */
+  const MODELOS_PADRAO = [
+    { id: 'confirmacao', titulo: 'Confirmação de agendamento', texto: 'Olá, {nome}! 😊\nSeu horário de {servico} está confirmado para {dia}, às {hora}.\nSe precisar remarcar, é só me avisar por aqui.\n\n{profissional}' },
+    { id: 'lembrete',    titulo: 'Lembrete (véspera)',         texto: 'Oi, {nome}! Passando para lembrar do seu horário de {servico} amanhã, {dia}, às {hora}. Posso confirmar sua presença? 💕\n\n{profissional}' },
+    { id: 'pos',         titulo: 'Pós-atendimento',            texto: 'Oi, {nome}! Tudo bem? Passando para saber como a sua pele reagiu à sessão de {servico} do dia {data}. Se notar qualquer vermelhidão ou tiver alguma dúvida, é só me chamar por aqui 💕' },
+    { id: 'retorno',     titulo: 'Hora do retorno',            texto: 'Oi, {nome}! Já está na época do seu retorno de {servico}. Quer que eu reserve um horário para você esta semana?' },
+    { id: 'sumida',      titulo: 'Paciente sumida',            texto: 'Oi, {nome}! Senti sua falta por aqui 💕 Que tal agendarmos um cuidado para a sua pele? Tenho horários disponíveis esta semana.' },
+    { id: 'aniversario', titulo: 'Aniversário',                texto: 'Feliz aniversário, {nome}! 🎉 Desejo um novo ciclo cheio de saúde, alegria e muito autocuidado. Obrigada por confiar no meu trabalho!\n\nCom carinho, {profissional}' },
+    { id: 'boasvindas',  titulo: 'Boas-vindas',                texto: 'Olá, {nome}! Seja muito bem-vinda 💕 Fico feliz em cuidar da sua pele. Qualquer dúvida antes do seu atendimento, é só me chamar por aqui.\n\n{profissional}' },
+  ];
+  // { textos: { idPadrao: textoEditado }, titulos: {idPadrao: tituloEditado}, extras: [{id, titulo, texto}] }
+  var mensagensModelos = { textos: {}, titulos: {}, extras: [] };
+  var mensagensHistorico = []; // [{ em: ISO, pacienteId, paciente, modelo, texto }]
+
+  function listaModelos(){
+    return MODELOS_PADRAO.map(m => ({
+      id: m.id, padrao: true,
+      titulo: (mensagensModelos.titulos || {})[m.id] || m.titulo,
+      texto: (mensagensModelos.textos || {})[m.id] != null ? mensagensModelos.textos[m.id] : m.texto,
+    })).concat((mensagensModelos.extras || []).map(m => ({ ...m, padrao: false })));
+  }
+  function modeloPorId(id){ return listaModelos().find(m => m.id === id) || listaModelos()[0]; }
+
+  // Troca as variáveis. ctx: { paciente, key, hora, servico }
+  function preencherModelo(texto, ctx){
+    ctx = ctx || {};
+    const p = ctx.paciente || {};
+    const d = ctx.key ? keyParaData(ctx.key) : null;
+    const prof = (perfilProfissional && perfilProfissional.nome) || '';
+    const vars = {
+      nome: primeiroNomeDe(p.name) || '',
+      nome_completo: (p.name || '').trim(),
+      servico: (ctx.servico || '').trim() || 'atendimento',
+      data: ctx.key ? formatarDataBR(ctx.key).slice(0, 5) : '',
+      dia: d ? `${weekdayFull[d.getDay()].toLowerCase()}, ${formatarDataBR(ctx.key).slice(0, 5)}` : '',
+      hora: ctx.hora || '',
+      profissional: prof,
+    };
+    let out = String(texto || '').replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+    // limpezas quando faltou alguma informação
+    out = out.replace(/^[ \t]*(Com carinho|Abraços|Beijos|Att)[,.]?[ \t]*$/gmi, '')  // assinatura sem nome
+             .replace(/, às \./g, '.').replace(/ às \./g, '.').replace(/ ,/g, ',')
+             .replace(/\n{3,}/g, '\n\n').trim();
+    return out;
+  }
+  function salvarModelos(){ salvarConfig('mensagens_modelos', mensagensModelos); }
+  function registrarEnvio(paciente, modeloId, texto){
+    mensagensHistorico.unshift({ em: new Date().toISOString(), pacienteId: paciente && paciente.id != null ? String(paciente.id) : null,
+      paciente: (paciente && paciente.name) || '', modelo: modeloId, texto: String(texto || '').slice(0, 400) });
+    if(mensagensHistorico.length > 300) mensagensHistorico.length = 300;
+    salvarConfig('mensagens_historico', mensagensHistorico);
+    try{ renderCentroMensagens(); }catch(e){}
+  }
+  function jaEnviadoHoje(paciente, modeloId){
+    const hoje = dateKey(new Date());
+    return mensagensHistorico.some(h => h.modelo === modeloId && h.em && dateKey(new Date(h.em)) === hoje &&
+      (paciente && paciente.id != null ? String(h.pacienteId) === String(paciente.id) : h.paciente === (paciente && paciente.name)));
+  }
+
+  /* ---------- Janela "Enviar mensagem" ---------- */
+  const modalMsgOverlay = document.getElementById('modalMsgOverlay');
+  let msgCtx = null;
+  function preencherSelectModelos(sel, escolhido){
+    sel.innerHTML = listaModelos().map(m => `<option value="${escHTML(m.id)}">${escHTML(m.titulo)}</option>`).join('');
+    if(escolhido && listaModelos().some(m => m.id === escolhido)) sel.value = escolhido;
+  }
+  function atualizarPreviaMsg(){
+    const m = modeloPorId(document.getElementById('msgModelo').value);
+    document.getElementById('msgTexto').value = preencherModelo(m.texto, msgCtx || {});
+    const p = msgCtx && msgCtx.paciente;
+    const num = p ? numeroWhatsappDaPaciente(p) : '';
+    document.getElementById('msgPara').textContent = p ? (num ? `Para ${p.name} · +${num}` : `${p.name} não tem telefone cadastrado — ajuste na aba Dados da paciente.`) : '';
+  }
+  // ctx: { paciente?, key?, hora?, servico?, modelo? }
+  function abrirEnvioMensagem(ctx){
+    msgCtx = Object.assign({}, ctx || {});
+    atualizarSugestoesFin();
+    const escolherPaciente = !msgCtx.paciente;
+    document.getElementById('msgCampoPaciente').style.display = escolherPaciente ? '' : 'none';
+    document.getElementById('msgPaciente').value = '';
+    document.getElementById('msgTitulo').textContent = msgCtx.paciente ? `Mensagem para ${primeiroNomeDe(msgCtx.paciente.name)}` : 'Enviar mensagem';
+    preencherSelectModelos(document.getElementById('msgModelo'), msgCtx.modelo || (escolherPaciente ? 'boasvindas' : 'confirmacao'));
+    atualizarPreviaMsg();
+    modalMsgOverlay.classList.add('open');
+    setTimeout(() => { if(!modalMsgOverlay.contains(document.activeElement)) document.getElementById(escolherPaciente ? 'msgPaciente' : 'msgTexto').focus(); }, 50);
+  }
+  function fecharEnvioMensagem(){ modalMsgOverlay.classList.remove('open'); msgCtx = null; }
+  document.getElementById('msgModelo').addEventListener('change', atualizarPreviaMsg);
+  document.getElementById('msgPaciente').addEventListener('input', (e) => {
+    const p = patients.find(x => semAcento(x.name) === semAcento(e.target.value.trim()));
+    if(msgCtx){ msgCtx.paciente = p || null; atualizarPreviaMsg(); }
+  });
+  document.getElementById('msgCancelar').addEventListener('click', fecharEnvioMensagem);
+  modalMsgOverlay.addEventListener('click', (e) => { if(e.target === modalMsgOverlay) fecharEnvioMensagem(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modalMsgOverlay.classList.contains('open')) fecharEnvioMensagem(); });
+  document.getElementById('msgEnviar').addEventListener('click', () => {
+    const p = msgCtx && msgCtx.paciente;
+    if(!p){ showToast('Escolha a paciente.'); document.getElementById('msgPaciente').focus(); return; }
+    const texto = document.getElementById('msgTexto').value.trim();
+    if(!texto){ showToast('A mensagem está vazia.'); return; }
+    const url = linkWhatsapp(p, texto);
+    if(!url){ showToast('Esta paciente não tem telefone cadastrado para o WhatsApp.'); return; }
+    window.open(url, '_blank', 'noopener');
+    registrarEnvio(p, document.getElementById('msgModelo').value, texto);
+    fecharEnvioMensagem();
+    showToast('WhatsApp aberto — é só enviar. Registrado no histórico.');
+  });
+  document.getElementById('btnMsgNova').addEventListener('click', () => abrirEnvioMensagem({}));
+
+  /* ---------- Abas ---------- */
+  document.querySelectorAll('#msgAbas .fin-tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('#msgAbas .fin-tab').forEach(x => x.classList.toggle('active', x === t));
+    document.querySelectorAll('#centroMensagensCard .msg-painel').forEach(pn => pn.classList.toggle('ativo', pn.id === 'msgPainel-' + t.dataset.msgaba));
+    renderCentroMensagens();
+  }));
+
+  /* ---------- "Enviar hoje": o que vale mandar hoje ---------- */
+  function itensParaEnviarHoje(){
+    const itens = [];
+    const amanha = dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1));
+    (appointments[amanha] || []).filter(a => a.type === 'appt').sort((a, b) => (a.time || '').localeCompare(b.time || '')).forEach(a => {
+      const p = pacienteDoItem(a);
+      if(p) itens.push({ grupo: 'Lembretes de amanhã', modelo: 'lembrete', paciente: p, ctx: { key: amanha, hora: a.time, servico: a.servico }, det: `Amanhã às ${a.time}${a.servico ? ' · ' + a.servico : ''}` });
+    });
+    try{
+      const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+      patients.forEach(p => {
+        const n = partesDataNascimento(p.dataNascimento);
+        if(!n) return;
+        const aniv = aniversarioNoAno(n, hoje.getFullYear());
+        if(aniv.getMonth() === hoje.getMonth() && aniv.getDate() === hoje.getDate())
+          itens.push({ grupo: 'Aniversariantes de hoje', modelo: 'aniversario', paciente: p, ctx: {}, det: `Faz ${hoje.getFullYear() - n.ano} anos hoje 🎉` });
+      });
+    }catch(e){}
+    try{
+      const dispensados = (lembretesEstado && lembretesEstado.dispensados) || {};
+      const hojeKey = dateKey(today);
+      lembretesAutomaticos().forEach(l => {
+        const d = dispensados[l.id];
+        if(d === 'feito' || (d && d > hojeKey) || !l.paciente) return;
+        const grupo = l.tipo === 'pos' ? 'Pós-atendimento' : l.tipo === 'retorno' ? 'Hora do retorno' : 'Pacientes sumidas';
+        itens.push({ grupo, modelo: l.tipo === 'pos' ? 'pos' : l.tipo, paciente: l.paciente, ctx: l.ctx || {}, det: l.texto });
+      });
+    }catch(e){}
+    return itens;
+  }
+
+  function renderCentroMensagens(){
+    const card = document.getElementById('centroMensagensCard');
+    if(!card) return;
+    // Enviar hoje
+    const itens = itensParaEnviarHoje();
+    const pendentes = itens.filter(i => !jaEnviadoHoje(i.paciente, i.modelo)).length;
+    document.getElementById('msgContadorHoje').textContent = pendentes ? String(pendentes) : '';
+    const lista = document.getElementById('msgHojeLista');
+    lista.innerHTML = itens.length ? '' : '<div class="msg-vazio">Nada para enviar hoje. Lembretes de amanhã, aniversariantes, pós-atendimento e pacientes sumidas aparecem aqui sozinhos.</div>';
+    let grupoAtual = '';
+    itens.forEach(i => {
+      if(i.grupo !== grupoAtual){ grupoAtual = i.grupo; const g = document.createElement('div'); g.className = 'msg-grupo'; g.textContent = i.grupo; lista.appendChild(g); }
+      const row = document.createElement('div');
+      row.className = 'msg-item';
+      const enviado = jaEnviadoHoje(i.paciente, i.modelo);
+      const temNumero = !!numeroWhatsappDaPaciente(i.paciente);
+      row.innerHTML = `<div class="info"><div class="nome">${escHTML(i.paciente.name)}</div><div class="det">${escHTML(i.det || '')}${temNumero ? '' : ' · <strong>sem telefone</strong>'}</div></div>
+        ${enviado ? '<span class="msg-enviado">Enviado hoje</span>' : ''}
+        <button type="button" class="fin-btn-mini ok">${enviado ? 'Enviar de novo' : 'Enviar'}</button>`;
+      row.querySelector('button').addEventListener('click', () => abrirEnvioMensagem({ paciente: i.paciente, modelo: i.modelo, ...i.ctx }));
+      lista.appendChild(row);
+    });
+
+    // Modelos
+    const box = document.getElementById('msgModelosLista');
+    if(!box.contains(document.activeElement)){ // não redesenha enquanto você digita
+      box.innerHTML = '';
+      listaModelos().forEach(m => {
+        const el = document.createElement('div');
+        el.className = 'msg-modelo';
+        const original = MODELOS_PADRAO.find(x => x.id === m.id);
+        const editado = m.padrao && original && (m.texto !== original.texto || m.titulo !== original.titulo);
+        el.innerHTML = `<div class="msg-modelo-topo"><input type="text" value="${escHTML(m.titulo)}" maxlength="50" aria-label="Nome do modelo">${m.padrao ? '<span class="tag">padrão</span>' : ''}</div>
+          <textarea aria-label="Texto do modelo ${escHTML(m.titulo)}">${escHTML(m.texto)}</textarea>
+          <div class="msg-modelo-acoes">
+            <button type="button" class="fin-btn-mini" data-acao="previa">Ver exemplo</button>
+            ${editado ? '<button type="button" class="fin-btn-mini" data-acao="restaurar">Restaurar texto original</button>' : ''}
+            ${m.padrao ? '' : '<button type="button" class="fin-btn-mini" data-acao="apagar">Apagar</button>'}
+          </div>`;
+        const [titulo, area] = [el.querySelector('input'), el.querySelector('textarea')];
+        const salvarEste = () => {
+          if(m.padrao){
+            mensagensModelos.titulos = mensagensModelos.titulos || {}; mensagensModelos.textos = mensagensModelos.textos || {};
+            mensagensModelos.titulos[m.id] = titulo.value.trim() || original.titulo;
+            mensagensModelos.textos[m.id] = area.value;
+          } else {
+            const x = mensagensModelos.extras.find(e => e.id === m.id);
+            if(x){ x.titulo = titulo.value.trim() || 'Modelo sem nome'; x.texto = area.value; }
+          }
+          salvarModelos();
+          showToast('Modelo salvo.');
+        };
+        titulo.addEventListener('change', salvarEste);
+        area.addEventListener('change', salvarEste);
+        el.querySelectorAll('[data-acao]').forEach(b => b.addEventListener('click', () => {
+          if(b.dataset.acao === 'previa'){
+            const exemplo = { paciente: { name: 'Ana Souza' }, key: dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)), hora: '10:00', servico: 'Limpeza de Pele' };
+            alert('Exemplo de como a paciente recebe:\n\n' + preencherModelo(area.value, exemplo));
+          } else if(b.dataset.acao === 'restaurar'){
+            delete mensagensModelos.textos[m.id]; delete mensagensModelos.titulos[m.id];
+            salvarModelos(); document.activeElement && document.activeElement.blur(); renderCentroMensagens();
+          } else if(b.dataset.acao === 'apagar'){
+            if(!confirm(`Apagar o modelo "${m.titulo}"?`)) return;
+            mensagensModelos.extras = mensagensModelos.extras.filter(e => e.id !== m.id);
+            salvarModelos(); document.activeElement && document.activeElement.blur(); renderCentroMensagens();
+          }
+        }));
+        box.appendChild(el);
+      });
+    }
+
+    // Histórico
+    const busca = semAcento((document.getElementById('msgHistoricoBusca') || {}).value || '').trim();
+    const hist = document.getElementById('msgHistoricoLista');
+    const nomes = Object.fromEntries(listaModelos().map(m => [m.id, m.titulo]));
+    const filtrados = mensagensHistorico.filter(h => !busca || semAcento(h.paciente + ' ' + (nomes[h.modelo] || h.modelo)).includes(busca));
+    hist.innerHTML = filtrados.length ? '' : `<div class="msg-vazio">${mensagensHistorico.length ? 'Nada encontrado.' : 'Nenhuma mensagem enviada ainda.'}</div>`;
+    filtrados.slice(0, 100).forEach(h => {
+      const dt = new Date(h.em);
+      const row = document.createElement('div');
+      row.className = 'msg-hist-item';
+      row.innerHTML = `<div class="quando">${isNaN(dt) ? '' : dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+        <div style="min-width:0;"><strong>${escHTML(h.paciente || 'Paciente')}</strong> · ${escHTML(nomes[h.modelo] || h.modelo || '')}<div class="txt">${escHTML(h.texto || '')}</div></div>`;
+      hist.appendChild(row);
+    });
+  }
+  document.getElementById('msgHistoricoBusca').addEventListener('input', renderCentroMensagens);
+  document.getElementById('btnMsgNovoModelo').addEventListener('click', () => {
+    mensagensModelos.extras = mensagensModelos.extras || [];
+    mensagensModelos.extras.push({ id: 'm' + Date.now(), titulo: 'Novo modelo', texto: 'Oi, {nome}! ' });
+    salvarModelos();
+    renderCentroMensagens();
+    const areas = document.querySelectorAll('#msgModelosLista textarea');
+    if(areas.length){ areas[areas.length - 1].focus(); }
+  });
+  // Atualiza ao abrir Configurações
+  document.querySelectorAll('.nav-item[data-view="configuracoes"]').forEach(n => n.addEventListener('click', () => { try{ renderCentroMensagens(); }catch(e){} }));
+  try{ renderCentroMensagens(); }catch(e){ console.warn('Centro de Mensagens:', e); }
 
   function renderLembretes(){
     const container = document.getElementById('lembretesContainer');
@@ -9573,7 +9908,12 @@
     ]);
     const tema = await lerConfig('tema');
     if(typeof tema === 'string' && tema) aplicarTema(tema);
-    const [moedaSalva, formasSalvas] = await Promise.all([lerConfig('moeda'), lerConfig('formas_pagamento')]);
+    const [moedaSalva, formasSalvas, modelosSalvos, historicoSalvo] = await Promise.all([lerConfig('moeda'), lerConfig('formas_pagamento'), lerConfig('mensagens_modelos'), lerConfig('mensagens_historico')]);
+    if(modelosSalvos && typeof modelosSalvos === 'object'){
+      mensagensModelos = { textos: modelosSalvos.textos || {}, titulos: modelosSalvos.titulos || {}, extras: Array.isArray(modelosSalvos.extras) ? modelosSalvos.extras : [] };
+    }
+    if(Array.isArray(historicoSalvo)) mensagensHistorico = historicoSalvo;
+    try{ renderCentroMensagens(); renderLembretes(); renderAniversariantes(); }catch(e){}
     if(typeof moedaSalva === 'string'){
       try{ localStorage.setItem('skinExpertMoeda', moedaSalva); }catch(e){}
       const selM = document.getElementById('cfgMoeda'); if(selM) selM.value = moedaSalva;
