@@ -2218,10 +2218,6 @@
       <div class="content-agenda">
 
         <div class="agenda-actions">
-          <button class="btn-pill-outline" id="btnLinkAgendamento">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.07 0l1.93-1.93a5 5 0 00-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 00-7.07 0l-1.93 1.93a5 5 0 007.07 7.07L13.5 18.5"/></svg>
-            Meu Link de Agendamento
-          </button>
           <button class="btn-pill-outline" id="btnBloquearHorarios">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="19.07" x2="19.07" y2="4.93"/></svg>
             Bloquear Horários
@@ -2380,7 +2376,8 @@
                 <div class="form-field">
                   <label>Telefone / WhatsApp <span class="required">*</span></label>
                   <div class="phone-field">
-                    <select class="phone-code" id="regPhoneCode">
+                    <select class="phone-code" id="regPhoneCode" aria-label="Código do país">
+                      <option value="">Selecionar</option>
                       <option value="+55">🇧🇷 +55</option>
                       <option value="+351">🇵🇹 +351</option>
                       <option value="+34">🇪🇸 +34</option>
@@ -2402,7 +2399,8 @@
                 <div class="form-field">
                   <label>País</label>
                   <select class="anamnese-select" id="regPais">
-                    <option value="Brasil" selected>Brasil</option>
+                    <option value="">Selecionar</option>
+                    <option value="Brasil">Brasil</option>
                     <option value="Estados Unidos">Estados Unidos</option>
                     <optgroup label="União Europeia">
                       <option value="Alemanha">Alemanha</option>
@@ -3916,6 +3914,7 @@
         <input type="checkbox" id="apptEnviarWhatsapp" style="width:16px; height:16px; accent-color:var(--sidebar-bg); cursor:pointer; flex-shrink:0; margin:0;">
         Enviar confirmação por WhatsApp
       </label>
+      <div style="font-size:12px; color:var(--text-muted); margin:4px 0 0 24px;">Abre o WhatsApp da paciente com a mensagem pronta — é só enviar.</div>
     </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel" id="modalCancel">Cancelar</button>
@@ -4008,9 +4007,44 @@
       </div>
       <div class="right">
         <button class="modal-btn-cancel" id="apptDetFicha">Ver ficha</button>
+        <button class="modal-btn-cancel" id="apptDetWhatsapp" title="Abre o WhatsApp da paciente com a confirmação pronta">WhatsApp</button>
         <button class="modal-btn-cancel" id="apptDetEditar">Editar</button>
         <button class="modal-btn-confirm" id="apptDetSalvar">Salvar observação</button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: nova paciente (cadastro com código do país) -->
+<div class="modal-overlay" id="modalNovaPacienteOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="npTitulo">
+    <h3 id="npTitulo">Nova Paciente</h3>
+    <div class="modal-field">
+      <label for="npNome">Nome completo <span class="required">*</span></label>
+      <input id="npNome" type="text" maxlength="120" placeholder="Nome e sobrenome">
+    </div>
+    <div class="modal-field">
+      <label for="npTelefone">Telefone / WhatsApp <span class="required">*</span></label>
+      <div class="phone-field">
+        <select class="phone-code" id="npPhoneCode" aria-label="Código do país"></select>
+        <input class="phone-number" id="npTelefone" type="tel" inputmode="tel" placeholder="912 345 678">
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Obrigatório, para evitar cadastros duplicados. Pode digitar com o código (ex.: +351 912…) que o país é escolhido sozinho.</div>
+    </div>
+    <div class="fin-form-2">
+      <div class="modal-field">
+        <label for="npPais">País</label>
+        <select id="npPais"></select>
+      </div>
+      <div class="modal-field">
+        <label for="npNascimento">Data de nascimento</label>
+        <input id="npNascimento" type="date">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="npCancelar">Cancelar</button>
+      <button class="modal-btn-confirm" id="npSalvar">Cadastrar</button>
     </div>
   </div>
 </div>
@@ -4988,30 +5022,75 @@
     renderPacientesTable();
   }
 
+  /* ---------- Nova paciente: janela com código do país e país (nada pré-definido) ---------- */
+  const modalNovaPacienteOverlay = document.getElementById('modalNovaPacienteOverlay');
+  const PAIS_POR_CODIGO = { '+55':'Brasil', '+351':'Portugal', '+34':'Espanha', '+33':'França', '+39':'Itália', '+49':'Alemanha', '+353':'Irlanda', '+31':'Países Baixos', '+1':'Estados Unidos' };
+  let resolverNovaPaciente = null;
+  (function prepararJanelaNovaPaciente(){
+    // mesmas opções da aba Dados (começando em "Selecionar")
+    document.getElementById('npPhoneCode').innerHTML = document.getElementById('regPhoneCode').innerHTML;
+    document.getElementById('npPais').innerHTML = document.getElementById('regPais').innerHTML;
+  })();
+  // "+351 912 345 678" ou "00351…" → escolhe o código e deixa só o número
+  function separarCodigoDoTelefone(){
+    const inp = document.getElementById('npTelefone'), sel = document.getElementById('npPhoneCode');
+    const bruto = inp.value.trim();
+    const m = bruto.match(/^(?:\+|00)\s*(\d{1,4})[\s\-.]*(.*)$/);
+    if(!m) return;
+    const opcoes = Array.from(sel.options).map(o => o.value).filter(Boolean).sort((a, b) => b.length - a.length);
+    const digitos = m[1] + m[2].replace(/\D/g, '');
+    const codigo = opcoes.find(c => digitos.startsWith(c.slice(1)));
+    if(!codigo) return;
+    sel.value = codigo;
+    inp.value = digitos.slice(codigo.length - 1).replace(/^0+/, '');
+    sugerirPaisPeloCodigo();
+  }
+  function sugerirPaisPeloCodigo(){
+    const pais = document.getElementById('npPais');
+    const sugestao = PAIS_POR_CODIGO[document.getElementById('npPhoneCode').value];
+    if(!pais.value && sugestao && Array.from(pais.options).some(o => o.value === sugestao)) pais.value = sugestao;
+  }
+  document.getElementById('npTelefone').addEventListener('blur', separarCodigoDoTelefone);
+  document.getElementById('npPhoneCode').addEventListener('change', sugerirPaisPeloCodigo);
+
+  function abrirNovaPaciente(nomeInicial){
+    document.getElementById('npNome').value = nomeInicial || '';
+    document.getElementById('npPhoneCode').value = '';
+    document.getElementById('npTelefone').value = '';
+    document.getElementById('npPais').value = '';
+    document.getElementById('npNascimento').value = '';
+    modalNovaPacienteOverlay.classList.add('open');
+    setTimeout(() => document.getElementById(nomeInicial ? 'npPhoneCode' : 'npNome').focus(), 50);
+    return new Promise(res => { resolverNovaPaciente = res; });
+  }
+  function fecharNovaPaciente(resultado){
+    modalNovaPacienteOverlay.classList.remove('open');
+    if(resolverNovaPaciente){ const r = resolverNovaPaciente; resolverNovaPaciente = null; r(resultado || null); }
+  }
+  document.getElementById('npCancelar').addEventListener('click', () => fecharNovaPaciente(null));
+  modalNovaPacienteOverlay.addEventListener('click', (e) => { if(e.target === modalNovaPacienteOverlay) fecharNovaPaciente(null); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modalNovaPacienteOverlay.classList.contains('open')) fecharNovaPaciente(null); });
+  document.getElementById('npSalvar').addEventListener('click', async () => {
+    separarCodigoDoTelefone();
+    const nome = document.getElementById('npNome').value.trim();
+    const codigo = document.getElementById('npPhoneCode').value;
+    const numero = document.getElementById('npTelefone').value.trim();
+    const pais = document.getElementById('npPais').value;
+    const nascimento = document.getElementById('npNascimento').value;
+    if(!nome){ showToast('Informe o nome da paciente.'); document.getElementById('npNome').focus(); return; }
+    if(!codigo){ showToast('Selecione o código do país do telefone.'); document.getElementById('npPhoneCode').focus(); return; }
+    if(!numero){ showToast('O telefone é obrigatório para cadastrar uma nova paciente.'); document.getElementById('npTelefone').focus(); return; }
+    const btn = document.getElementById('npSalvar');
+    btn.disabled = true;
+    try{
+      const criada = await criarPaciente({ nome, codigo, numero, pais, nascimento });
+      if(criada) fecharNovaPaciente(criada);
+    } finally { btn.disabled = false; }
+  });
+
   document.getElementById('btnNovoPaciente').addEventListener('click', async () => {
-    const nome = prompt('Nome completo da paciente:');
-    if(!nome || !nome.trim()) return;
-
-    const telefoneNumero = prompt('Telefone / WhatsApp da paciente (obrigatório, para evitar cadastros duplicados):');
-    if(!telefoneNumero || !telefoneNumero.trim()){ showToast('O telefone é obrigatório para cadastrar uma nova paciente.'); return; }
-
-    const duplicada = encontrarPacienteDuplicado(nome, telefoneNumero);
-    if(duplicada){ showToast('Já existe uma paciente cadastrada com esse nome e telefone: ' + duplicada.name); return; }
-
-    const idadeStr = prompt('Idade (opcional):') || '';
-    const idade = parseInt(idadeStr, 10) || null;
-
-    const { data: userData } = await supabaseClient.auth.getUser();
-    if(!userData || !userData.user){ showToast('Sessão expirada, faça login novamente.'); return; }
-
-    const { error } = await supabaseClient.from('pacientes').insert({
-      profissional_id: userData.user.id, nome: nome.trim(), idade, status: 'Ativo',
-      telefone_numero: telefoneNumero.trim(),
-    });
-
-    if(error){ showToast('Erro ao salvar: ' + error.message); return; }
-    await loadPacientesFromSupabase();
-    showToast('Paciente cadastrada com sucesso!');
+    const criada = await abrirNovaPaciente('');
+    if(criada) showToast('Paciente cadastrada com sucesso!');
   });
 
   /* ================= REGISTRO DE PACIENTE MODULE ================= */
@@ -5219,10 +5298,10 @@
     document.getElementById('regNome').value = p.name || '';
     document.getElementById('regStatus').value = p.status || 'Ativo';
     document.getElementById('regEmail').value = p.email || '';
-    document.getElementById('regPhoneCode').value = p.phoneCode || '+55';
+    document.getElementById('regPhoneCode').value = p.phoneCode || '';
     document.getElementById('regPhoneNumber').value = p.phoneNumber || '';
     document.getElementById('regDataNascimento').value = p.dataNascimento || '';
-    document.getElementById('regPais').value = p.pais || 'Brasil';
+    document.getElementById('regPais').value = p.pais || '';
     setPatientPhotoCircle(p.foto_url || '', initialsFromName(p.name), p.color, p.bg);
     atualizarHeaderPaciente(p);
 
@@ -5285,6 +5364,7 @@
 
     if(!nome){ showToast('O nome completo é obrigatório.'); return; }
     if(!phoneNumber){ showToast('O telefone / WhatsApp é obrigatório.'); return; }
+    if(!phoneCode){ showToast('Selecione o código do país do telefone.'); document.getElementById('regPhoneCode').focus(); return; }
 
     const duplicada = encontrarPacienteDuplicado(nome, phoneNumber, currentPatient.id);
     if(duplicada){ showToast('Já existe uma paciente cadastrada com esse nome e telefone: ' + duplicada.name); return; }
@@ -5293,7 +5373,7 @@
       const { error } = await supabaseClient.from('pacientes').update({
         nome, status, email,
         telefone_codigo: phoneCode, telefone_numero: phoneNumber,
-        data_nascimento: dataNascimento || null, pais,
+        data_nascimento: dataNascimento || null, pais: pais || null,
       }).eq('id', currentPatient.id);
 
       if(error){ showToast('Erro ao salvar: ' + error.message); return; }
@@ -7250,6 +7330,7 @@
     const paciente = isBlock ? null : pacienteDoItem(item);
     const btnFicha = document.getElementById('apptDetFicha');
     btnFicha.style.display = paciente ? '' : 'none';
+    document.getElementById('apptDetWhatsapp').style.display = paciente && numeroWhatsappDaPaciente(paciente) ? '' : 'none';
 
     modalApptDetOverlay.classList.add('open');
   }
@@ -7263,6 +7344,15 @@
   modalApptDetOverlay.addEventListener('click', (e) => { if(e.target === modalApptDetOverlay) fecharDetalhesAtendimento(); });
   document.addEventListener('keydown', (e) => {
     if(e.key === 'Escape' && modalApptDetOverlay.classList.contains('open')) fecharDetalhesAtendimento();
+  });
+
+  document.getElementById('apptDetWhatsapp').addEventListener('click', () => {
+    if(!apptDetAtual) return;
+    const { key, item } = apptDetAtual;
+    const paciente = pacienteDoItem(item);
+    const url = paciente ? linkWhatsapp(paciente, mensagemConfirmacaoWhatsapp(paciente.name, key, item.time, item.servico)) : '';
+    if(!url){ showToast('Esta paciente não tem telefone cadastrado para o WhatsApp.'); return; }
+    window.open(url, '_blank', 'noopener');
   });
 
   document.getElementById('apptDetFicha').addEventListener('click', () => {
@@ -7651,9 +7741,6 @@
     renderCalendar();
   });
 
-  document.getElementById('btnLinkAgendamento').addEventListener('click', () => {
-    showToast('Link de agendamento copiado!');
-  });
 
   /* ---------- Seletor de duração (horas + minutos, sem opções fixas) ---------- */
   const DUR_MAX_HORAS = 12;
@@ -7723,39 +7810,35 @@
 
   // Cria uma paciente rapidamente a partir da busca, sem sair do modal de agendamento.
   // Funciona tanto para contas reais (salva no Supabase) quanto no modo demonstração (só em memória).
-  async function criarPacienteRapido(nome, telefoneNumero){
-    if(!telefoneNumero || !telefoneNumero.trim()){
-      showToast('Informe o telefone da paciente para concluir o cadastro.');
-      return null;
-    }
-
-    const duplicada = encontrarPacienteDuplicado(nome, telefoneNumero);
+  async function criarPaciente({ nome, codigo, numero, pais, nascimento }){
+    const duplicada = encontrarPacienteDuplicado(nome, numero);
     if(duplicada){
       showToast('Já existe uma paciente cadastrada com esse nome e telefone: ' + duplicada.name);
       return null;
     }
-
     const usuario = await usuarioParaSalvar();
     if(!usuario && !modoDemonstracao) return null; // sessão caiu: não cria só na tela
     if(usuario){
       const { data, error } = await supabaseClient.from('pacientes')
-        .insert({ profissional_id: usuario.id, nome: nome.trim(), status: 'Ativo', telefone_numero: telefoneNumero.trim() })
+        .insert({ profissional_id: usuario.id, nome: nome.trim(), status: 'Ativo', telefone_codigo: codigo, telefone_numero: numero.trim(),
+                  pais: pais || null, data_nascimento: nascimento || null })
         .select().single();
       if(error){ showToast('Erro ao criar paciente: ' + error.message); return null; }
       await loadPacientesFromSupabase();
       return patients.find(p => String(p.id) === String(data.id)) || null;
-    } else {
-      const pal = avatarPalette[patients.length % avatarPalette.length];
-      const novo = {
-        id: 'demo-p-' + Date.now(), initials: initialsFromName(nome), color: pal.color, bg: pal.bg,
-        name: nome.trim(), age: null, gender: '', phone: telefoneNumero.trim(), phoneCode: '', phoneNumber: telefoneNumero.trim(), email: '',
-        rotina: null, acomp: { type: 'dash' }, status: 'Ativo',
-      };
-      patients.push(novo);
-      renderPacientesTable();
-      return novo;
     }
+    const pal = avatarPalette[patients.length % avatarPalette.length];
+    const novo = {
+      id: 'demo-p-' + Date.now(), initials: initialsFromName(nome), color: pal.color, bg: pal.bg,
+      name: nome.trim(), age: calcularIdade(nascimento), gender: '', phone: [codigo, numero.trim()].join(' '), phoneCode: codigo,
+      phoneNumber: numero.trim(), pais: pais || '', dataNascimento: nascimento || '', email: '',
+      rotina: null, acomp: { type: 'dash' }, status: 'Ativo',
+    };
+    patients.push(novo);
+    renderPacientesTable();
+    return novo;
   }
+
 
   function renderizarResultadosBuscaPaciente(){
     const termoRaw = apptPatientSearch.value.trim();
@@ -7796,9 +7879,7 @@
       const nome = apptPatientSearch.value.trim();
       if(!nome) return;
       apptPatientResults.classList.remove('open');
-      const telefoneNumero = prompt('Telefone / WhatsApp de ' + nome + ' (obrigatório, para evitar cadastros duplicados):');
-      if(!telefoneNumero || !telefoneNumero.trim()){ showToast('O telefone é obrigatório para cadastrar uma nova paciente.'); return; }
-      const criada = await criarPacienteRapido(nome, telefoneNumero);
+      const criada = await abrirNovaPaciente(nome);
       if(criada){
         selecionarPacienteNoModal(criada);
         showToast('Paciente "' + criada.name + '" adicionada com sucesso!');
@@ -7959,7 +8040,7 @@
       apptServicoResults.classList.remove('open');
       renderChipsServicos();
       modalConfirm.textContent = 'Agendar';
-      modalWhatsappField.style.display = 'none';
+      modalWhatsappField.style.display = 'block';
     } else {
       modalTitle.textContent = 'Bloquear Horário';
       modalPatientLabel.textContent = 'Motivo (opcional)';
@@ -8005,6 +8086,7 @@
     }
     seletorDuracaoAtendimento.definir(parseInt(item.duration, 10) || 60);
     modalConfirm.textContent = 'Salvar alterações';
+    modalWhatsappField.style.display = 'none'; // confirmação é só para agendamento novo
   }
 
   async function salvarEdicaoAtendimento(){
@@ -8100,8 +8182,70 @@
     }
   }
 
+  /* ---------- Confirmação por WhatsApp ----------
+     Sem configurar nada: abre o WhatsApp da paciente com a mensagem pronta (você só aperta enviar).
+     Com a API da Meta conectada em Configurações: envia sozinho pela função do servidor. */
+  function numeroWhatsappDaPaciente(p){
+    if(!p) return '';
+    let codigo = String(p.phoneCode || '').replace(/\D/g, '');
+    let numero = String(p.phoneNumber || '').replace(/\D/g, '');
+    if(!numero && p.phone) numero = String(p.phone).replace(/\D/g, '');
+    if(!numero) return '';
+    if(!codigo){
+      const pais = semAcento(p.pais || '');
+      codigo = pais.includes('portugal') ? '351' : (pais.includes('brasil') || pais.includes('brazil')) ? '55' : '';
+    }
+    numero = numero.replace(/^0+/, '');
+    const completo = (codigo && numero.startsWith(codigo) && numero.length >= codigo.length + 8) ? numero : codigo + numero;
+    return completo.length >= 10 ? completo : '';
+  }
+  function mensagemConfirmacaoWhatsapp(pacienteNome, key, hora, servicos){
+    const d = keyParaData(key);
+    const primeiro = primeiroNomeDe(pacienteNome) || 'tudo bem';
+    const dia = `${weekdayFull[d.getDay()].toLowerCase()}, ${formatarDataBR(key).slice(0, 5)}`;
+    const assinatura = perfilProfissional && perfilProfissional.nome ? `\n\n${perfilProfissional.nome}` : '';
+    return `Olá, ${primeiro}! 😊\nSeu atendimento${servicos ? ' de ' + servicos : ''} está confirmado para ${dia}, às ${hora}.\nSe precisar remarcar, é só me avisar por aqui.${assinatura}`;
+  }
+  function linkWhatsapp(paciente, texto){
+    const numero = numeroWhatsappDaPaciente(paciente);
+    return numero ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}` : '';
+  }
+  // lembra a escolha da caixinha
+  try{ apptEnviarWhatsapp.checked = localStorage.getItem('skinExpertConfirmarWhats') !== 'nao'; }catch(e){}
+  apptEnviarWhatsapp.addEventListener('change', () => { try{ localStorage.setItem('skinExpertConfirmarWhats', apptEnviarWhatsapp.checked ? 'sim' : 'nao'); }catch(e){} });
+
   modalConfirm.addEventListener('click', async () => {
     if(edicaoAtual) return salvarEdicaoAtendimento();
+    const viaApi = !!(integracaoWhatsapp && integracaoWhatsapp.ativo);
+    const querWhats = modalMode === 'appt' && apptEnviarWhatsapp.checked;
+    // A janela do WhatsApp tem que abrir já no clique (senão o navegador bloqueia como pop-up).
+    let janela = null;
+    if(querWhats && !viaApi){
+      const keyPrev = apptDate.value || dateKey(selectedDate);
+      const pacPrev = patients.find(p => String(p.id) === String(apptPatientSelect.value));
+      if(pacPrev && numeroWhatsappDaPaciente(pacPrev) && !conflitoDeHorario(keyPrev, apptTime.value || '09:00', parseInt(apptDuration.value, 10), null)){
+        janela = window.open('', '_blank');
+        if(janela){ try{ janela.opener = null; janela.document.write('<p style="font-family:sans-serif;padding:24px;color:#555">Abrindo o WhatsApp…</p>'); }catch(e){} }
+      }
+    }
+    let r = null;
+    try{ r = await criarAtendimentoDoModal(); }
+    finally{ if(!r && janela){ try{ janela.close(); }catch(e){} } }
+    if(!r || r.tipo !== 'appt') return;
+
+    if(!querWhats){ showToast('Atendimento agendado!'); return; }
+    if(viaApi && isAgendamentoReal({ id: r.id })){
+      showToast('Atendimento agendado! Enviando confirmação por WhatsApp...');
+      dispararConfirmacaoWhatsapp(r.id);
+      return;
+    }
+    const url = linkWhatsapp(r.paciente, mensagemConfirmacaoWhatsapp(r.paciente.name, r.key, r.hora, r.servicos));
+    if(!url){ showToast('Atendimento agendado! Esta paciente não tem telefone cadastrado para o WhatsApp.'); return; }
+    if(janela){ janela.location.href = url; showToast('Atendimento agendado! Confira e envie a mensagem no WhatsApp.'); }
+    else showToast('Atendimento agendado! Para enviar a confirmação, abra o atendimento e toque em "WhatsApp".');
+  });
+
+  async function criarAtendimentoDoModal(){
     const key = apptDate.value || dateKey(selectedDate);
     if(!appointments[key]) appointments[key] = [];
     const hora = apptTime.value || '09:00';
@@ -8158,13 +8302,7 @@
 
       sincronizarComGoogleAgenda(inserted.id);
 
-      if(apptEnviarWhatsapp.checked){
-        showToast('Atendimento agendado! Enviando confirmação por WhatsApp...');
-        dispararConfirmacaoWhatsapp(inserted.id);
-      } else {
-        showToast('Atendimento agendado!');
-      }
-      return;
+      return { tipo: 'appt', id: inserted.id, paciente: pacienteSelecionado, key, hora, servicos: servicoNome };
     }
 
     if(usuarioLogado && modalMode === 'block'){
@@ -8187,7 +8325,7 @@
       renderCurrentView();
       sincronizarComGoogleAgenda(inserted.id);
       showToast('Horário bloqueado!');
-      return;
+      return { tipo: 'block' };
     }
 
     // Modo demonstração (sem sessão real): mantém o comportamento local, sem Supabase
@@ -8214,11 +8352,13 @@
       servico: modalMode === 'appt' ? (getServicosSelecionados().join(', ') || null) : null,
       type: modalMode
     });
+    const tipoCriado = modalMode;
     closeModal();
     renderCalendar();
     renderCurrentView();
-    showToast(modalMode === 'appt' ? 'Atendimento agendado! (modo demonstração, sem envio de WhatsApp)' : 'Horário bloqueado!');
-  });
+    if(tipoCriado !== 'appt'){ showToast('Horário bloqueado!'); return { tipo: 'block' }; }
+    return { tipo: 'appt', id: idDemo, paciente: pacienteDemoObj, key, hora, servicos: getServicosSelecionados().join(', ') || null };
+  }
 
   // Carrega a agenda do Supabase.
   // - Só um carregamento por vez: se a página e o login pedirem ao mesmo tempo, os dois usam o mesmo.
