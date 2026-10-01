@@ -411,6 +411,8 @@
   }
 
   .calendar-card{ padding: 16px; }
+  .agenda-lateral{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+  .btn-bloquear-lateral{ width:100%; justify-content:center; }
   .calendar-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; }
   .calendar-month-label{ font-size:14px; font-weight:700; }
   .calendar-nav{ display:flex; gap:4px; }
@@ -447,7 +449,12 @@
   .legend-block{ background: var(--block-red); }
 
   .schedule-card{ padding: 22px; }
-  .schedule-header{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom: 16px; }
+  .schedule-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom: 16px; }
+  @media (max-width: 560px){
+    .schedule-header{ flex-direction:column; align-items:stretch; }
+    .schedule-header .btn-agenda-primary{ justify-content:center; }
+    .schedule-toolbar{ flex-wrap:wrap; gap:10px; }
+  }
   .schedule-date{ font-family:'Playfair Display', serif; font-size:19px; font-weight:700; }
   .schedule-count{ font-size:13.5px; color: var(--text-muted); margin-top:3px; }
 
@@ -2217,14 +2224,8 @@
     <div class="view" id="view-agenda">
       <div class="content-agenda">
 
-        <div class="agenda-actions">
-          <button class="btn-pill-outline" id="btnBloquearHorarios">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="19.07" x2="19.07" y2="4.93"/></svg>
-            Bloquear Horários
-          </button>
-        </div>
-
         <div class="agenda-grid">
+          <div class="agenda-lateral">
           <div class="card calendar-card">
             <div class="calendar-header">
               <div class="calendar-month-label" id="calMonthLabel">Julho de 2026</div>
@@ -2246,6 +2247,11 @@
               <div><span class="legend-dot legend-appt"></span> Com atendimentos</div>
               <div><span class="legend-dot legend-block"></span> Com bloqueio</div>
             </div>
+          </div>
+          <button class="btn-pill-outline btn-bloquear-lateral" id="btnBloquearHorarios">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="19.07" x2="19.07" y2="4.93"/></svg>
+            Bloquear Horários
+          </button>
           </div>
 
           <div class="card schedule-card">
@@ -4750,6 +4756,7 @@
       const viewName = item.dataset.view;
       views.forEach(v => v.classList.remove('active'));
       document.getElementById('view-' + viewName).classList.add('active');
+      if(viewName === 'agenda'){ try{ ultimaRolagemAgenda = ''; rolarAgendaParaHorarioDeTrabalho(); }catch(e){} }
 
       pageTitle.textContent = item.dataset.title;
       if (item.dataset.subtitle) {
@@ -7687,9 +7694,57 @@
     }
   }
 
+  /* ---------- Abrir a grade no horário de trabalho (não em 00:00) ----------
+     Rola só quando muda o dia, a semana ou a visão — redesenhos (arrastar, salvar) não pulam. */
+  let ultimaRolagemAgenda = '';
+  function horaInicialDaGrade(keys){
+    // meia hora antes do primeiro atendimento/bloqueio; senão, o início do Horário de Atendimento
+    let primeiro = null;
+    keys.forEach(k => (appointments[k] || []).forEach(a => {
+      const m = timeStrToMinutes(a.time || '00:00');
+      if(primeiro == null || m < primeiro) primeiro = m;
+    }));
+    let inicio = 8 * 60;
+    try{
+      const exp = expedientesData && expedientesData[0];
+      if(exp){
+        const dia = keyParaData(keys[0]).getDay();
+        const entradas = keys.length > 1 ? exp.entradas.filter((e, i) => !(exp.fechados || [])[i]) : [exp.entradas[dia]];
+        const mins = entradas.filter(Boolean).map(timeStrToMinutes);
+        if(mins.length) inicio = Math.min(...mins);
+      }
+    }catch(e){}
+    const alvo = primeiro != null ? Math.min(primeiro, inicio) : inicio;
+    return Math.max(0, alvo - 30);
+  }
+  function rolarAgendaParaHorarioDeTrabalho(){
+    const semanal = agendaViewMode === 'semanal';
+    const base = semanal ? getWeekStart(selectedDate) : selectedDate;
+    const chave = (semanal ? 's' : 'd') + dateKey(base);
+    if(chave === ultimaRolagemAgenda) return;
+    const scroller = document.getElementById(semanal ? 'scheduleScrollWeek' : 'scheduleScrollDay');
+    if(!scroller || scroller.offsetParent === null) return; // aba escondida: rola quando aparecer
+    ultimaRolagemAgenda = chave;
+    const keys = semanal ? Array.from({ length: 7 }, (_, i) => { const d = new Date(base); d.setDate(d.getDate() + i); return dateKey(d); }) : [dateKey(base)];
+    const minutos = horaInicialDaGrade(keys);
+    requestAnimationFrame(() => {
+      if(semanal){
+        const sc = document.getElementById('scheduleScrollWeek');
+        const linhas = sc.querySelector('.week-day-rows');
+        if(!linhas) return;
+        const topoLinhas = linhas.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop;
+        const cabecalho = sc.querySelector('.week-day-header');
+        sc.scrollTop = topoLinhas + (minutos / 30) * WEEK_ROW_H - (cabecalho ? cabecalho.offsetHeight : 0);
+      } else {
+        document.getElementById('scheduleScrollDay').scrollTop = (minutos / 30) * DAY_ROW_H;
+      }
+    });
+  }
+
   function renderCurrentView(){
     if(agendaViewMode === 'semanal') renderWeekSchedule();
     else renderSchedule();
+    rolarAgendaParaHorarioDeTrabalho();
     try{ renderLembretes(); }catch(e){}
   }
 
