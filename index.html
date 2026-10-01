@@ -672,6 +672,18 @@
     background:none; border:none; cursor:pointer; padding:8px 4px;
   }
   .delete-link:hover{ text-decoration:underline; }
+  .esp-chips .chip{ padding:7px 13px; font-size:12.5px; }
+  .esp-qual{ margin-top:8px; }
+  .esp-full{ grid-column:1 / -1; }
+  .esp-imc{ font-size:13px; color:var(--text-muted); margin-top:4px; }
+  .esp-hist{ margin-top:6px; }
+  .esp-hist-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; margin-bottom:8px; font-size:13.5px; }
+  .esp-hist-item.atual{ border-color: var(--gold); background: var(--gold-light); }
+  .esp-hist-item button{ background:none; border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:12.5px; font-weight:700; cursor:pointer; color:var(--text-dark); }
+  .esp-hist-item button.apagar{ color:#d64545; }
+  .esp-rodape{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:6px; }
+  .esp-rodape .esp-acoes{ display:flex; gap:10px; flex-wrap:wrap; }
+  @media (max-width: 720px){ .panel-especialidade .form-grid{ grid-template-columns:1fr; } }
   .registro-footer-lgpd{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
   .export-link{
     display:flex; align-items:center; gap:8px; color:var(--text-dark); font-size:14px; font-weight:700;
@@ -2432,6 +2444,18 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3v2h6V3"/></svg>
             Anamnese Clínica
           </div>
+          <div class="registro-tab tab-especialidade" data-tab="hof" style="display:none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c-4 0-7 3.2-7 8 0 5.5 3.6 10 7 10s7-4.5 7-10c0-4.8-3-8-7-8z"/><path d="M9 15c1.7 1.2 4.3 1.2 6 0"/></svg>
+            Harmonização Facial
+          </div>
+          <div class="registro-tab tab-especialidade" data-tab="tricologia" style="display:none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 20c0-8 3-15 7-17M12 20c0-7 2-13 5-16M19 20c0-5 0-9 1-12"/></svg>
+            Tricologia
+          </div>
+          <div class="registro-tab tab-especialidade" data-tab="corporal" style="display:none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4.5" r="2"/><path d="M8 22l1.5-8M16 22l-1.5-8M6 9.5c2 .8 4 1.2 6 1.2s4-.4 6-1.2M12 10.7V15"/></svg>
+            Corporal
+          </div>
           <div class="registro-tab" data-tab="avaliacao">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
             Avaliação Cutânea
@@ -3304,6 +3328,11 @@
         </div>
 
         <!-- Placeholder panels for tabs not yet built -->
+        <!-- ---------- ANAMNESES ESPECÍFICAS (montadas pelo JS; só aparecem se a área estiver ligada em Configurações) ---------- -->
+        <div class="registro-panel panel-especialidade" id="panel-hof" data-esp="hof"></div>
+        <div class="registro-panel panel-especialidade" id="panel-tricologia" data-esp="tricologia"></div>
+        <div class="registro-panel panel-especialidade" id="panel-corporal" data-esp="corporal"></div>
+
         <div class="registro-panel" id="panel-placeholder">
           <div class="registro-card empty-state">Esta aba estará disponível em breve.</div>
         </div>
@@ -3616,6 +3645,15 @@
             </div>
             <div id="msgHistoricoLista"></div>
           </div>
+        </div>
+
+        <div class="registro-card" style="max-width:560px;" id="cfgAreasCard">
+          <div class="anamnese-title" style="margin-bottom:6px;">Áreas de Atuação</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Marque o que você atende. Cada área ligada adiciona a anamnese específica dela na ficha das pacientes.</p>
+          <label class="checkbox-item"><input type="checkbox" class="cfg-area" value="hof"> <span><b>Harmonização Facial</b><br><small style="color:var(--text-muted);">Toxina, preenchedores, bioestimuladores, fios</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" class="cfg-area" value="tricologia"> <span><b>Tricologia</b><br><small style="color:var(--text-muted);">Queda, couro cabeludo e saúde dos fios</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" class="cfg-area" value="corporal"> <span><b>Estética Corporal</b><br><small style="color:var(--text-muted);">Gordura localizada, celulite, flacidez, drenagem, pós-operatório</small></span></label>
+          <p style="font-size:12px; color:var(--text-muted); margin:6px 0 0 0;">Desligar uma área só esconde a aba: as fichas já preenchidas continuam guardadas.</p>
         </div>
 
         <div class="registro-card" style="max-width:560px;">
@@ -5546,6 +5584,7 @@
     currentPatient = p;
     if(trocouDePaciente){
       limparFormulariosDaPaciente();
+      try{ limparEspecificas(); }catch(e){}
       carregarUltimaAvaliacao(p);
     }
     carregarMoedaAnamnese(p);
@@ -5582,6 +5621,10 @@
     else { document.getElementById('panel-placeholder').classList.add('active'); }
     if(tabName === 'planoskincare') updateSkincareMeta();
     if(tabName === 'fotos') renderFotosEvolucao();
+    if(typeof ESPECIALIDADES !== 'undefined' && ESPECIALIDADES[tabName]){
+      if(!areasAtuacao[tabName]){ switchRegistroTab('dados'); return; }
+      carregarEspecifica(tabName);
+    }
     if(tabName === 'historico'){
       renderAnamnesesRespondidas().then(updateHistoricoCountBadge);
       renderPlanosSkincareHistorico().then(updateHistoricoCountBadge);
@@ -10107,6 +10150,7 @@
     ]);
     const tema = await lerConfig('tema');
     if(typeof tema === 'string' && tema) aplicarTema(tema);
+    try{ await carregarAreasAtuacao(); }catch(e){ console.warn('Áreas de atuação:', e); }
     const [moedaSalva, formasSalvas, modelosSalvos, historicoSalvo] = await Promise.all([lerConfig('moeda'), lerConfig('formas_pagamento'), lerConfig('mensagens_modelos'), lerConfig('mensagens_historico')]);
     if(modelosSalvos && typeof modelosSalvos === 'object'){
       mensagensModelos = { textos: modelosSalvos.textos || {}, titulos: modelosSalvos.titulos || {}, extras: Array.isArray(modelosSalvos.extras) ? modelosSalvos.extras : [] };
@@ -13289,7 +13333,7 @@
   async function coletarDadosPaciente(p, opcoes){
     opcoes = opcoes || {};
     const out = { geradoEm: new Date().toISOString(), paciente: null, anamneses: [], avaliacoes: [], planos: [], fotos: [],
-                  atendimentos: [], comandas: [], mensagens: [], lembretes: [], avisos: [] };
+                  atendimentos: [], comandas: [], mensagens: [], lembretes: [], especificas: [], avisos: [] };
     const pid = String(p.id);
     out.mensagens = (mensagensHistorico || []).filter(h => h.pacienteId != null ? String(h.pacienteId) === pid : h.paciente === p.name)
       .map(h => ({ em: h.em, modelo: (() => { try{ return modeloPorId(h.modelo).titulo; }catch(e){ return h.modelo; } })(), texto: h.texto }));
@@ -13304,7 +13348,7 @@
           return data || [];
         }catch(e){ out.avisos.push(rotulo); return []; }
       };
-      const [cad, an, av, pl, fo, ag, co] = await Promise.all([
+      const [cad, an, av, pl, fo, ag, co, esp] = await Promise.all([
         ler('cadastro', 'pacientes', q => q.eq('id', p.id)),
         ler('fichas de anamnese', 'anamneses', q => q.eq('paciente_id', p.id)),
         ler('avaliações', 'avaliacoes_cutaneas', q => q.eq('paciente_id', p.id)),
@@ -13312,9 +13356,12 @@
         ler('fotos', 'fotos_evolucao', q => q.eq('paciente_id', p.id)),
         ler('atendimentos', 'agendamentos', q => q.eq('paciente_id', p.id)),
         ler('comandas', 'comandas', q => q.eq('paciente_id', pid)),
+        ler('anamneses específicas', 'anamneses_especificas', q => q.eq('paciente_id', p.id)),
       ]);
       out.paciente = cad[0] || null;
       out.anamneses = an; out.avaliacoes = av; out.planos = pl; out.fotos = fo; out.atendimentos = ag;
+      // tabela nova: se ainda não existir no banco, não conta como falha
+      out.especificas = esp; out.avisos = out.avisos.filter(a => !/^anamneses específicas \(.*(does not exist|schema cache|anamneses_especificas)/i.test(a));
       const idsAg = ag.map(a => a.id).filter(Boolean);
       let co2 = [];
       if(idsAg.length) co2 = await ler('comandas da agenda', 'comandas', q => q.in('agendamento_id', idsAg));
@@ -13338,6 +13385,7 @@
       out.paciente = { nome: p.name, email: p.email, telefone_codigo: p.phoneCode, telefone_numero: p.phoneNumber,
                        data_nascimento: p.dataNascimento, pais: p.pais, status: p.status, foto_url: p.foto_url };
       out.anamneses = (demoAnamnesesPorPaciente[p.id] || []).slice();
+      Object.keys(demoEspecificas[p.id] || {}).forEach(t => (demoEspecificas[p.id][t] || []).forEach(r => out.especificas.push({ ...r, tipo: t })));
       Object.keys(appointments || {}).forEach(key => (appointments[key] || []).forEach(a => {
         if(a.type !== 'block' && (String(a.pacienteId) === pid || (!a.pacienteId && a.label === p.name)))
           out.atendimentos.push({ id: a.id, data: key, hora: a.time, duracao_min: a.duration, servico_nome: a.servico, observacoes: a.observacoes, status: a.status });
@@ -13407,6 +13455,7 @@ ${sec('Cadastro', null, d.paciente ? lgpdCamposHTML(d.paciente) : nada)}
 ${sec('Fichas de anamnese', d.anamneses.length, lista(d.anamneses, 'Ficha', 'respondida_em'))}
 ${sec('Avaliações cutâneas', d.avaliacoes.length, lista(d.avaliacoes, 'Avaliação', 'data_avaliacao'))}
 ${sec('Planos de skincare', d.planos.length, lista(d.planos, 'Plano', 'created_at'))}
+${d.especificas.length ? sec('Anamneses específicas', d.especificas.length, d.especificas.map(r => `<div class="bloco"><h3>${escHTML((ESPECIALIDADES[r.tipo] || {}).titulo || r.tipo)} — ${escHTML(lgpdData(r.created_at) || '')}</h3><table>${espLinhas(r.tipo, r.dados || {}).map(([k, v]) => `<tr><th>${escHTML(k)}</th><td>${escHTML(v)}</td></tr>`).join('')}</table></div>`).join('')) : ''}
 ${sec('Fotos de evolução', d.fotos.length, fotos)}
 ${sec('Atendimentos', d.atendimentos.length, atend)}
 ${sec('Comandas', d.comandas.length, comandas)}
@@ -13489,6 +13538,7 @@ ${d.lembretes.length ? sec('Lembretes', d.lembretes.length, lemb) : ''}
       'Cadastro e foto de perfil',
       d.anamneses.length && plural(d.anamneses.length, 'ficha de anamnese', 'fichas de anamnese'),
       d.avaliacoes.length && plural(d.avaliacoes.length, 'avaliação cutânea', 'avaliações cutâneas'),
+      d.especificas.length && plural(d.especificas.length, 'anamnese específica (harmonização, tricologia ou corporal)', 'anamneses específicas (harmonização, tricologia ou corporal)'),
       d.planos.length && plural(d.planos.length, 'plano de skincare', 'planos de skincare'),
       d.fotos.length && plural(d.fotos.length, 'foto de evolução', 'fotos de evolução'),
       d.atendimentos.length && (plural(d.atendimentos.length, 'atendimento da agenda', 'atendimentos da agenda') +
@@ -13549,6 +13599,7 @@ ${d.lembretes.length ? sec('Lembretes', d.lembretes.length, lemb) : ''}
       const idx = patients.findIndex(x => String(x.id) === pid);
       if(idx !== -1) patients.splice(idx, 1);
       delete demoAnamnesesPorPaciente[p.id];
+      delete demoEspecificas[p.id];
       Object.keys(appointments || {}).forEach(key => {
         appointments[key] = (appointments[key] || []).filter(a => !(a.type !== 'block' && (String(a.pacienteId) === pid || (!a.pacienteId && a.label === p.name))));
       });
@@ -13596,6 +13647,407 @@ ${d.lembretes.length ? sec('Lembretes', d.lembretes.length, lemb) : ''}
     if(modalExportarOverlay.classList.contains('open')) fecharExportar();
     else if(modalApagarPacOverlay.classList.contains('open')) fecharApagarPac();
   });
+
+  /* ================= ANAMNESES ESPECÍFICAS (Harmonização Facial, Tricologia, Corporal) =================
+     Só aparecem na ficha se a área estiver ligada em Configurações → Áreas de Atuação.
+     Cada "Salvar" registra uma ficha nova (o histórico fica guardado). Tabela: anamneses_especificas. */
+  const SN = ['Não', 'Sim'];
+  const ESPECIALIDADES = {
+    hof: { nome: 'Harmonização Facial', titulo: 'Anamnese de Harmonização Facial', campos: [
+      { s: 'Queixa e objetivos' },
+      { id: 'queixa', l: 'Queixa principal / o que deseja melhorar', t: 'area' },
+      { id: 'areas', l: 'Áreas de interesse', t: 'chips', o: ['Testa', 'Glabela (entre as sobrancelhas)', 'Pés de galinha', 'Olheiras', 'Malar (maçãs do rosto)', 'Sulco nasogeniano', 'Linhas de marionete', 'Lábios', 'Código de barras', 'Mento (queixo)', 'Mandíbula', 'Nariz', 'Papada', 'Pescoço e colo'] },
+      { id: 'procedimentos', l: 'Procedimentos de interesse', t: 'chips', o: ['Toxina botulínica', 'Preenchimento com ácido hialurônico', 'Bioestimulador de colágeno', 'Fios de PDO', 'Skinbooster', 'Enzimas / papada', 'Microagulhamento', 'Peeling', 'Ainda não sei'] },
+      { id: 'naturalidade', l: 'Resultado que espera', t: 'sel', o: ['Bem natural', 'Moderado', 'Mais evidente'] },
+      { id: 'evento', l: 'Tem algum evento importante em breve? Quando?', t: 'txt' },
+      { s: 'Procedimentos anteriores' },
+      { id: 'toxina', l: 'Já aplicou toxina botulínica', t: 'sn', det: 'Quando foi a última e em quais áreas?' },
+      { id: 'preenchimento', l: 'Já fez preenchimento com ácido hialurônico', t: 'sn', det: 'Produto, áreas e data' },
+      { id: 'bioestimulador', l: 'Já fez bioestimulador de colágeno', t: 'sn', det: 'Produto, áreas e data' },
+      { id: 'fios', l: 'Já colocou fios de PDO', t: 'sn', det: 'Onde e quando?' },
+      { id: 'definitivo', l: 'Preenchimento definitivo (PMMA, silicone) ou implante facial', t: 'sn', det: 'Onde?' },
+      { id: 'cirurgia', l: 'Cirurgia plástica no rosto', t: 'sn', det: 'Qual e quando?' },
+      { id: 'intercorrencia', l: 'Já teve reação ou intercorrência em procedimento estético', t: 'sn', det: 'O que aconteceu?' },
+      { id: 'satisfacao', l: 'Como se sentiu com os resultados anteriores', t: 'area' },
+      { s: 'Saúde e contraindicações' },
+      { id: 'gestante', l: 'Gestante ou amamentando', t: 'sn' },
+      { id: 'autoimune', l: 'Doença autoimune (lúpus, artrite reumatoide, vitiligo…)', t: 'sn', det: 'Qual?' },
+      { id: 'neuromuscular', l: 'Doença neuromuscular (miastenia gravis, ELA…)', t: 'sn', det: 'Qual?' },
+      { id: 'coagulacao', l: 'Distúrbio de coagulação ou sangra com facilidade', t: 'sn' },
+      { id: 'anticoagulante', l: 'Usa anticoagulante, AAS, anti-inflamatório, ômega 3, vitamina E ou ginkgo biloba', t: 'sn', det: 'Qual?' },
+      { id: 'isotretinoina', l: 'Usou isotretinoína (Roacutan) nos últimos 6 meses', t: 'sn' },
+      { id: 'antibiotico', l: 'Está tomando antibiótico', t: 'sn', det: 'Qual?' },
+      { id: 'alergia', l: 'Alergia a anestésico (lidocaína), ovo/albumina ou ácido hialurônico', t: 'sn', det: 'Qual?' },
+      { id: 'herpes', l: 'Herpes labial recorrente', t: 'sn' },
+      { id: 'queloide', l: 'Tendência a queloide ou cicatriz alta', t: 'sn' },
+      { id: 'infeccao', l: 'Infecção, acne inflamada ou ferida na área a tratar', t: 'sn' },
+      { id: 'dentista', l: 'Tratamento dentário recente ou marcado para as próximas semanas', t: 'sn' },
+      { id: 'vacina', l: 'Tomou vacina nas últimas 2 semanas', t: 'sn' },
+      { s: 'Avaliação da profissional' },
+      { id: 'assimetrias', l: 'Assimetrias e observações da face', t: 'area' },
+      { id: 'plano', l: 'Plano proposto (produtos, áreas, quantidade ou unidades)', t: 'area' },
+      { id: 'retorno', l: 'Data do retorno / revisão', t: 'date' },
+      { id: 'observacoes', l: 'Observações', t: 'area' },
+    ]},
+    tricologia: { nome: 'Tricologia', titulo: 'Anamnese Tricológica', campos: [
+      { s: 'Queixa' },
+      { id: 'queixas', l: 'O que incomoda', t: 'chips', o: ['Queda de cabelo', 'Afinamento dos fios', 'Falhas / entradas', 'Caspa / descamação', 'Oleosidade', 'Coceira', 'Couro cabeludo sensível ou ardendo', 'Ressecamento', 'Quebra dos fios', 'Crescimento lento'] },
+      { id: 'tempo', l: 'Há quanto tempo', t: 'sel', o: ['Menos de 3 meses', '3 a 6 meses', '6 meses a 1 ano', 'Mais de 1 ano'] },
+      { id: 'inicio', l: 'Como começou', t: 'sel', o: ['De repente', 'Aos poucos'] },
+      { id: 'quantidade', l: 'Quanto cabelo cai (na percepção dela)', t: 'sel', o: ['Pouco', 'Moderado', 'Muito (tufos)'] },
+      { id: 'familia', l: 'Calvície ou queda de cabelo na família', t: 'sn', det: 'Quem?' },
+      { id: 'queixa_texto', l: 'Descrição da queixa', t: 'area' },
+      { s: 'Possíveis gatilhos' },
+      { id: 'estresse', l: 'Estresse intenso nos últimos meses', t: 'sn' },
+      { id: 'febre', l: 'Febre alta, COVID, cirurgia ou internação nos últimos 6 meses', t: 'sn', det: 'O quê e quando?' },
+      { id: 'parto', l: 'Parto ou fim da amamentação no último ano', t: 'sn' },
+      { id: 'dieta', l: 'Dieta restritiva ou perda de peso rápida', t: 'sn' },
+      { id: 'anemia', l: 'Anemia ou ferritina baixa', t: 'sn' },
+      { id: 'tireoide', l: 'Alteração na tireoide', t: 'sn', det: 'Qual?' },
+      { id: 'hormonal', l: 'SOP ou outra alteração hormonal', t: 'sn', det: 'Qual?' },
+      { id: 'anticoncepcional', l: 'Anticoncepcional', t: 'sel', o: ['Não usa', 'Usa', 'Parou recentemente', 'Começou recentemente'] },
+      { id: 'medicamentos', l: 'Medicamentos ou suplementos para o cabelo (minoxidil, finasterida, vitaminas…)', t: 'txt' },
+      { id: 'exames', l: 'Exames recentes (ferritina, vitamina D, B12, zinco, tireoide…)', t: 'area' },
+      { s: 'Hábitos capilares' },
+      { id: 'lavagem', l: 'Lava o cabelo', t: 'sel', o: ['Todo dia', 'A cada 2 dias', '2 vezes por semana', '1 vez por semana ou menos'] },
+      { id: 'quimica', l: 'Química no cabelo', t: 'chips', o: ['Coloração', 'Descoloração / luzes', 'Progressiva / alisamento', 'Relaxamento', 'Permanente', 'Nenhuma'] },
+      { id: 'calor', l: 'Usa calor', t: 'chips', o: ['Secador', 'Chapinha', 'Babyliss', 'Nenhum'] },
+      { id: 'tracao', l: 'Usa penteados presos com frequência (rabo, coque, tranças, apliques)', t: 'sn' },
+      { id: 'produtos', l: 'Produtos que usa hoje', t: 'area' },
+      { s: 'Avaliação da profissional' },
+      { id: 'couro', l: 'Couro cabeludo', t: 'sel', o: ['Normal', 'Oleoso', 'Seco', 'Misto', 'Sensível'] },
+      { id: 'descamacao', l: 'Descamação', t: 'sel', o: ['Ausente', 'Leve', 'Moderada', 'Intensa'] },
+      { id: 'eritema', l: 'Vermelhidão', t: 'sel', o: ['Ausente', 'Leve', 'Moderada', 'Intensa'] },
+      { id: 'curvatura', l: 'Curvatura do fio', t: 'sel', o: ['Liso (1)', 'Ondulado (2)', 'Cacheado (3)', 'Crespo (4)'] },
+      { id: 'espessura', l: 'Espessura do fio', t: 'sel', o: ['Fino', 'Médio', 'Grosso'] },
+      { id: 'densidade', l: 'Densidade', t: 'sel', o: ['Baixa', 'Média', 'Alta'] },
+      { id: 'teste_tracao', l: 'Teste de tração', t: 'sel', o: ['Negativo', 'Positivo'] },
+      { id: 'padrao', l: 'Padrão / grau da queda (ex.: Ludwig I, Norwood III)', t: 'txt' },
+      { id: 'tricoscopia', l: 'Tricoscopia: o que foi observado', t: 'area' },
+      { id: 'plano', l: 'Plano de tratamento', t: 'area' },
+      { id: 'observacoes', l: 'Observações', t: 'area' },
+    ]},
+    corporal: { nome: 'Corporal', titulo: 'Anamnese Corporal', campos: [
+      { s: 'Queixa e objetivos' },
+      { id: 'queixas', l: 'Queixas', t: 'chips', o: ['Gordura localizada', 'Celulite', 'Flacidez', 'Estrias', 'Retenção / inchaço', 'Contorno corporal', 'Pós-operatório', 'Relaxamento / dores'] },
+      { id: 'areas', l: 'Áreas', t: 'chips', o: ['Abdômen', 'Flancos', 'Costas', 'Braços', 'Culote', 'Coxas (interna)', 'Coxas (externa)', 'Glúteos', 'Joelhos', 'Panturrilhas'] },
+      { id: 'objetivo', l: 'O que espera do tratamento', t: 'area' },
+      { s: 'Saúde e contraindicações' },
+      { id: 'gestante', l: 'Gestante ou amamentando', t: 'sn' },
+      { id: 'cirurgia', l: 'Cirurgia nos últimos 12 meses', t: 'sn', det: 'Qual, data e se o médico liberou drenagem/procedimentos' },
+      { id: 'circulacao', l: 'Varizes, trombose ou problema de circulação', t: 'sn', det: 'Qual?' },
+      { id: 'linfedema', l: 'Linfedema ou retirada de linfonodos', t: 'sn' },
+      { id: 'cardiaco', l: 'Problema cardíaco ou marcapasso', t: 'sn', det: 'Qual?' },
+      { id: 'metal', l: 'Implante metálico, prótese ou DIU de cobre', t: 'sn', det: 'Onde?' },
+      { id: 'renal', l: 'Problema renal', t: 'sn' },
+      { id: 'hernia', l: 'Hérnia (abdominal, umbilical ou de disco)', t: 'sn' },
+      { id: 'hematoma', l: 'Faz hematomas com facilidade', t: 'sn' },
+      { id: 'sensibilidade', l: 'Sensibilidade alterada ao calor ou ao frio', t: 'sn' },
+      { id: 'hormonios', l: 'Anticoncepcional ou hormônios em uso', t: 'txt' },
+      { id: 'ciclo', l: 'Fase do ciclo hoje', t: 'sel', o: ['Menstruada', 'Pré-menstrual', 'Outra fase', 'Não menstrua'] },
+      { s: 'Medidas' },
+      { id: 'peso', l: 'Peso (kg)', t: 'num' },
+      { id: 'altura', l: 'Altura (cm)', t: 'num' },
+      { id: 'cintura', l: 'Cintura (cm)', t: 'num' },
+      { id: 'abdomen', l: 'Abdômen, na altura do umbigo (cm)', t: 'num' },
+      { id: 'quadril', l: 'Quadril (cm)', t: 'num' },
+      { id: 'coxa_d', l: 'Coxa direita (cm)', t: 'num' },
+      { id: 'coxa_e', l: 'Coxa esquerda (cm)', t: 'num' },
+      { id: 'braco_d', l: 'Braço direito (cm)', t: 'num' },
+      { id: 'braco_e', l: 'Braço esquerdo (cm)', t: 'num' },
+      { s: 'Avaliação da profissional' },
+      { id: 'celulite', l: 'Celulite', t: 'sel', o: ['Ausente', 'Grau 1', 'Grau 2', 'Grau 3', 'Grau 4'] },
+      { id: 'flacidez', l: 'Flacidez', t: 'sel', o: ['Ausente', 'Tissular (pele)', 'Muscular', 'Mista'] },
+      { id: 'estrias', l: 'Estrias', t: 'sel', o: ['Ausentes', 'Rubras (recentes)', 'Albas (antigas)', 'Rubras e albas'] },
+      { id: 'gordura', l: 'Gordura localizada: onde e quanto', t: 'txt' },
+      { id: 'plano', l: 'Plano de tratamento (técnicas e número de sessões)', t: 'area' },
+      { id: 'observacoes', l: 'Observações', t: 'area' },
+    ]},
+  };
+  const DECLARACAO_ESPECIFICA = 'A paciente conferiu estas informações e autorizou o registro destes dados para o atendimento.';
+  var areasAtuacao = { hof: false, tricologia: false, corporal: false };
+  const demoEspecificas = {}; // { pacienteId: { tipo: [registros] } } — só no modo demonstração
+  const espEstado = {}; // { tipo: { registros, mostrandoId, seq } }
+
+  function espRotulo(tipo, id){
+    if(id === 'consentimento') return 'Autorização da paciente';
+    const c = (ESPECIALIDADES[tipo] || { campos: [] }).campos.find(x => x.id === id);
+    if(c) return c.l;
+    const base = id.replace(/_qual$/, '');
+    const cb = (ESPECIALIDADES[tipo] || { campos: [] }).campos.find(x => x.id === base);
+    return cb ? (cb.det || 'Detalhes') : id;
+  }
+  // { campo: valor } → [[rótulo, valor]] na ordem do formulário (para histórico, exportação e impressão)
+  function espLinhas(tipo, dados){
+    const out = [];
+    (ESPECIALIDADES[tipo] || { campos: [] }).campos.forEach(c => {
+      if(!c.id) return;
+      const v = dados[c.id];
+      if(v != null && v !== '' && !(Array.isArray(v) && !v.length)) out.push([c.l, Array.isArray(v) ? v.join(', ') : (c.t === 'date' ? (lgpdData(v) || v) : String(v))]);
+      if(c.det && dados[c.id + '_qual']) out.push(['↳ ' + c.det, dados[c.id + '_qual']]);
+    });
+    if(dados.consentimento) out.push(['Autorização da paciente', 'Sim']);
+    return out;
+  }
+
+  function montarPainelEspecifico(tipo){
+    const esp = ESPECIALIDADES[tipo];
+    const painel = document.getElementById('panel-' + tipo);
+    if(!painel || !esp) return;
+    let html = `<div class="comanda-aviso" id="esp-aviso-${tipo}" style="display:none;"></div>`;
+    let aberto = false;
+    const fechar = () => aberto ? '</div></div>' : '';
+    esp.campos.forEach((c, i) => {
+      if(c.s){
+        html += fechar();
+        html += `<div class="anamnese-card"><div class="anamnese-card-head"><div class="anamnese-title">${escHTML(i === 0 ? esp.titulo + ' — ' + c.s : c.s)}</div></div><div class="form-grid">`;
+        aberto = true; return;
+      }
+      const nome = `esp-${tipo}-${c.id}`;
+      const largo = (c.t === 'area' || c.t === 'chips') ? ' esp-full' : '';
+      let campo = '';
+      if(c.t === 'area') campo = `<textarea class="anamnese-textarea" id="${nome}" rows="3" style="min-height:70px;"></textarea>`;
+      else if(c.t === 'txt') campo = `<input type="text" id="${nome}" class="anamnese-select">`;
+      else if(c.t === 'num') campo = `<input type="number" step="0.1" min="0" inputmode="decimal" id="${nome}" class="anamnese-select">`;
+      else if(c.t === 'date') campo = `<input type="date" id="${nome}" class="anamnese-select">`;
+      else if(c.t === 'sel' || c.t === 'sn'){
+        const ops = c.t === 'sn' ? SN : c.o;
+        campo = `<select class="anamnese-select" id="${nome}"><option value="">Selecionar</option>${ops.map(o => `<option>${escHTML(o)}</option>`).join('')}</select>`;
+        if(c.det) campo += `<input type="text" class="anamnese-select esp-qual" id="${nome}_qual" placeholder="${escHTML(c.det)}" style="display:none;">`;
+      }
+      else if(c.t === 'chips') campo = `<div class="chip-select esp-chips" id="${nome}">${c.o.map(o => `<div class="chip" data-valor="${escHTML(o)}">${escHTML(o)}</div>`).join('')}</div>`;
+      html += `<div class="form-field${largo}"><label for="${nome}">${escHTML(c.l)}</label>${campo}${c.id === 'altura' ? `<div class="esp-imc" id="esp-${tipo}-imc"></div>` : ''}</div>`;
+    });
+    html += fechar();
+    html += `<div class="anamnese-card">
+      <label class="checkbox-item" style="margin-bottom:14px;"><input type="checkbox" id="esp-${tipo}-consentimento"> ${escHTML(DECLARACAO_ESPECIFICA)}</label>
+      <div class="esp-rodape">
+        <div class="esp-acoes">
+          <button class="btn-outline" type="button" id="esp-${tipo}-limpar">Nova ficha em branco</button>
+          <button class="btn-outline" type="button" id="esp-${tipo}-imprimir">Imprimir / PDF</button>
+        </div>
+        <button class="btn-save" type="button" id="esp-${tipo}-salvar">Salvar ${escHTML(esp.titulo)}</button>
+      </div>
+      <div class="toggle-subtitle" style="margin-top:22px;">Fichas anteriores</div>
+      <div class="esp-hist" id="esp-${tipo}-hist"><p class="lgpd-texto">Nenhuma ficha salva ainda.</p></div>
+    </div>`;
+    painel.innerHTML = html;
+
+    painel.querySelectorAll('.esp-chips .chip').forEach(ch => ch.addEventListener('click', () => ch.classList.toggle('selected')));
+    esp.campos.filter(c => c.det).forEach(c => {
+      const sel = document.getElementById(`esp-${tipo}-${c.id}`);
+      sel.addEventListener('change', () => { document.getElementById(`esp-${tipo}-${c.id}_qual`).style.display = sel.value === 'Sim' ? 'block' : 'none'; });
+    });
+    if(tipo === 'corporal'){
+      ['peso', 'altura'].forEach(id => document.getElementById('esp-corporal-' + id).addEventListener('input', atualizarImc));
+    }
+    document.getElementById(`esp-${tipo}-salvar`).addEventListener('click', () => salvarEspecifica(tipo));
+    document.getElementById(`esp-${tipo}-limpar`).addEventListener('click', () => { preencherEspecifica(tipo, {}); espEstado[tipo] = { ...(espEstado[tipo] || {}), mostrandoId: null }; mostrarAvisoEspecifica(tipo); renderHistoricoEspecifica(tipo); });
+    document.getElementById(`esp-${tipo}-imprimir`).addEventListener('click', () => imprimirEspecifica(tipo));
+  }
+  function atualizarImc(){
+    const peso = parseFloat(String(document.getElementById('esp-corporal-peso').value).replace(',', '.'));
+    const alt = parseFloat(String(document.getElementById('esp-corporal-altura').value).replace(',', '.'));
+    const el = document.getElementById('esp-corporal-imc');
+    if(peso > 0 && alt > 0){ const m = alt > 3 ? alt / 100 : alt; el.textContent = 'IMC: ' + (peso / (m * m)).toFixed(1).replace('.', ','); }
+    else el.textContent = '';
+  }
+  function lerEspecifica(tipo){
+    const dados = {};
+    ESPECIALIDADES[tipo].campos.forEach(c => {
+      if(!c.id) return;
+      const el = document.getElementById(`esp-${tipo}-${c.id}`);
+      if(!el) return;
+      if(c.t === 'chips'){ const v = Array.from(el.querySelectorAll('.chip.selected')).map(x => x.dataset.valor); if(v.length) dados[c.id] = v; return; }
+      const v = String(el.value || '').trim();
+      if(v) dados[c.id] = c.t === 'num' ? (parseFloat(v.replace(',', '.')) || v) : v;
+      if(c.det && v === 'Sim'){ const q = document.getElementById(`esp-${tipo}-${c.id}_qual`).value.trim(); if(q) dados[c.id + '_qual'] = q; }
+    });
+    if(document.getElementById(`esp-${tipo}-consentimento`).checked) dados.consentimento = true;
+    return dados;
+  }
+  function preencherEspecifica(tipo, dados){
+    dados = dados || {};
+    ESPECIALIDADES[tipo].campos.forEach(c => {
+      if(!c.id) return;
+      const el = document.getElementById(`esp-${tipo}-${c.id}`);
+      if(!el) return;
+      if(c.t === 'chips'){ const lista = Array.isArray(dados[c.id]) ? dados[c.id] : []; el.querySelectorAll('.chip').forEach(x => x.classList.toggle('selected', lista.includes(x.dataset.valor))); return; }
+      el.value = dados[c.id] != null ? String(dados[c.id]) : '';
+      if(c.det){
+        const q = document.getElementById(`esp-${tipo}-${c.id}_qual`);
+        q.value = dados[c.id + '_qual'] || '';
+        q.style.display = el.value === 'Sim' ? 'block' : 'none';
+      }
+    });
+    document.getElementById(`esp-${tipo}-consentimento`).checked = !!dados.consentimento;
+    if(tipo === 'corporal') atualizarImc();
+  }
+  function limparEspecificas(){
+    Object.keys(ESPECIALIDADES).forEach(tipo => {
+      if(!document.getElementById(`esp-${tipo}-salvar`)) return;
+      espEstado[tipo] = { registros: [], mostrandoId: null, seq: ((espEstado[tipo] || {}).seq || 0) + 1, carregadoDe: null };
+      preencherEspecifica(tipo, {});
+      mostrarAvisoEspecifica(tipo);
+      renderHistoricoEspecifica(tipo);
+    });
+  }
+  function dataDoRegistro(r){ const d = new Date(r.created_at || r.criado_em || Date.now()); return isNaN(d) ? '' : d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
+  function mostrarAvisoEspecifica(tipo){
+    const av = document.getElementById(`esp-aviso-${tipo}`);
+    if(!av) return;
+    const st = espEstado[tipo] || {};
+    const r = (st.registros || []).find(x => x.id === st.mostrandoId);
+    if(r){ av.textContent = `Mostrando a ficha de ${dataDoRegistro(r)}. Ao salvar, uma nova ficha é registrada e esta continua no histórico.`; av.style.display = 'block'; }
+    else av.style.display = 'none';
+  }
+  function renderHistoricoEspecifica(tipo){
+    const box = document.getElementById(`esp-${tipo}-hist`);
+    if(!box) return;
+    const st = espEstado[tipo] || { registros: [] };
+    if(!st.registros || !st.registros.length){ box.innerHTML = '<p class="lgpd-texto">Nenhuma ficha salva ainda.</p>'; return; }
+    box.innerHTML = st.registros.map(r => `<div class="esp-hist-item${r.id === st.mostrandoId ? ' atual' : ''}" data-id="${escHTML(r.id)}">
+      <span>Ficha de ${escHTML(dataDoRegistro(r))}${r.dados && r.dados.consentimento ? ' · autorizada' : ''}</span>
+      <span style="display:flex; gap:6px;"><button type="button" class="ver">${r.id === st.mostrandoId ? 'Aberta' : 'Abrir'}</button><button type="button" class="apagar">Excluir</button></span></div>`).join('');
+    box.querySelectorAll('.esp-hist-item').forEach(item => {
+      const r = st.registros.find(x => String(x.id) === item.dataset.id);
+      item.querySelector('.ver').addEventListener('click', () => { st.mostrandoId = r.id; preencherEspecifica(tipo, r.dados || {}); mostrarAvisoEspecifica(tipo); renderHistoricoEspecifica(tipo); });
+      item.querySelector('.apagar').addEventListener('click', () => excluirEspecifica(tipo, r));
+    });
+  }
+  async function carregarEspecifica(tipo){
+    const p = currentPatient;
+    if(!p) return;
+    const st = espEstado[tipo] = espEstado[tipo] || { registros: [] };
+    if(st.carregadoDe === String(p.id)) return; // já carregado para esta paciente
+    const minha = st.seq = (st.seq || 0) + 1;
+    let regs = [];
+    if(isPacienteReal(p)){
+      try{
+        const { data, error } = await supabaseClient.from('anamneses_especificas').select('*')
+          .eq('paciente_id', p.id).eq('tipo', tipo).order('created_at', { ascending: false });
+        if(error){
+          if(/anamneses_especificas|does not exist|schema cache/i.test(error.message || '')) showToast('Falta rodar o arquivo anamneses-especificas.sql no Supabase.');
+          else showToast('Não foi possível carregar as fichas: ' + error.message);
+          return;
+        }
+        regs = data || [];
+      }catch(e){ return; }
+    } else {
+      regs = ((demoEspecificas[p.id] || {})[tipo] || []).slice();
+    }
+    if(minha !== st.seq || !currentPatient || String(currentPatient.id) !== String(p.id)) return; // trocou de paciente no meio
+    regs.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+    st.registros = regs; st.carregadoDe = String(p.id);
+    st.mostrandoId = regs[0] ? regs[0].id : null;
+    preencherEspecifica(tipo, regs[0] ? regs[0].dados : {});
+    mostrarAvisoEspecifica(tipo);
+    renderHistoricoEspecifica(tipo);
+  }
+  async function salvarEspecifica(tipo){
+    const p = currentPatient;
+    if(!p){ showToast('Nenhuma paciente selecionada.'); return; }
+    const dados = lerEspecifica(tipo);
+    if(!Object.keys(dados).filter(k => k !== 'consentimento').length){ showToast('Preencha pelo menos um campo antes de salvar.'); return; }
+    const st = espEstado[tipo] = espEstado[tipo] || { registros: [] };
+    let novo;
+    if(isPacienteReal(p)){
+      const usuario = await usuarioParaSalvar();
+      if(!usuario) return;
+      const { data, error } = await supabaseClient.from('anamneses_especificas').insert({
+        profissional_id: usuario.id, paciente_id: p.id, tipo, dados,
+        consentimento_em: dados.consentimento ? new Date().toISOString() : null,
+      }).select().single();
+      if(error){
+        showToast(/anamneses_especificas|does not exist|schema cache/i.test(error.message || '') ? 'Falta rodar o arquivo anamneses-especificas.sql no Supabase. Nada foi salvo.' : 'Erro ao salvar: ' + error.message);
+        return;
+      }
+      novo = data;
+    } else {
+      novo = { id: 'demo-' + Date.now(), tipo, dados, created_at: new Date().toISOString() };
+      demoEspecificas[p.id] = demoEspecificas[p.id] || {};
+      (demoEspecificas[p.id][tipo] = demoEspecificas[p.id][tipo] || []).unshift(novo);
+    }
+    if(!novo.created_at) novo.created_at = new Date().toISOString();
+    if(!novo.dados) novo.dados = dados;
+    st.registros = [novo].concat((st.registros || []).filter(r => r.id !== novo.id));
+    st.mostrandoId = novo.id; st.carregadoDe = String(p.id);
+    mostrarAvisoEspecifica(tipo);
+    renderHistoricoEspecifica(tipo);
+    showToast(ESPECIALIDADES[tipo].titulo + ' salva!');
+  }
+  async function excluirEspecifica(tipo, r){
+    if(!confirm(`Excluir a ficha de ${dataDoRegistro(r)}? Essa ação não pode ser desfeita.`)) return;
+    const p = currentPatient;
+    if(p && isPacienteReal(p)){
+      const usuario = await usuarioParaSalvar();
+      if(!usuario) return;
+      const { error } = await supabaseClient.from('anamneses_especificas').delete().eq('id', r.id);
+      if(error){ showToast('Não foi possível excluir: ' + error.message); return; }
+    } else if(p){
+      const lista = (demoEspecificas[p.id] || {})[tipo] || [];
+      const i = lista.indexOf(r); if(i > -1) lista.splice(i, 1);
+    }
+    const st = espEstado[tipo];
+    st.registros = st.registros.filter(x => x !== r);
+    if(st.mostrandoId === r.id){ st.mostrandoId = null; preencherEspecifica(tipo, {}); }
+    mostrarAvisoEspecifica(tipo);
+    renderHistoricoEspecifica(tipo);
+    showToast('Ficha excluída.');
+  }
+  function imprimirEspecifica(tipo){
+    const p = currentPatient;
+    if(!p) return;
+    const esp = ESPECIALIDADES[tipo];
+    const linhas = espLinhas(tipo, lerEspecifica(tipo));
+    if(!linhas.length){ showToast('A ficha está em branco.'); return; }
+    const prof = (perfilProfissional && perfilProfissional.nome) || '';
+    const st = espEstado[tipo] || {};
+    const r = (st.registros || []).find(x => x.id === st.mostrandoId);
+    const quando = r ? dataDoRegistro(r) : new Date().toLocaleDateString('pt-BR');
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escHTML(esp.titulo)} — ${escHTML(p.name)}</title>
+      <style>body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#1f2a30;max-width:780px;margin:0 auto;padding:28px 18px;line-height:1.45}
+      h1{font-size:20px;margin:0 0 4px} .meta{font-size:13px;color:#555;margin:0 0 18px;border-bottom:2px solid #c9a46a;padding-bottom:12px}
+      table{width:100%;border-collapse:collapse;font-size:13px} th,td{text-align:left;vertical-align:top;padding:6px 8px;border-bottom:1px solid #eee} th{width:42%;color:#444;font-weight:600}
+      .ass{margin-top:46px;display:flex;gap:40px} .ass div{flex:1;border-top:1px solid #333;padding-top:6px;font-size:12px;text-align:center}
+      @media print{button{display:none}}</style></head><body>
+      <h1>${escHTML(esp.titulo)}</h1>
+      <p class="meta">Paciente: <b>${escHTML(p.name)}</b> · Ficha de ${escHTML(quando)}${prof ? ' · Profissional: ' + escHTML(prof) : ''}</p>
+      <table>${linhas.map(([k, v]) => `<tr><th>${escHTML(k)}</th><td>${escHTML(v).replace(/\n/g, '<br>')}</td></tr>`).join('')}</table>
+      <p style="font-size:12.5px;margin-top:22px;">Declaro que as informações acima são verdadeiras e que informei a profissional sobre minha saúde e procedimentos anteriores.</p>
+      <div class="ass"><div>Assinatura da paciente</div><div>Assinatura da profissional</div></div>
+      <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`;
+    const w = window.open('', '_blank');
+    if(!w){ showToast('Permita pop-ups para imprimir a ficha.'); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+  }
+
+  /* ---------- Áreas de atuação (Configurações) ---------- */
+  function aplicarAreasAtuacao(){
+    Object.keys(ESPECIALIDADES).forEach(tipo => {
+      const on = !!areasAtuacao[tipo];
+      const tab = document.querySelector(`.registro-tab[data-tab="${tipo}"]`);
+      if(tab) tab.style.display = on ? '' : 'none';
+      const cb = document.querySelector(`.cfg-area[value="${tipo}"]`);
+      if(cb) cb.checked = on;
+      const painel = document.getElementById('panel-' + tipo);
+      if(!on && painel && painel.classList.contains('active')) switchRegistroTab('dados');
+    });
+  }
+  document.querySelectorAll('.cfg-area').forEach(cb => cb.addEventListener('change', async () => {
+    areasAtuacao[cb.value] = cb.checked;
+    aplicarAreasAtuacao();
+    const ok = await salvarConfig('areas_atuacao', areasAtuacao);
+    showToast(cb.checked ? `${ESPECIALIDADES[cb.value].titulo} ligada: a aba aparece na ficha das pacientes.` : `${ESPECIALIDADES[cb.value].titulo} desligada. As fichas salvas continuam guardadas.`);
+    if(ok === false && !modoDemonstracao) console.warn('Áreas de atuação salvas só neste navegador.');
+  }));
+  async function carregarAreasAtuacao(){
+    const v = await lerConfig('areas_atuacao');
+    Object.keys(ESPECIALIDADES).forEach(t => { areasAtuacao[t] = !!(v && typeof v === 'object' && v[t]); });
+    aplicarAreasAtuacao();
+  }
+  Object.keys(ESPECIALIDADES).forEach(montarPainelEspecifico);
+  aplicarAreasAtuacao();
 
   if(confirmarToken){
     document.getElementById('authScreen').style.display = 'none';
