@@ -57,3 +57,8 @@
 
   // Aplica a cor do tema escolhida antes da página aparecer, para não "piscar" na cor padrão.
   try{ var t = localStorage.getItem('skinExpertTema'); if(t && t !== 'bordo') document.documentElement.setAttribute('data-tema', t); }catch(e){}
+
+  // Versão para celular (menu embaixo, áreas só do computador, sem modo demonstração).
+  // false = celular continua como antes. Para ligar, troque para true.
+  var VERSAO_CELULAR = false;
+  if(VERSAO_CELULAR) document.documentElement.classList.add('celular-ativo');
