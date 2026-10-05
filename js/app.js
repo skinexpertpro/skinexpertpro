@@ -887,6 +887,7 @@
   }
 
   function switchRegistroTab(tabName){
+    if(ehCelular() && ['planoskincare', 'recomendacoes'].includes(tabName)) tabName = 'dados'; // no celular essas abas ficam só no computador
     document.querySelectorAll('.registro-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.registro-panel').forEach(p => p.classList.remove('active'));
     const tabEl = document.querySelector(`.registro-tab[data-tab="${tabName}"]`);
@@ -894,7 +895,7 @@
     const panel = document.getElementById('panel-' + tabName);
     if(panel){ panel.classList.add('active'); }
     else { document.getElementById('panel-placeholder').classList.add('active'); }
-    if(tabName === 'planoskincare') updateSkincareMeta();
+    if(tabName === 'planoskincare'){ updateSkincareMeta(); atualizarProdutosSeAntigo(); }
     if(tabName === 'fotos') renderFotosEvolucao();
     if(typeof ESPECIALIDADES !== 'undefined' && ESPECIALIDADES[tabName]){
       if(!areasAtuacao[tabName]){ switchRegistroTab('dados'); return; }
@@ -2317,11 +2318,20 @@
         outrosIngredientes: p.outros_ingredientes,
       }));
 
+      produtosCarregadosEm = Date.now();
       renderCatalogo();
       renderSkcProdutosEncontrados();
     } catch(e){
       // qualquer falha de rede/consulta: segue com o mock local, sem travar o app
     }
+  }
+  // Busca o Catálogo de novo (ex.: produtos novos cadastrados no Supabase com o app já aberto).
+  // Roda ao abrir o Plano de SkinCare e o Assistente; no máximo 1 vez a cada 30 segundos.
+  let produtosCarregadosEm = 0;
+  function atualizarProdutosSeAntigo(){
+    if(Date.now() - produtosCarregadosEm < 30000) return;
+    produtosCarregadosEm = Date.now();
+    loadProdutosFromSupabase();
   }
   // (loadProdutosFromSupabase roda no enterApp, depois do login — aqui só duplicava o carregamento)
 
@@ -2742,6 +2752,7 @@
     const btnFicha = document.getElementById('apptDetFicha');
     btnFicha.style.display = paciente ? '' : 'none';
     document.getElementById('apptDetWhatsapp').style.display = paciente && numeroWhatsappDaPaciente(paciente) ? '' : 'none';
+    document.getElementById('apptDetComanda').style.display = isBlock ? 'none' : '';
 
     modalApptDetOverlay.classList.add('open');
   }
@@ -2766,6 +2777,20 @@
     const modelo = key < hojeK ? 'pos' : key === amanhaK ? 'lembrete' : 'confirmacao';
     fecharDetalhesAtendimento();
     abrirEnvioMensagem({ paciente, key, hora: item.time, servico: item.servico, modelo });
+  });
+
+  // Comanda do atendimento: abre (ou cria, se ainda não existir) para registrar o pagamento
+  document.getElementById('apptDetComanda').addEventListener('click', async () => {
+    if(!apptDetAtual) return;
+    const { key, item } = apptDetAtual;
+    let c = comandaDoAgendamento(item.id);
+    if(!c){
+      const paciente = pacienteDoItem(item);
+      c = await criarComandaDoAgendamento({ agendamentoId: item.id, key, pacienteId: paciente ? paciente.id : (item.pacienteId || null), cliente: item.label, servicoNome: item.servico });
+      if(!c){ showToast('Não foi possível abrir a comanda deste atendimento.'); return; }
+    }
+    fecharDetalhesAtendimento();
+    abrirComanda(c);
   });
 
   document.getElementById('apptDetFicha').addEventListener('click', () => {
@@ -6680,6 +6705,7 @@
   document.getElementById('skcBtnToggleAssistente').addEventListener('click', () => {
     const panel = document.getElementById('skcAssistentePanel');
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    atualizarProdutosSeAntigo();
   });
 
   const skcClassesContainer = document.getElementById('skcAssistClasses');
@@ -6902,17 +6928,32 @@
       return;
     }
 
-    const qtdAtivosDoProduto = p => (p.ativos || []).filter(aid => skcAtivosDesejados.has(aid)).length;
+    // Mesma regra do Dicionário de Ativos: conta o ativo marcado no cadastro do produto
+    // e também o que aparece na lista de ingredientes (INCI). Assim, todo produto novo do
+    // Catálogo entra na busca sem precisar de ajuste no assistente.
+    const ativosPorProduto = new Map(); // id do produto -> { ids: [ativos], marcados: n }
+    skcAtivosDesejados.forEach(aid => {
+      const a = ativosData.find(x => x.id === aid);
+      if(!a) return;
+      produtosQueContemAtivo(a).forEach(x => {
+        const reg = ativosPorProduto.get(x.id) || { ids: [], marcados: 0 };
+        reg.ids.push(aid);
+        if(!x.__pelaInci) reg.marcados++;
+        ativosPorProduto.set(x.id, reg);
+      });
+    });
+    const ativosDoProduto = p => (ativosPorProduto.get(p.id) || { ids: [] }).ids;
+    const qtdAtivosDoProduto = p => ativosDoProduto(p).length;
+    const ordenar = (a, b) => (qtdAtivosDoProduto(b) - qtdAtivosDoProduto(a)) ||
+      (((ativosPorProduto.get(b.id) || {}).marcados || 0) - ((ativosPorProduto.get(a.id) || {}).marcados || 0));
     let encontrados;
     if(funcoesAtivas.length > 0){
       // Tipo de produto escolhido: mostra TODOS desse tipo (ex.: os 14 protetores solares).
       // Os ativos escolhidos não escondem nada: só colocam primeiro quem os contém.
-      encontrados = products.filter(p => funcoesAtivas.includes(p.category))
-        .sort((a, b) => qtdAtivosDoProduto(b) - qtdAtivosDoProduto(a));
+      encontrados = products.filter(p => funcoesAtivas.includes(p.category)).sort(ordenar);
     } else {
       // Só ativos escolhidos: mostra os produtos que contêm algum deles.
-      encontrados = products.filter(p => qtdAtivosDoProduto(p) > 0)
-        .sort((a, b) => qtdAtivosDoProduto(b) - qtdAtivosDoProduto(a));
+      encontrados = products.filter(p => qtdAtivosDoProduto(p) > 0).sort(ordenar);
     }
 
     if(encontrados.length === 0){
@@ -6930,7 +6971,7 @@
     }
 
     encontrados.forEach(prod => {
-      const ativosMatch = (prod.ativos || []).filter(aid => skcAtivosDesejados.has(aid))
+      const ativosMatch = ativosDoProduto(prod)
         .map(aid => ativosData.find(x => x.id === aid))
         .filter(Boolean);
       const onManha = routineEntries.some(e => e.product.id === prod.id && e.period === 'manha');
@@ -7742,6 +7783,7 @@
   }
 
   document.getElementById('authDemoLink').addEventListener('click', () => {
+    if(ehCelular()) return; // no celular não existe modo demonstração
     modoDemonstracao = true;
     document.body.classList.add('modo-demo');
     authScreenEl.style.display = 'none';
@@ -8835,3 +8877,71 @@ ${d.lembretes.length ? sec('Lembretes', d.lembretes.length, lemb) : ''}
       });
     })();
   }
+
+
+  /* ================= CELULAR: menu de baixo, conta e áreas só do computador ================= */
+  function ehCelular(){ return document.documentElement.classList.contains('celular-ativo') && window.matchMedia('(max-width: 760px)').matches; }
+  const mobileNavEl = document.getElementById('mobileNav');
+  function marcarMenuCelular(){
+    const ativa = document.querySelector('.view.active');
+    const id = ativa ? ativa.id.replace('view-', '') : '';
+    const alvo = id === 'registro-paciente' ? 'pacientes' : id;
+    mobileNavEl.querySelectorAll('button').forEach(b => {
+      const on = b.dataset.view === alvo;
+      b.classList.toggle('active', on);
+      if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+  }
+  mobileNavEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const item = document.querySelector(`.nav-item[data-view="${b.dataset.view}"]`);
+    if(item) item.click();
+    window.scrollTo(0, 0);
+    marcarMenuCelular();
+  }));
+  new MutationObserver(marcarMenuCelular).observe(document.querySelector('.main'), { subtree: true, attributes: true, attributeFilter: ['class'] });
+  marcarMenuCelular();
+
+  // Áreas que ficam só no computador: no celular aparece um aviso no lugar da tela
+  const SO_COMPUTADOR = { catalogo: 'O Catálogo de Produtos', produto: 'O Catálogo de Produtos', financeiro: 'O Financeiro', equipe: 'O Meu Negócio', configuracoes: 'As Configurações', planos: 'Os Planos' };
+  Object.keys(SO_COMPUTADOR).forEach(v => {
+    const view = document.getElementById('view-' + v);
+    if(!view) return;
+    view.classList.add('so-computador');
+    const aviso = document.createElement('div');
+    aviso.className = 'aviso-computador';
+    aviso.innerHTML = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <h2>Disponível no computador</h2>
+      <p>${SO_COMPUTADOR[v]} fica na versão para computador. No celular você usa o Dashboard, a Agenda e as Pacientes.</p>
+      <button type="button">Voltar ao Dashboard</button>`;
+    aviso.querySelector('button').addEventListener('click', () => { const d = document.querySelector('.nav-item[data-view="dashboard"]'); if(d) d.click(); });
+    view.prepend(aviso);
+  });
+
+  // Ao virar celular com uma aba "só computador" aberta na ficha, volta para Dados
+  window.matchMedia('(max-width: 760px)').addEventListener('change', (e) => {
+    if(!e.matches || !ehCelular()) return;
+    const aba = document.querySelector('.registro-tab.active');
+    if(aba && ['planoskincare', 'recomendacoes'].includes(aba.dataset.tab)) switchRegistroTab('dados');
+  });
+
+  // Menu da conta (avatar no topo): Sair
+  const btnConta = document.getElementById('btnConta'), contaMenu = document.getElementById('contaMenu');
+  function fecharMenuConta(){ contaMenu.classList.remove('open'); btnConta.setAttribute('aria-expanded', 'false'); }
+  btnConta.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const abrir = !contaMenu.classList.contains('open');
+    if(abrir){
+      const nome = (typeof perfilProfissional !== 'undefined' && perfilProfissional && perfilProfissional.nome) || '';
+      document.getElementById('contaNome').textContent = nome || 'Minha conta';
+    }
+    contaMenu.classList.toggle('open', abrir);
+    btnConta.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+  });
+  contaMenu.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', fecharMenuConta);
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') fecharMenuConta(); });
+  document.getElementById('contaSair').addEventListener('click', () => {
+    fecharMenuConta();
+    const sair = document.querySelector('.nav-item[data-logout]');
+    if(sair) sair.click();
+  });
