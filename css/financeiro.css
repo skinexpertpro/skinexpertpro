@@ -1,0 +1,137 @@
+/* Financeiro: comandas, controle, contas, formas de pagamento, descontos */
+
+  /* ================= FINANCEIRO VIEW ================= */
+  .content-financeiro{ padding: 24px 36px 48px 36px; }
+
+  .fin-tabs{ display:flex; gap:10px; margin-bottom:22px; overflow-x:auto; padding-bottom:4px; flex-wrap:wrap; }
+  .fin-tab{
+    display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:999px; background:#fff;
+    border:1px solid var(--border); font-size:13px; font-weight:700; color: var(--text-dark); cursor:pointer;
+    white-space:nowrap; flex-shrink:0;
+  }
+  .fin-tab:hover{ background:#fafbfc; }
+  .fin-tab.active{ background: var(--sidebar-bg); color:#fff; border-color: var(--sidebar-bg); }
+  .fin-tab .lock-icon{ opacity:.6; margin-left:2px; }
+
+  .fin-panel{ display:none; }
+  .fin-panel.active{ display:block; }
+
+  .fin-filter-bar{ display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .fin-date-field{ display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:13.5px; color: var(--text-dark); }
+  .fin-date-field input[type="date"]{ border:none; outline:none; font-family:inherit; font-size:13.5px; color: var(--text-dark); background:transparent; }
+  .fin-date-field label{ color: var(--text-muted); font-weight:600; font-size:12.5px; }
+
+  .fin-summary-row{ display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:22px; }
+  .fin-summary-card{ background:#fff; border:1px solid var(--border); border-radius: var(--radius); padding:18px 20px; }
+  .fin-summary-label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color: var(--text-muted); margin-bottom:8px; }
+  .fin-summary-value{ font-family:'Playfair Display', serif; font-size:22px; font-weight:700; color: var(--text-dark); }
+  .fin-summary-card.in .fin-summary-value{ color: var(--green-text); }
+  .fin-summary-card.out .fin-summary-value{ color: var(--block-red); }
+
+  @media (max-width: 980px){ .fin-summary-row{ grid-template-columns: 1fr 1fr; } }
+
+
+  /* ---------- Financeiro funcional ---------- */
+  .fin-summary-sub{ font-size:12px; color: var(--text-muted); margin-top:4px; }
+  .fin-dica{ font-size:12.5px; color: var(--text-muted); }
+  .card-head{ flex-wrap:wrap; gap:6px 16px; }
+  .fin-table-wrap{ overflow-x:auto; }
+  .fin-table-wrap table{ min-width:760px; }
+  #view-financeiro th.num, #view-financeiro td.num{ text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; }
+  #view-financeiro tbody tr.clicavel{ cursor:pointer; }
+  #view-financeiro tbody tr.clicavel:hover td{ background: var(--gold-light, #faf6ee); }
+  .fin-acoes{ display:flex; gap:6px; justify-content:flex-end; white-space:nowrap; }
+  .fin-btn-mini{
+    background:#fff; border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:12.5px;
+    font-weight:700; color: var(--text-dark); cursor:pointer; font-family:inherit; white-space:nowrap;
+  }
+  .fin-btn-mini:hover{ border-color: var(--gold); }
+  .fin-btn-mini.ok{ color: var(--green-text); }
+  .fin-vazio{ text-align:center; color: var(--text-muted); padding:28px !important; }
+  .fin-valor-in{ color: var(--green-text); font-weight:700; }
+  .fin-valor-out{ color: var(--block-red); font-weight:700; }
+  .fin-origem{ display:inline-block; margin-left:6px; font-size:11px; font-weight:700; color: var(--text-muted); background: var(--gray-pill-bg); border-radius:10px; padding:1px 7px; }
+  .fin-form-2{ display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
+  .fin-check{ display:flex; align-items:center; gap:10px; }
+  .fin-check input{ width:16px; height:16px; margin:0; }
+  .fin-check label{ margin:0 !important; }
+  .fin-tipo-toggle{ display:flex; gap:8px; margin-bottom:14px; }
+  .fin-tipo-btn{ flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:#fff; font-weight:700; font-size:13.5px; cursor:pointer; font-family:inherit; color: var(--text-dark); }
+  .fin-tipo-btn.ativo[data-tipo=receita]{ background: var(--green-bg); color: var(--green-text); border-color: var(--green-text); }
+  .fin-tipo-btn.ativo[data-tipo=despesa]{ background:#fbe9e4; color: var(--block-red); border-color: var(--block-red); }
+  .modal-box.comanda-box{ width:620px; max-width:calc(100vw - 32px); max-height:calc(100vh - 32px); overflow-y:auto; }
+  #view-financeiro .pill, #view-financeiro .status-active{ white-space:nowrap; }
+  .comanda-topo{ display:flex; align-items:center; gap:12px; justify-content:space-between; margin-bottom:12px; }
+  .comanda-topo h3{ margin:0 !important; }
+  .comanda-aviso{ background: var(--gray-pill-bg); color: var(--text-dark); border-radius:9px; padding:10px 12px; font-size:13px; margin-bottom:12px; }
+  .comanda-secao{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color: var(--text-muted); margin:14px 0 8px 0; }
+  .comanda-itens, .comanda-pagamentos{ border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .comanda-linha{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-top:1px solid var(--border); font-size:14px; }
+  .comanda-linha:first-child{ border-top:none; }
+  .comanda-linha .nome{ flex:1; min-width:0; }
+  .comanda-linha .nome small{ color: var(--text-muted); margin-left:6px; }
+  .comanda-linha .val{ font-weight:700; font-variant-numeric: tabular-nums; white-space:nowrap; }
+  .comanda-linha .val input{ width:100px; text-align:right; padding:6px 8px; border:1px solid var(--border); border-radius:8px; font:inherit; font-weight:700; }
+  .comanda-linha button{ background:none; border:none; color: var(--text-muted); cursor:pointer; font-size:18px; line-height:1; padding:2px 6px; border-radius:6px; }
+  .comanda-linha button:hover{ color:#b42318; background:#fff5f5; }
+  .comanda-vazio{ padding:12px; color: var(--text-muted); font-size:13.5px; }
+  .comanda-add-item, .comanda-pagar{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .comanda-add-item input, .comanda-pagar input, .comanda-pagar select{
+    padding:9px 11px; border:1px solid var(--border); border-radius:9px; font:inherit; font-size:13.5px; background:#fff; min-width:0;
+  }
+  .comanda-add-item #comandaItemNome{ flex:1 1 200px; }
+  .comanda-add-item #comandaItemValor, .comanda-pagar #comandaPagValor{ width:110px; text-align:right; }
+  .comanda-pagar #comandaPagForma{ flex:1 1 150px; }
+  .comanda-totais{ display:flex; gap:10px; margin-top:14px; }
+  .comanda-totais > div{ flex:1; background: var(--gray-pill-bg); border-radius:10px; padding:10px 12px; }
+  .comanda-totais span{ display:block; font-size:11.5px; font-weight:700; text-transform:uppercase; color: var(--text-muted); }
+  .comanda-totais strong{ font-size:17px; font-variant-numeric: tabular-nums; }
+  .comanda-totais .saldo{ background: var(--gold-light, #faf6ee); }
+  .comanda-acoes{ justify-content:space-between !important; align-items:center; margin-top:18px; }
+  .comanda-acoes .right{ display:flex; gap:10px; }
+  .formas-lista{ padding:4px 20px; }
+  .forma-item{ display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid var(--border); font-size:14px; }
+  .forma-item:first-child{ border-top:none; }
+  .forma-item label{ flex:1; display:flex; align-items:center; gap:10px; cursor:pointer; margin:0; }
+  .forma-item input[type=checkbox]{ width:16px; height:16px; accent-color: var(--sidebar-bg); }
+  .forma-item button{ background:none; border:none; color: var(--text-muted); cursor:pointer; font-size:13px; font-weight:700; }
+  .forma-item button:hover{ color:#b42318; }
+  .formas-add{ display:flex; gap:8px; padding:12px 20px 14px 20px; flex-wrap:wrap; }
+  .formas-add input{ flex:1 1 220px; padding:10px 12px; border:1px solid var(--border); border-radius:9px; font:inherit; font-size:14px; }
+  @media (max-width: 560px){
+    .content-financeiro{ padding:16px 16px 40px 16px; }
+    .fin-summary-row{ grid-template-columns:1fr 1fr; gap:10px; }
+    .fin-summary-value{ font-size:18px; }
+    .fin-form-2{ grid-template-columns:1fr; }
+    .comanda-totais{ flex-direction:column; }
+    .comanda-acoes{ flex-direction:column-reverse; align-items:stretch; gap:10px; }
+    .comanda-acoes .right{ justify-content:stretch; } .comanda-acoes .right button{ flex:1; }
+  }
+
+
+  /* ---------- Descontos (comandas e pacotes) ---------- */
+  .desconto-row{ display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .desconto-row label{ font-size:12.5px; font-weight:700; color: var(--text-muted); margin:0 4px 0 0; }
+  .desconto-row select, .desconto-row input{ padding:9px 11px; border:1px solid var(--border); border-radius:9px; font:inherit; font-size:13.5px; background:#fff; }
+  .desconto-row select{ flex:1 1 170px; }
+  .desconto-row input{ width:110px; text-align:right; }
+  .desconto-row input:disabled{ background: var(--gray-pill-bg); }
+  .desconto-resumo{ font-size:13px; color: var(--text-muted); margin-top:6px; min-height:0; }
+  .desconto-resumo strong{ color: var(--block-red); }
+  .desconto-tag{ display:inline-block; margin-left:6px; font-size:11px; font-weight:700; color: var(--block-red); background:#fbe9e4; border-radius:10px; padding:1px 7px; white-space:nowrap; }
+  .valor-riscado{ text-decoration:line-through; color: var(--text-muted); font-size:12.5px; margin-right:6px; }
+
+  .fin-action-row{ display:flex; gap:12px; margin-bottom:22px; flex-wrap:wrap; }
+  .fin-action-card{
+    flex:1; min-width:200px; display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--border);
+    border-radius: var(--radius); padding:16px 18px; cursor:pointer;
+  }
+  .fin-action-card:hover{ border-color: var(--gold); background: var(--gold-light); }
+  .fin-action-icon{
+    width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .fin-action-icon.receber{ background: var(--green-bg); color: var(--green-text); }
+  .fin-action-icon.pagar{ background:#fbe9e4; color: var(--block-red); }
+  .fin-action-icon.compra{ background: var(--tag-bg); color: var(--tag-text); }
+  .fin-action-label{ font-weight:700; font-size:13.5px; color: var(--text-dark); }
+  .fin-summary-card.pending .fin-summary-value{ color: var(--gold-dark); }

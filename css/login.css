@@ -1,0 +1,53 @@
+/* Login/cadastro e formulário público de anamnese */
+
+  /* ================= LOGIN / CADASTRO ================= */
+  .auth-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--bg); padding:20px;
+  }
+  .auth-box{ background:#fff; border-radius: var(--radius); border:1px solid var(--border); padding:40px 36px; width:380px; max-width:100%; }
+  .auth-logo{ display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:26px; }
+  .auth-logo .brand-logo{ width:34px; height:34px; border-radius:50%; background: conic-gradient(from 200deg, var(--gold), var(--sidebar-bg) 60%, var(--gold)); }
+  .auth-logo span{ font-family:'Playfair Display', serif; font-size:19px; font-weight:700; color: var(--sidebar-bg); }
+  .auth-title{ font-family:'Playfair Display', serif; font-size:20px; font-weight:700; text-align:center; margin-bottom:6px; }
+  .auth-sub{ font-size:13px; color: var(--text-muted); text-align:center; margin-bottom:24px; }
+  .auth-field{ margin-bottom:14px; }
+  .auth-field label{ display:block; font-size:12.5px; font-weight:700; color: var(--text-dark); margin-bottom:6px; }
+  .auth-field input{
+    width:100%; padding:11px 14px; border:1px solid var(--border); border-radius:10px; font-size:14px;
+    font-family:inherit; color: var(--text-dark); outline:none;
+  }
+  .auth-field input:focus{ border-color: var(--gold); }
+
+  .auth-password-wrap{ position:relative; }
+  .auth-password-wrap input{ padding-right:42px; }
+  .auth-eye-btn{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none;
+    color: var(--text-muted); cursor:pointer; padding:4px; display:flex;
+  }
+  .auth-eye-btn:hover{ color: var(--text-dark); }
+  .auth-forgot{ text-align:right; margin-top:8px; }
+  .auth-forgot a{ font-size:12.5px; color: var(--pink); font-weight:600; cursor:pointer; text-decoration:none; }
+  .auth-forgot a:hover{ text-decoration:underline; }
+  .auth-btn{
+    width:100%; padding:13px; border-radius:10px; border:none; background: var(--gold); color:#fff;
+    font-size:14.5px; font-weight:700; cursor:pointer; margin-top:6px;
+  }
+  .auth-btn:hover{ background: var(--gold-dark); }
+  .auth-btn:disabled{ opacity:.6; cursor:default; }
+  .auth-switch{ text-align:center; font-size:13px; color: var(--text-muted); margin-top:18px; }
+  .auth-switch a{ color: var(--pink); font-weight:700; cursor:pointer; text-decoration:none; }
+  .auth-error{ background:#fbe9e4; color:#9c3a20; font-size:13px; padding:10px 14px; border-radius:9px; margin-bottom:14px; display:none; }
+  .auth-error.show{ display:block; }
+
+  /* ================= FORMULÁRIO PÚBLICO DE ANAMNESE (paciente) ================= */
+  .public-screen{ min-height:100vh; background: var(--bg); padding:40px 16px 80px 16px; }
+  .public-container{ max-width:640px; margin:0 auto; }
+  .public-header{ text-align:center; margin-bottom:28px; }
+  .public-header .brand-logo{ width:40px; height:40px; border-radius:50%; margin:0 auto 12px auto; background: conic-gradient(from 200deg, var(--gold), var(--sidebar-bg) 60%, var(--gold)); }
+  .public-header h1{ font-family:'Playfair Display', serif; font-size:24px; margin:0 0 6px 0; }
+  .public-header p{ color: var(--text-muted); font-size:14px; margin:0; }
+  .public-submitted{ text-align:center; padding:60px 20px; }
+  .public-submitted svg{ color: var(--green-text); margin-bottom:16px; }
+  .public-submitted h2{ font-family:'Playfair Display', serif; font-size:22px; margin:0 0 8px 0; }
+  .public-submitted p{ color: var(--text-muted); }
+  .public-invalid{ text-align:center; padding:60px 20px; color: var(--text-muted); }

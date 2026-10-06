@@ -1,0 +1,32 @@
+/* Meu Negócio: horários de atendimento e pacotes */
+
+  /* ================= EQUIPE VIEW ================= */
+  .content-equipe{ padding: 24px 36px 48px 36px; }
+
+  .status-toggle{ display:inline-flex; align-items:center; }
+  .access-profile-chip{
+    display:inline-block; padding:4px 11px; border-radius:999px; font-size:11.5px; font-weight:700;
+    background: var(--tag-bg); color: var(--tag-text);
+  }
+
+  /* ---------- Expediente day grid ---------- */
+  .expediente-grid{ display:grid; grid-template-columns: 84px repeat(7, 1fr); gap:8px 10px; align-items:center; margin-top:14px; }
+  .expediente-grid .eg-head{ font-size:11px; font-weight:700; text-align:center; color: var(--text-muted); text-transform:uppercase; }
+  .expediente-grid .eg-row-label{ font-size:12.5px; font-weight:700; color: var(--text-dark); }
+  .expediente-grid .eg-fechado-label{ display:flex; flex-direction:column; align-items:center; gap:2px; font-size:9.5px; font-weight:600; color: var(--text-muted); text-transform:uppercase; letter-spacing:.02em; }
+  .expediente-grid input.eg-entrada[disabled], .expediente-grid input.eg-saida[disabled]{ background: var(--bg); color: var(--text-muted); opacity:.6; cursor:not-allowed; }
+  .expediente-grid input[type="time"]{
+    width:100%; padding:7px 6px; border:1px solid var(--border); border-radius:7px; font-size:12px;
+    font-family:inherit; color: var(--text-dark); outline:none;
+  }
+  .expediente-grid input[type="checkbox"]{ width:16px; height:16px; display:block; margin:0 auto; }
+
+  /* ---------- Pacote service rows ---------- */
+  .pacote-row{ display:grid; grid-template-columns: 1fr 90px 70px 90px 30px; gap:8px; align-items:center; margin-bottom:10px; }
+  .pacote-row select, .pacote-row input{
+    width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;
+    font-family:inherit; color: var(--text-dark); outline:none;
+  }
+  .pacote-total-row{ display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+  .pacote-total-label{ font-size:15px; font-weight:700; }
+  .pacote-total-value{ font-family:'Playfair Display', serif; font-size:20px; font-weight:700; color: var(--pink); }

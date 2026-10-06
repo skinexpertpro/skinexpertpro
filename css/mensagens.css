@@ -1,0 +1,55 @@
+/* Centro de Mensagens, consentimento (LGPD/RGPD) e confirmação da anamnese */
+
+  /* ---------- Centro de Mensagens ---------- */
+  .msg-painel{ display:none; }
+  .msg-painel.ativo{ display:block; }
+  .msg-contador{ display:inline-block; min-width:18px; padding:0 6px; margin-left:4px; border-radius:10px; background: var(--gold); color:#fff; font-size:11px; line-height:18px; text-align:center; }
+  .msg-contador:empty{ display:none; }
+  .msg-grupo{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color: var(--text-muted); margin:14px 0 6px 0; }
+  .msg-grupo:first-child{ margin-top:0; }
+  .msg-item{ display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid var(--border); }
+  .msg-item:first-of-type{ border-top:none; }
+  .msg-item .info{ flex:1; min-width:0; }
+  .msg-item .nome{ font-weight:700; font-size:14px; color: var(--text-dark); }
+  .msg-item .det{ font-size:12.5px; color: var(--text-muted); margin-top:2px; }
+  .msg-enviado{ font-size:11.5px; font-weight:700; color: var(--green-text); background: var(--green-bg); border-radius:10px; padding:2px 8px; white-space:nowrap; }
+  .msg-vazio{ color: var(--text-muted); font-size:13.5px; padding:14px 0; }
+  .msg-variaveis{ font-size:12.5px; color: var(--text-muted); margin-bottom:12px; line-height:1.9; }
+  .msg-variaveis code{ background: var(--gray-pill-bg); color: var(--text-dark); border-radius:6px; padding:1px 6px; font-size:12px; }
+  .msg-modelo{ border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:10px; background:#fff; }
+  .msg-modelo-topo{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .msg-modelo-topo input{ flex:1; font-weight:700; font-size:14px; border:1px solid transparent; border-radius:8px; padding:5px 8px; font-family:inherit; color: var(--text-dark); background:transparent; }
+  .msg-modelo-topo input:focus{ border-color: var(--border); outline:none; background:#fff; }
+  .msg-modelo-topo .tag{ font-size:11px; font-weight:700; color: var(--tag-text); background: var(--tag-bg); border-radius:10px; padding:2px 8px; white-space:nowrap; }
+  .msg-modelo textarea{ width:100%; min-height:86px; border:1px solid var(--border); border-radius:9px; padding:9px 11px; font:inherit; font-size:13.5px; resize:vertical; box-sizing:border-box; }
+  .msg-modelo-acoes{ display:flex; gap:8px; justify-content:flex-end; margin-top:8px; flex-wrap:wrap; }
+  .msg-hist-item{ display:flex; gap:12px; padding:10px 0; border-top:1px solid var(--border); font-size:13.5px; }
+  .msg-hist-item:first-child{ border-top:none; }
+  .msg-hist-item .quando{ color: var(--text-muted); white-space:nowrap; font-size:12.5px; min-width:92px; }
+  .msg-hist-item .txt{ color: var(--text-muted); font-size:12.5px; margin-top:2px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .msg-para{ font-size:13px; color: var(--text-muted); margin:-4px 0 12px 0; }
+  #msgTexto{ width:100%; box-sizing:border-box; font:inherit; font-size:14px; line-height:1.5; }
+
+
+  /* ---------- Consentimento (RGPD / LGPD) ---------- */
+  .consentimento-card{ border-left:4px solid var(--gold); }
+  .consentimento-texto{ font-size:13.5px; line-height:1.6; color: var(--text-dark); background: var(--gray-pill-bg); border-radius:10px; padding:12px 14px; margin-bottom:12px; white-space:pre-line; }
+  .consentimento-check{ display:flex; gap:10px; align-items:flex-start; font-size:14px; font-weight:600; color: var(--text-dark); cursor:pointer; }
+  .consentimento-check input{ width:18px; height:18px; margin-top:2px; flex-shrink:0; accent-color: var(--sidebar-bg); }
+  .consentimento-alerta{ outline:2px solid var(--block-red); outline-offset:4px; border-radius:12px; }
+  .consentimento-registro{ font-size:12.5px; color: var(--text-muted); margin-bottom:10px; }
+  .consentimento-registro.falta{ color: var(--block-red); font-weight:700; }
+
+
+  /* ---------- Página de confirmação da anamnese ---------- */
+  .conf-secao{ margin-bottom:14px; }
+  .conf-linha{ display:flex; gap:10px; padding:7px 0; border-top:1px solid var(--border); font-size:14px; }
+  .conf-linha:first-of-type{ border-top:none; }
+  .conf-linha .k{ flex:0 0 46%; color: var(--text-muted); }
+  .conf-linha .v{ flex:1; color: var(--text-dark); font-weight:600; white-space:pre-line; word-break:break-word; }
+  .conf-nota{ text-align:center; font-size:13px; color: var(--text-muted); margin-top:14px; }
+  @media print{
+    #publicConfirmarScreen .conf-acoes, #publicConfirmarScreen .conf-nota, #publicConfirmarScreen .consentimento-check input{ display:none !important; }
+    #publicConfirmarScreen{ padding:0 !important; background:#fff !important; }
+    #publicConfirmarScreen .anamnese-card{ break-inside:avoid; border:1px solid #ddd; }
+  }

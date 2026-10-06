@@ -1,0 +1,134 @@
+/* Janelas (modais), aviso (toast) e detalhes do atendimento */
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background: rgba(20,25,28,.45);
+    align-items:center; justify-content:center; z-index:1000;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background:#fff; border-radius:16px; padding: 26px 26px 22px 26px; width:360px; max-width: 90vw;
+  }
+  .modal-box.wide{ width:680px; max-height:85vh; overflow-y:auto; }
+  .modal-box.xwide{ width:980px; max-width:96vw; max-height:85vh; overflow-y:auto; }
+  .modal-box h3{ margin:0 0 16px 0; font-size:18px; font-weight:800; }
+  .modal-field{ margin-bottom:14px; }
+  .modal-field label{ display:block; font-size:12.5px; font-weight:700; color: var(--text-muted); margin-bottom:6px; }
+  .modal-field input, .modal-field select{
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:9px; font-size:14px;
+    font-family:inherit; color: var(--text-dark); outline:none;
+  }
+  .modal-field input:focus, .modal-field select:focus{ border-color: var(--pink); }
+  .appt-patient-results{
+    display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:20;
+    background:#fff; border:1px solid var(--border); border-radius:9px; box-shadow:0 8px 24px rgba(0,0,0,.1);
+    max-height:220px; overflow-y:auto;
+  }
+  .appt-patient-results.open{ display:block; }
+  .appt-patient-result-item{
+    padding:9px 12px; font-size:13.5px; color: var(--text-dark); cursor:pointer;
+  }
+  .appt-patient-result-item:hover{ background: var(--tag-bg); }
+  .appt-patient-result-add{
+    padding:9px 12px; font-size:13.5px; color: var(--sidebar-bg); font-weight:700; cursor:pointer; border-top:1px solid var(--border);
+  }
+  .appt-patient-result-add:hover{ background: var(--tag-bg); }
+  .appt-patient-result-empty{ padding:9px 12px; font-size:13px; color: var(--text-muted); }
+  .appt-patient-result-item .serv-dur{ color: var(--text-muted); font-size:12px; margin-left:6px; }
+  .appt-patient-result-item.ativo{ background: var(--tag-bg); }
+  .dur-picker{ display:flex; align-items:center; gap:8px; }
+  .modal-field .dur-picker select{ width:auto; min-width:92px; flex:0 0 auto; }
+  .dur-total{ font-size:12.5px; color: var(--text-muted); font-weight:600; }
+  .serv-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+  .serv-chips:empty{ display:none; }
+  .serv-chip{
+    display:inline-flex; align-items:center; gap:6px; background: var(--pink-light); color: var(--sidebar-bg);
+    border-radius:16px; padding:5px 6px 5px 11px; font-size:12.5px; font-weight:700;
+  }
+  .serv-chip small{ font-weight:600; opacity:.7; }
+  .serv-chip button{
+    border:none; background:rgba(0,0,0,.07); color:inherit; width:18px; height:18px; border-radius:50%;
+    cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .serv-chip button:hover{ background:rgba(0,0,0,.15); }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+  .modal-btn-cancel{
+    background:#fff; border:1px solid var(--border); border-radius:9px; padding:10px 16px;
+    font-size:14px; font-weight:700; color: var(--text-dark); cursor:pointer;
+  }
+  .modal-btn-cancel:hover{ background:#f7f8f9; }
+  .modal-btn-confirm{
+    background: var(--pink); border:none; border-radius:9px; padding:10px 18px;
+    font-size:14px; font-weight:700; color:#fff; cursor:pointer;
+  }
+  .modal-btn-confirm:hover{ background: var(--sidebar-bg); }
+
+  /* ---------- TOAST ---------- */
+  .toast{
+    position:fixed; bottom:28px; left:50%; transform: translateX(-50%) translateY(20px);
+    background: var(--sidebar-bg); color:#fff; padding: 12px 20px; border-radius:10px;
+    font-size:14px; font-weight:600; opacity:0; pointer-events:none; transition: opacity .2s ease, transform .2s ease;
+    z-index:2000; display:flex; align-items:center; gap:14px;
+  }
+  .toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+  .toast.show.has-action{ pointer-events:auto; }
+  .toast-undo{
+    background:none; border:none; color: var(--pink); font-weight:700; font-size:14px;
+    cursor:pointer; padding:0; flex-shrink:0; white-space:nowrap;
+  }
+  .toast-undo:hover{ text-decoration:underline; }
+  .schedule-block, .week-block{ cursor:pointer; }
+  .schedule-block:hover, .week-block:hover{ filter: brightness(0.97); box-shadow:0 2px 8px rgba(0,0,0,0.12); }
+
+  /* ---------- Detalhes do atendimento ---------- */
+  .modal-field textarea{
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:9px; font-size:14px;
+    font-family:inherit; color: var(--text-dark); outline:none; resize:vertical; min-height:70px; box-sizing:border-box;
+  }
+  .modal-field textarea:focus{ border-color: var(--pink); }
+  .appt-det-box{ width:520px; max-height:88vh; overflow-y:auto; position:relative; }
+  .appt-det-close{
+    position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%; border:none;
+    background:transparent; font-size:20px; line-height:1; color: var(--text-muted); cursor:pointer;
+  }
+  .appt-det-close:hover{ background: var(--tag-bg); color: var(--text-dark); }
+  .appt-det-tag{
+    display:inline-block; font-size:11px; font-weight:800; letter-spacing:.4px; text-transform:uppercase;
+    padding:4px 10px; border-radius:20px; background: var(--pink-light); color: var(--sidebar-bg); margin-bottom:10px;
+  }
+  .appt-det-tag.block{ background:#fde8e8; color:#b42318; }
+  .appt-det-nome{ font-size:20px; font-weight:800; margin:0 36px 2px 0; color: var(--text-dark); }
+  .appt-det-servico{ font-size:14px; color: var(--text-muted); margin:0 0 16px 0; }
+  .appt-det-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px; }
+  .appt-det-item{ background:#f7f8f9; border-radius:10px; padding:10px 12px; }
+  .appt-det-item.full{ grid-column: 1 / -1; }
+  .appt-det-label{ font-size:11.5px; font-weight:700; color: var(--text-muted); text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px; }
+  .appt-det-valor{ font-size:14.5px; font-weight:700; color: var(--text-dark); }
+  .appt-det-sub{ font-size:12.5px; color: var(--text-muted); margin-top:2px; }
+  .appt-det-section{ font-size:13px; font-weight:800; color: var(--text-dark); margin:4px 0 8px 0; }
+  .appt-det-actions{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; margin-top:18px; }
+  .appt-det-actions .right{ display:flex; gap:10px; flex-wrap:wrap; }
+  .modal-btn-danger{
+    background:#fff; border:1px solid #f1c4c4; border-radius:9px; padding:10px 14px;
+    font-size:14px; font-weight:700; color:#b42318; cursor:pointer;
+  }
+  .modal-btn-danger:hover{ background:#fdf2f2; }
+  .appt-det-actions button{ white-space:nowrap; }
+  .appt-det-actions .left{ display:flex; gap:10px; flex-wrap:wrap; }
+  .modal-btn-danger.suave{ border-color: var(--border); color: var(--text-muted); font-weight:600; }
+  .pill-inativa{ background: #eeeeee; color: #8a8a8a; text-decoration: line-through; }
+  select.select-box{ appearance:auto; font-family:inherit; }
+  .comanda-apagar{
+    background:none; border:1px solid transparent; border-radius:8px; padding:6px; cursor:pointer;
+    color: var(--text-muted); display:inline-flex; align-items:center;
+  }
+  .comanda-apagar:hover{ border-color:#f1c4c4; color:#b42318; background:#fff5f5; }
+  .comanda-servicos{ color: var(--text-muted); font-size:13px; max-width:220px; }
+  @media (max-width: 520px){
+    .appt-det-grid{ grid-template-columns: 1fr; }
+    .appt-det-actions, .appt-det-actions .right{ flex-direction:column; }
+    .appt-det-actions button{ width:100%; }
+  }
+  .schedule-block.dragging, .week-block.dragging{
+    cursor:grabbing; opacity:0.85; box-shadow:0 4px 14px rgba(0,0,0,0.22); z-index:5;
+  }
