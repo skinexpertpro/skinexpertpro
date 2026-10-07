@@ -11,7 +11,7 @@
 <script src="js/seguranca-tema.js?v=20261005a"></script>
 <!-- Estilos: um arquivo por área. A ordem importa: não troque a sequência; celular.css sempre por último. -->
 <link rel="stylesheet" href="css/base.css?v=20261006a">
-<link rel="stylesheet" href="css/dashboard.css?v=20261006a">
+<link rel="stylesheet" href="css/dashboard.css?v=20261007a">
 <link rel="stylesheet" href="css/pacientes.css?v=20261006a">
 <link rel="stylesheet" href="css/agenda.css?v=20261006a">
 <link rel="stylesheet" href="css/registro-paciente.css?v=20261006a">
@@ -540,11 +540,11 @@
             <div class="card-head">
               <div class="card-title">
                 <span class="dot"></span> Acompanhamentos
-                <svg class="info-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <span title="Pacientes cujo Plano de SkinCare termina nos próximos 7 dias ou terminou há até 15 dias, sem retorno agendado." style="display:inline-flex;cursor:help;"><svg class="info-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
               </div>
             </div>
-            <div class="table-header"><span>Paciente</span><span>Duração</span><span>Ação</span></div>
-            <div class="empty-state">Nenhum acompanhamento próximo do encerramento.</div>
+            <div class="table-header acomp-grid"><span>Paciente</span><span>Duração</span><span>Ação</span></div>
+            <div id="acompanhamentosContainer"><div class="empty-state">Nenhum acompanhamento próximo do encerramento.</div></div>
           </div>
         </div>
 
@@ -2992,7 +2992,24 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/dados.js?v=20261005a"></script>
-<script src="js/app.js?v=20261005a"></script>
+<!-- Lógica do app: um arquivo por área. A ordem importa: não troque a sequência (nucleo.js sempre primeiro, celular.js sempre por último). -->
+<script src="js/nucleo.js?v=20261007b"></script>
+<script src="js/pacientes.js?v=20261007b"></script>
+<script src="js/registro-paciente.js?v=20261007b"></script>
+<script src="js/plano-skincare.js?v=20261007b"></script>
+<script src="js/catalogo.js?v=20261007b"></script>
+<script src="js/planos.js?v=20261007b"></script>
+<script src="js/agenda.js?v=20261007b"></script>
+<script src="js/lembretes-mensagens.js?v=20261007b"></script>
+<script src="js/dashboard.js?v=20261007b"></script>
+<script src="js/financeiro.js?v=20261007b"></script>
+<script src="js/meu-negocio.js?v=20261007b"></script>
+<script src="js/formulacoes.js?v=20261007b"></script>
+<script src="js/anamneses.js?v=20261007b"></script>
+<script src="js/login.js?v=20261007b"></script>
+<script src="js/lgpd.js?v=20261007b"></script>
+<script src="js/anamneses-especificas.js?v=20261007b"></script>
+<script src="js/celular.js?v=20261007b"></script>
 
 </body>
 </html>
