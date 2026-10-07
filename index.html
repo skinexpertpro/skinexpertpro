@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="css/dashboard.css?v=20261007a">
 <link rel="stylesheet" href="css/pacientes.css?v=20261006a">
 <link rel="stylesheet" href="css/agenda.css?v=20261006a">
-<link rel="stylesheet" href="css/registro-paciente.css?v=20261006a">
+<link rel="stylesheet" href="css/registro-paciente.css?v=20261007a">
 <link rel="stylesheet" href="css/catalogo.css?v=20261006a">
 <link rel="stylesheet" href="css/planos.css?v=20261006a">
 <link rel="stylesheet" href="css/financeiro.css?v=20261006a">
@@ -2567,6 +2567,24 @@
   </div>
 </div>
 
+<!-- MODAL: excluir plano de SkinCare (pede a senha da profissional) -->
+<div class="modal-overlay" id="modalExcluirPlanoOverlay">
+  <div class="modal-box lgpd-box" role="dialog" aria-modal="true" aria-labelledby="expTitulo">
+    <h3 id="expTitulo">Excluir plano de SkinCare</h3>
+    <p class="lgpd-texto" id="expResumo"></p>
+    <label class="exp-ciente"><input type="checkbox" id="expCiente"> <span id="expCienteTexto"></span></label>
+    <div class="modal-field" id="expSenhaCampo">
+      <label for="expSenha">Para confirmar, digite a sua senha de acesso</label>
+      <input id="expSenha" type="password" autocomplete="current-password" placeholder="Sua senha">
+    </div>
+    <div class="exp-erro" id="expErro" role="alert"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="expCancelar">Cancelar</button>
+      <button class="modal-btn-danger forte" id="expConfirmar" disabled>Excluir plano</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: enviar mensagem (Centro de Mensagens) -->
 <div class="modal-overlay" id="modalMsgOverlay">
   <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="msgTitulo" style="width:520px;">
@@ -2994,18 +3012,18 @@
 <script src="js/dados.js?v=20261005a"></script>
 <!-- Lógica do app: um arquivo por área. A ordem importa: não troque a sequência (nucleo.js sempre primeiro, celular.js sempre por último). -->
 <script src="js/nucleo.js?v=20261007b"></script>
-<script src="js/pacientes.js?v=20261007b"></script>
-<script src="js/registro-paciente.js?v=20261007b"></script>
-<script src="js/plano-skincare.js?v=20261007b"></script>
+<script src="js/pacientes.js?v=20261007c"></script>
+<script src="js/registro-paciente.js?v=20261007c"></script>
+<script src="js/plano-skincare.js?v=20261007c"></script>
 <script src="js/catalogo.js?v=20261007b"></script>
 <script src="js/planos.js?v=20261007b"></script>
 <script src="js/agenda.js?v=20261007b"></script>
 <script src="js/lembretes-mensagens.js?v=20261007b"></script>
-<script src="js/dashboard.js?v=20261007b"></script>
+<script src="js/dashboard.js?v=20261007c"></script>
 <script src="js/financeiro.js?v=20261007b"></script>
 <script src="js/meu-negocio.js?v=20261007b"></script>
 <script src="js/formulacoes.js?v=20261007b"></script>
-<script src="js/anamneses.js?v=20261007b"></script>
+<script src="js/anamneses.js?v=20261007c"></script>
 <script src="js/login.js?v=20261007b"></script>
 <script src="js/lgpd.js?v=20261007b"></script>
 <script src="js/anamneses-especificas.js?v=20261007b"></script>
