@@ -178,6 +178,26 @@
     document.getElementById('pdfPlanoDuracao').textContent = plano.duracao ? plano.duracao + ' dias' : '—';
 
     const pdfPlaceholderImg = 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2216%22%20fill%3D%22%23f4ede8%22/%3E%3Cpath%20d%3D%22M40%2028h20v9l7%207v42a5%205%200%2001-5%205H38a5%205%200%2001-5-5V44l7-7z%22%20fill%3D%22none%22%20stroke%3D%22%238a7060%22%20stroke-width%3D%224%22%20stroke-linejoin%3D%22round%22/%3E%3Cline%20x1%3D%2240%22%20y1%3D%2250%22%20x2%3D%2260%22%20y2%3D%2250%22%20stroke%3D%22%238a7060%22%20stroke-width%3D%224%22/%3E%3C/svg%3E';
+    // Planos antigos guardaram o endereço da foto da época; se a foto mudou de lugar, usa a foto ATUAL
+    // do catálogo (mesmo nome do produto). Se mesmo assim não carregar, mostra o desenho padrão.
+    const normNome = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+    function fotoAtualDoProduto(p){
+      try{
+        const lista = (typeof products !== 'undefined' && Array.isArray(products)) ? products : [];
+        const n = normNome(p.name), b = normNome(p.brand);
+        const achado = lista.find(x => normNome(x.name) === n && normNome(x.brand) === b) || lista.find(x => normNome(x.name) === n);
+        if(achado && achado.image) return achado.image;
+      }catch(e){}
+      return p.image || '';
+    }
+    // O filtro de segurança tira "onerror" e o desenho SVG do HTML, então o substituto é colocado por aqui.
+    function protegerFotosPdf(el){
+      el.querySelectorAll('img.pdf-product-thumb').forEach(img => {
+        const usarPadrao = () => { img.removeEventListener('error', usarPadrao); img.src = pdfPlaceholderImg; };
+        if(!img.getAttribute('src')) usarPadrao();
+        else { img.addEventListener('error', usarPadrao); if(img.complete && img.naturalWidth === 0) usarPadrao(); }
+      });
+    }
     function renderPdfProdutoCard(p){
       const whyHtml = (p.why && p.why.length)
         ? `<div class="pdf-product-why"><div class="pdf-product-why-title">Por que foi sugerido</div><div class="pdf-product-why-item"><b>Contém:</b> ${p.why.map(w => w.nome).join(', ')}</div>${p.func ? `<div class="pdf-product-why-item">${p.func}</div>` : ''}</div>`
@@ -188,7 +208,7 @@
       const usageHtml = p.usage
         ? `<div class="pdf-product-usage-title">Modo de uso</div><div class="pdf-product-usage">${p.usage}</div>`
         : '';
-      return `<div class="pdf-product"><img class="pdf-product-thumb" src="${p.image || pdfPlaceholderImg}" alt="${p.name}"><div class="pdf-product-info">${etapaHtml}<div class="pdf-product-name">${p.name}</div><div class="pdf-product-brand">${p.brand}</div>${usageHtml}${whyHtml}</div></div>`;
+      return `<div class="pdf-product"><img class="pdf-product-thumb" src="${fotoAtualDoProduto(p)}" alt="${p.name}"><div class="pdf-product-info">${etapaHtml}<div class="pdf-product-name">${p.name}</div><div class="pdf-product-brand">${p.brand}</div>${usageHtml}${whyHtml}</div></div>`;
     }
 
     function ordenarPorEtapa(lista){
@@ -213,6 +233,8 @@
     noiteEl.innerHTML = noiteOrdenada.length
       ? noiteOrdenada.map(renderPdfProdutoCard).join('')
       : '<p style="color:var(--text-muted);">Nenhum produto adicionado.</p>';
+    protegerFotosPdf(manhaEl);
+    protegerFotosPdf(noiteEl);
 
     navItems.forEach(i => i.classList.remove('active'));
     const pacientesNavForPdf = document.querySelector('.nav-item[data-view="pacientes"]');
