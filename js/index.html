@@ -1,0 +1,2998 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skin Expert Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/seguranca-tema.js?v=20261005a"></script>
+<!-- Estilos: um arquivo por área. A ordem importa: não troque a sequência; celular.css sempre por último. -->
+<link rel="stylesheet" href="css/base.css?v=20261006a">
+<link rel="stylesheet" href="css/dashboard.css?v=20261007a">
+<link rel="stylesheet" href="css/pacientes.css?v=20261006a">
+<link rel="stylesheet" href="css/agenda.css?v=20261006a">
+<link rel="stylesheet" href="css/registro-paciente.css?v=20261006a">
+<link rel="stylesheet" href="css/catalogo.css?v=20261006a">
+<link rel="stylesheet" href="css/planos.css?v=20261006a">
+<link rel="stylesheet" href="css/financeiro.css?v=20261006a">
+<link rel="stylesheet" href="css/mensagens.css?v=20261006a">
+<link rel="stylesheet" href="css/login.css?v=20261006a">
+<link rel="stylesheet" href="css/meu-negocio.css?v=20261006a">
+<link rel="stylesheet" href="css/modais.css?v=20261006a">
+<link rel="stylesheet" href="css/celular.css?v=20261006a">
+</head>
+<body>
+
+<!-- ================= TELA DE LOGIN / CADASTRO ================= -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="brand-logo"></div>
+      <span>Skin Expert Pro</span>
+    </div>
+    <div class="auth-title" id="authTitle">Entrar na sua conta</div>
+    <div class="auth-sub" id="authSub">Acesse seu painel profissional</div>
+
+    <div class="auth-error" id="authError"></div>
+
+    <div class="auth-field" id="authNomeField" style="display:none;">
+      <label>Nome completo</label>
+      <input type="text" id="authNome" placeholder="Seu nome">
+    </div>
+    <div class="auth-field">
+      <label>E-mail</label>
+      <input type="email" id="authEmail" placeholder="voce@exemplo.com">
+    </div>
+    <div class="auth-field">
+      <label>Senha</label>
+      <div class="auth-password-wrap">
+        <input type="password" id="authSenha" placeholder="••••••••">
+        <button type="button" class="auth-eye-btn" id="authToggleSenha" title="Mostrar senha">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="auth-forgot" id="authForgotWrap">
+        <a id="authForgotLink">Esqueci minha senha</a>
+      </div>
+    </div>
+
+    <button class="auth-btn" id="authSubmitBtn">Entrar</button>
+
+    <div class="auth-switch" id="authSwitch">
+      Ainda não tem conta? <a id="authSwitchLink">Criar conta</a>
+    </div>
+
+    <div class="auth-switch auth-demo" style="margin-top:8px;">
+      <a id="authDemoLink">Só quero navegar (modo demonstração, sem salvar dados)</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= FORMULÁRIO PÚBLICO DE ANAMNESE (link da paciente) ================= -->
+<!-- ================= CONFIRMAÇÃO DA ANAMNESE PELA PACIENTE (link ?confirmar=) ================= -->
+<div class="public-screen" id="publicConfirmarScreen" style="display:none;">
+  <div class="public-container">
+    <div class="public-header">
+      <div class="brand-logo"></div>
+      <h1>Confirme a sua Ficha de Anamnese</h1>
+      <p id="confSaudacao">Confira com calma as informações abaixo.</p>
+    </div>
+    <div id="confCarregando" class="public-invalid">Carregando a sua ficha…</div>
+    <div id="confConteudoWrap" style="display:none;">
+      <div id="confConteudo"></div>
+      <div class="anamnese-card consentimento-card" id="confDeclaracoes">
+        <div class="anamnese-title" style="margin-bottom:12px;">Confirmação e autorização</div>
+        <label class="consentimento-check" style="margin-bottom:14px;">
+          <input type="checkbox" id="confVeracidade">
+          <span id="confVeracidadeTexto"></span>
+        </label>
+        <div class="consentimento-texto" id="confConsentTexto"></div>
+        <label class="consentimento-check">
+          <input type="checkbox" id="confConsentimento">
+          <span>Li e autorizo o uso dos meus dados pessoais e de saúde como descrito acima. <span class="required">*</span></span>
+        </label>
+      </div>
+      <div class="anamnese-footer conf-acoes" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+        <button class="btn-save" id="confImprimir" style="background:var(--tag-bg); color:var(--text-dark);">Salvar em PDF</button>
+        <button class="btn-save" id="confConfirmar">Confirmar</button>
+      </div>
+      <p class="conf-nota">Algo errado? Não confirme — fale com a sua profissional para corrigir.</p>
+    </div>
+    <div id="confFeito" class="public-submitted" style="display:none;">
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h2>Ficha confirmada!</h2>
+      <p id="confFeitoTexto">Obrigada. A sua confirmação foi registrada.</p>
+    </div>
+    <div id="confInvalido" class="public-invalid" style="display:none;">Este link não é válido. Peça um novo link à sua profissional.</div>
+  </div>
+</div>
+
+<div class="public-screen" id="publicAnamneseScreen" style="display:none;">
+  <div class="public-container">
+    <div class="public-header">
+      <div class="brand-logo"></div>
+      <h1>Ficha de Anamnese</h1>
+      <p id="publicPacienteSaudacao">Preencha com calma — suas respostas vão direto para a sua profissional.</p>
+    </div>
+
+    <div id="publicFormContent">
+
+      <div class="anamnese-card">
+        <div class="anamnese-title" style="margin-bottom:20px;">Anamnese Sistêmica</div>
+                    <div class="form-grid">
+              <div class="form-field">
+                <label>Diabético</label>
+                <select class="anamnese-select" id="pubDiabetico"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="pubDiabeticoTipoWrap" style="display:none;">
+                <label>Qual tipo de diabetes?</label>
+                <select class="anamnese-select" id="pubDiabeticoTipo"><option>Selecionar</option><option>Tipo 1</option><option>Tipo 2</option><option>Diabetes gestacional</option><option>Pré-diabetes</option></select>
+              </div>
+              <div class="form-field">
+                <label>Tireoide</label>
+                <select class="anamnese-select" id="pubTireoide"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="pubTireoideTipoWrap" style="display:none;">
+                <label>Qual alteração na tireoide?</label>
+                <select class="anamnese-select" id="pubTireoideTipo"><option>Selecionar</option><option>Hipotireoidismo</option><option>Hipertireoidismo</option></select>
+              </div>
+              <div class="form-field">
+                <label>Hipertensão</label>
+                <select class="anamnese-select" id="pubHipertensao"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Hipotensão</label>
+                <select class="anamnese-select" id="pubHipotensao"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Cardiopatologia</label>
+                <select class="anamnese-select" id="pubCardiopatologia"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Trombose</label>
+                <select class="anamnese-select" id="pubTrombose"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Insuficiência Renal</label>
+                <select class="anamnese-select" id="pubInsuficienciaRenal"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Hepatite</label>
+                <select class="anamnese-select" id="pubHepatite"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Epilepsia</label>
+                <select class="anamnese-select" id="pubEpilepsia"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>SOP</label>
+                <select class="anamnese-select" id="pubSOP"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Antecedentes Oncológicos</label>
+                <select class="anamnese-select" id="pubOncologicos"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Cirurgia Bariátrica</label>
+                <select class="anamnese-select" id="pubBariatrico"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Dermatite</label>
+                <select class="anamnese-select" id="pubDermatite"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="pubDermatiteFrequenciaWrap" style="display:none;">
+                <label>Frequência da Dermatite</label>
+                <input type="text" id="pubDermatiteFrequencia" placeholder="Ex: 2x ao ano">
+              </div>
+              <div class="form-field">
+                <label>Asma</label>
+                <select class="anamnese-select" id="pubAsma"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="pubAsmaFrequenciaWrap" style="display:none;">
+                <label>Frequência da Asma</label>
+                <input type="text" id="pubAsmaFrequencia" placeholder="Ex: crises raras">
+              </div>
+              <div class="form-field">
+                <label>Ansiedade</label>
+                <select class="anamnese-select" id="pubAnsiedade"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Depressão</label>
+                <select class="anamnese-select" id="pubDepressao"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Gestante <span class="required">*</span></label>
+                <select class="anamnese-select" id="pubGestante"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Lactante <span class="required">*</span></label>
+                <select class="anamnese-select" id="pubLactante"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Alergias</label>
+                <select class="anamnese-select" id="pubAlergias"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="pubAlergiaTipoWrap" style="display:none;">
+                <label>Qual tipo de alergia?</label>
+                <input type="text" id="pubAlergiaTipo" placeholder="Ex: níquel, fragrância, ácido, conservante...">
+              </div>
+              <div class="form-field">
+                <label>Uso de medicamentos ou suplementos</label>
+                <input type="text" id="pubMedicamentos" placeholder="Dosagens e horários...">
+                <div class="contraindicacao-alert" id="pubMedicamentosAlert" style="display:none;"></div>
+              </div>
+            </div>
+            <div class="form-field" style="margin-top:18px;">
+              <label>Outras doenças</label>
+              <input type="text" id="pubOutrasDoencas" placeholder="Exemplo: endometriose, doenças autoimunes, etc...">
+              <div class="contraindicacao-alert" id="pubOutrasDoencasAlert" style="display:none;"></div>
+            </div>
+      </div>
+
+      <div class="anamnese-card">
+        <div class="anamnese-title" style="margin-bottom:20px;">Estilo de Vida</div>
+                    <div class="form-grid">
+              <div class="form-field">
+                <label>Atividade Física</label>
+                <select class="anamnese-select" id="pubAtividadeFisica"><option>Selecionar</option><option>Sedentária</option><option>Leve</option><option>Moderada</option><option>Intensa</option></select>
+              </div>
+              <div class="form-field">
+                <label>Alimentação</label>
+                <select class="anamnese-select" id="pubAlimentacao"><option>Selecionar</option><option>Saudável</option><option>Equilibrada</option><option>Alto consumo de açúcar, laticínios ou glúten</option></select>
+              </div>
+              <div class="form-field">
+                <label>Consumo de Água</label>
+                <select class="anamnese-select" id="pubAgua"><option>Selecionar</option><option>Menos de 1L/dia</option><option>1-2L por dia</option><option>2L+ por dia</option></select>
+              </div>
+              <div class="form-field">
+                <label>Qualidade do Sono</label>
+                <select class="anamnese-select" id="pubSono"><option>Selecionar</option><option>Ruim</option><option>Regular</option><option>Boa</option></select>
+              </div>
+              <div class="form-field">
+                <label>Exposição ao sol</label>
+                <select class="anamnese-select" id="pubSol"><option>Selecionar</option><option>Rara</option><option>Ocasional</option><option>Frequente</option></select>
+              </div>
+              <div class="form-field">
+                <label>Tabagista</label>
+                <select class="anamnese-select" id="pubTabagista"><option>Selecionar</option><option>Não</option><option>Sim</option><option>Ex-fumante</option></select>
+              </div>
+              <div class="form-field">
+                <label>Bebida Alcoólica</label>
+                <select class="anamnese-select" id="pubAlcool"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Frequência do Álcool</label>
+                <input type="text" id="pubAlcoolFrequencia" placeholder="Ex: socialmente, fins de semana">
+              </div>
+              <div class="form-field">
+                <label>Frequência de Evacuação</label>
+                <select class="anamnese-select" id="pubEvacuacao"><option>Selecionar</option><option>Mais de 1 vez ao dia</option><option>1 vez ao dia</option><option>1 vez a cada 2 dias</option><option>Menos de 1 vez a cada 2 dias</option></select>
+              </div>
+              <div class="form-field">
+                <label>Frequência do Hábito Urinário</label>
+                <select class="anamnese-select" id="pubHabitoUrinario"><option>Selecionar</option><option>Mais de 3 vezes ao dia</option><option>1 a 3 vezes ao dia</option><option>Menos de 1 vez a cada 2 dias</option></select>
+              </div>
+              <div class="form-field">
+                <label>Frequência Menstrual</label>
+                <select class="anamnese-select" id="pubFrequenciaMenstrual"><option>Selecionar</option><option>Regulada</option><option>Desregulada</option><option>Não menstrua</option></select>
+              </div>
+            </div>
+      </div>
+
+      <div class="anamnese-card">
+        <div class="anamnese-title" style="margin-bottom:16px;">Anamnese Integrativa</div>
+        <div class="form-field">
+          <label>Há algo mais que gostaria de contar sobre sua pele, sua rotina ou seu momento de vida atual?</label>
+          <textarea class="anamnese-textarea" id="pubIntegrativa" placeholder="Fique à vontade para escrever..."></textarea>
+        </div>
+      </div>
+
+      <div class="anamnese-card">
+        <div class="anamnese-title" style="margin-bottom:16px;">Descobrindo a Sua Pele</div>
+        <div class="form-field" style="margin-bottom:18px;">
+          <label>Principal Queixa <span class="required">*</span></label>
+          <textarea class="anamnese-textarea" id="pubPrincipalQueixa" placeholder="Descreva o motivo principal da consulta..."></textarea>
+        </div>
+        <div class="form-field" style="margin-bottom:18px;">
+          <label>Tratamentos Anteriores</label>
+          <input type="text" id="pubTratamentosAnteriores" placeholder="Ex: Peeling, Laser...">
+        </div>
+        <div class="checkbox-columns">
+          <div>
+            <div class="category-block">
+              <div class="category-label"><span class="category-dot" style="background:#e0705a;"></span> Tendência à Rosácea</div>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> Minhas bochechas ficam vermelhas após banho quente</label>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> Meu rosto fica vermelho ao beber vinho ou álcool</label>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> Fico vermelha ao comer alimentos apimentados</label>
+            </div>
+            <div class="category-block">
+              <div class="category-label"><span class="category-dot" style="background:#3d8ac6;"></span> Comportamento da Oleosidade</div>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> Minha pele fica oleosa poucas horas após lavar</label>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> O brilho aumenta muito ao longo do dia</label>
+            </div>
+          </div>
+          <div>
+            <div class="category-block">
+              <div class="category-label"><span class="category-dot" style="background:#e0a930;"></span> Barreira e Sensibilidade</div>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> Minha pele arde ao usar alguns produtos</label>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> Minha pele repuxa após lavar</label>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> Sinto desconforto com vento ou frio</label>
+            </div>
+            <div class="category-block">
+              <div class="category-label"><span class="category-dot" style="background:#3fb56c;"></span> Percepção Global</div>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> Sinto minha pele sensível na maior parte do tempo</label>
+              <label class="checkbox-item"><input type="checkbox" class="pub-autopercepcao"> Minha pele costuma tolerar bem a maioria dos produtos</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="anamnese-card">
+        <div class="anamnese-title" style="margin-bottom:16px;">Skincare</div>
+        <div class="form-field" style="margin-bottom:18px;">
+          <label>Descreva sua rotina de SkinCare Atual</label>
+          <textarea class="anamnese-textarea" id="pubSkincareAtual" placeholder="Quais produtos você usa hoje, e como?"></textarea>
+        </div>
+        <div class="form-field" style="margin-bottom:18px;">
+          <label>Produtos que tem mas não está utilizando</label>
+          <textarea class="anamnese-textarea" id="pubSkincareParado" placeholder="Produtos parados no armário..."></textarea>
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>Consegue manter a rotina com regularidade?</label><select class="anamnese-select" id="pubRegularidade"><option>Selecionar</option><option>Não</option><option>Sim</option></select></div>
+          <div class="form-field"><label>Como gostaria que fosse sua rotina?</label><select class="anamnese-select" id="pubComoGostaria"><option>Selecionar</option><option>Mais simples</option><option>Mais completa</option><option>Manter como está</option></select></div>
+        </div>
+      </div>
+
+      <div class="anamnese-card">
+        <div class="anamnese-title" style="margin-bottom:16px;">Investimento Confortável</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Moeda</label>
+            <select class="anamnese-select" id="pubInvestimentoMoeda">
+              <option value="BRL">Real (R$)</option>
+              <option value="USD">Dólar ($)</option>
+              <option value="EUR">Euro (€)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Faixa confortável</label>
+            <select class="anamnese-select" id="pubInvestimento"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="anamnese-card">
+        <div class="anamnese-title" style="margin-bottom:16px;">Observações Adicionais</div>
+        <textarea class="anamnese-textarea" id="pubObservacoes" placeholder="Outras informações que queira compartilhar."></textarea>
+      </div>
+
+      <div class="anamnese-card consentimento-card" id="pubConsentimentoCard">
+        <div class="anamnese-title" style="margin-bottom:10px;">Consentimento para uso dos seus dados</div>
+        <div class="consentimento-texto" id="pubConsentimentoTexto"></div>
+        <label class="consentimento-check">
+          <input type="checkbox" id="pubConsentimento">
+          <span>Li e autorizo o uso dos meus dados pessoais e de saúde como descrito acima. <span class="required">*</span></span>
+        </label>
+      </div>
+
+      <div class="anamnese-footer">
+        <button class="btn-save" id="btnEnviarAnamnesePublica">Enviar Respostas</button>
+      </div>
+    </div>
+
+    <div class="public-submitted" id="publicSubmittedMsg" style="display:none;">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
+      <h2>Obrigada!</h2>
+      <p>Suas respostas foram enviadas com sucesso para a sua profissional.</p>
+    </div>
+
+    <div class="public-invalid" id="publicInvalidMsg" style="display:none;">
+      Este link é inválido, já foi respondido, ou expirou. Peça um novo link à sua profissional.
+    </div>
+  </div>
+</div>
+
+<div class="app" id="appRoot" style="display:none;">
+
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <button class="collapse-btn" title="Recolher menu">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+
+    <div class="brand">
+      <div class="brand-logo"></div>
+      <div class="brand-name">Skin Expert Pro</div>
+    </div>
+
+    <a class="nav-item active" data-view="dashboard" data-title="Dashboard Profissional" data-subtitle="">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item accent-pink" data-view="agenda" data-title="Agenda" data-subtitle="Gerencie suas consultas e compromissos">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Agenda
+    </a>
+
+    <div class="nav-section-label">Gestão</div>
+    <a class="nav-item" data-view="equipe" data-title="Meu Negócio" data-subtitle="Seus serviços, pacotes e horários de atendimento">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><path d="M2 13h20"/></svg>
+      Meu Negócio
+    </a>
+    <a class="nav-item" data-view="pacientes" data-title="Pacientes" data-subtitle="Gerencie a lista de pacientes da clínica">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
+      Pacientes
+    </a>
+    <a class="nav-item" data-view="catalogo" data-title="Catálogo de Produtos" data-subtitle="Gerencie sua lista de produtos e recomendações">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      Catálogo de Produtos
+    </a>
+    <a class="nav-item locked" data-locked="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H4a1 1 0 00-1 1v3a2 2 0 010 4v3a1 1 0 001 1h5"/><path d="M15 5h5a1 1 0 011 1v3a2 2 0 000 4v3a1 1 0 01-1 1h-5"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      Cupons
+      <svg class="lock-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+    </a>
+    <a class="nav-item" data-soon="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-3V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v3a2 2 0 002 2h14a2 2 0 002-2V8a1 1 0 00-1-1z"/><path d="M4 13v6a1 1 0 001 1h14a1 1 0 001-1v-6"/></svg>
+      Estoque
+    </a>
+    <a class="nav-item" data-view="financeiro" data-title="Financeiro" data-subtitle="Controle receitas, despesas e comandas do seu negócio">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Financeiro
+    </a>
+
+    <div class="nav-section-label">Educacional</div>
+    <a class="nav-item" data-soon="true" title="Em breve">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Comunidade
+      <span class="nav-soon-badge">Em breve</span>
+    </a>
+    <a class="nav-item" data-soon="true" title="Em breve">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Tutoriais
+      <span class="nav-soon-badge">Em breve</span>
+    </a>
+    <a class="nav-item" data-soon="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-1a6 6 0 0112 0v1"/><path d="M16 3.5a4 4 0 010 7.5"/><path d="M22 21v-1a5.5 5.5 0 00-4-5.3"/></svg>
+      Afiliados
+      <span class="nav-soon-badge">Em breve</span>
+    </a>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="profile-label">Perfil</div>
+    <div class="profile-row" id="profileRow" style="position:relative;">
+      <div class="avatar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="profile-name">Bruna Baezy</div>
+
+      <div class="profile-dropdown" id="profileDropdown">
+        <button class="profile-dropdown-item" id="profileDropdownSair">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair
+        </button>
+      </div>
+    </div>
+
+    <a class="nav-item" data-view="planos" data-title="Planos" data-subtitle="Escolha o nível certo para o seu momento" style="display:none;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Planos
+    </a>
+    <a class="nav-item" data-view="configuracoes" data-title="Configurações" data-subtitle="Preferências da sua conta profissional">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Configurações
+    </a>
+    <a class="nav-item" data-logout="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sair
+    </a>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 class="page-title" id="pageTitle">Dashboard Profissional</h1>
+        <p class="page-subtitle" id="pageSubtitle" style="display:none;"></p>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Buscar...">
+        </div>
+        <button class="bell-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </button>
+        <div class="conta-wrap">
+          <button type="button" class="topbar-avatar" id="btnConta" aria-haspopup="true" aria-expanded="false" aria-label="Minha conta">BB</button>
+          <div class="conta-menu" id="contaMenu" role="menu">
+            <div class="conta-nome" id="contaNome">Minha conta</div>
+            <button type="button" class="conta-item" id="contaSair" role="menuitem">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sair
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= DASHBOARD VIEW ================= -->
+    <div class="view active" id="view-dashboard">
+      <div class="content-dash">
+        <div class="col">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title"><span class="dot"></span> Lembretes</div>
+              <button class="btn-primary" id="btnLembrete">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Lembrete
+              </button>
+            </div>
+            <div id="lembretesContainer"><div class="empty-state">Nenhum lembrete no momento.</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <span class="dot"></span> Acompanhamentos
+                <span title="Pacientes cujo Plano de SkinCare termina nos próximos 7 dias ou terminou há até 15 dias, sem retorno agendado." style="display:inline-flex;cursor:help;"><svg class="info-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+              </div>
+            </div>
+            <div class="table-header acomp-grid"><span>Paciente</span><span>Duração</span><span>Ação</span></div>
+            <div id="acompanhamentosContainer"><div class="empty-state">Nenhum acompanhamento próximo do encerramento.</div></div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><div class="card-title"><span class="dot"></span> Pré-fichas Respondidas</div></div>
+            <div id="preFichasContainer"><div class="empty-state">Nenhuma pré-ficha respondida.</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title"><span class="dot"></span> Aniversariantes do Mês</div>
+              <div class="date-pill" id="anivDatePill">—</div>
+            </div>
+            <div id="aniversariantesContainer"><div class="empty-state">Nenhum aniversariante este mês.</div></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= PACIENTES VIEW ================= -->
+    <div class="view" id="view-pacientes">
+      <div class="content-pacientes">
+
+        <div class="filter-bar">
+          <div class="search-input">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="pacientesSearch" placeholder="Filtrar por nome...">
+          </div>
+          <div class="select-box" style="position:relative;">
+            <select id="pacientesFiltroStatus" style="border:none; outline:none; background:transparent; font-family:inherit; font-size:14px; font-weight:600; color: var(--text-dark); appearance:none; padding-right:4px;">
+              <option value="">Status: Todos</option>
+              <option value="Ativo">Ativo</option>
+              <option value="Inativo">Inativo</option>
+            </select>
+          </div>
+          <div class="select-box" style="position:relative;">
+            <select id="pacientesFiltroRotina" style="border:none; outline:none; background:transparent; font-family:inherit; font-size:14px; font-weight:600; color: var(--text-dark); appearance:none; padding-right:4px;">
+              <option value="">Rotina: Todas</option>
+              <option value="com">Com rotina ativa</option>
+              <option value="sem">Sem rotina</option>
+            </select>
+          </div>
+          <div class="spacer-flex"></div>
+          <button class="btn-outline">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4a3 3 0 01-.6 1.8L11 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6L3.6 8.8A3 3 0 013 7V3z"/></svg>
+            Enviar link
+          </button>
+          <button class="btn-primary" id="btnNovoPaciente">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo Paciente
+          </button>
+        </div>
+
+        <div class="card-table">
+          <div class="card-head"><div class="card-title">Lista de Pacientes</div></div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Nome <svg class="sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 15 12 20 17 15"/><polyline points="7 9 12 4 17 9"/></svg></th>
+                <th>Telefone</th>
+                <th>Última rotina <svg class="sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 15 12 20 17 15"/><polyline points="7 9 12 4 17 9"/></svg></th>
+                <th>Acompanhamento <svg class="sort-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 15 12 20 17 15"/><polyline points="7 9 12 4 17 9"/></svg></th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="patientsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= AGENDA VIEW ================= -->
+    <div class="view" id="view-agenda">
+      <div class="content-agenda">
+
+        <div class="agenda-grid">
+          <div class="agenda-lateral">
+          <div class="card calendar-card">
+            <div class="calendar-header">
+              <div class="calendar-month-label" id="calMonthLabel">Julho de 2026</div>
+              <div class="calendar-nav">
+                <button id="calPrev">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button id="calNext">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="calendar-weekdays">
+              <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+            </div>
+            <div class="calendar-days" id="calDays"></div>
+            <div class="calendar-legend">
+              <div><span class="legend-dot legend-today"></span> Hoje</div>
+              <div><span class="legend-dot legend-appt"></span> Com atendimentos</div>
+              <div><span class="legend-dot legend-block"></span> Com bloqueio</div>
+            </div>
+          </div>
+          <button class="btn-pill-outline btn-bloquear-lateral" id="btnBloquearHorarios">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="19.07" x2="19.07" y2="4.93"/></svg>
+            Bloquear Horários
+          </button>
+          </div>
+
+          <div class="card schedule-card">
+            <div class="schedule-toolbar">
+              <div class="view-mode-toggle">
+                <button class="active" data-agenda-view="diario">Diário</button>
+                <button data-agenda-view="semanal">Semanal</button>
+              </div>
+              <div class="schedule-nav">
+                <button id="scheduleNavPrev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+                <button id="scheduleNavToday" class="schedule-nav-today">Hoje</button>
+                <button id="scheduleNavNext"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+              </div>
+            </div>
+            <div class="schedule-header">
+              <div>
+                <div class="schedule-date" id="scheduleDate">Quarta-feira, 22 de Julho</div>
+                <div class="schedule-count" id="scheduleCount">0 atendimento(s)</div>
+              </div>
+              <button class="btn-agenda-primary" id="btnNovoAtendimento">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Novo Atendimento
+              </button>
+            </div>
+            <div class="schedule-scroll" id="scheduleScrollDay">
+              <div class="schedule-rows" id="scheduleRows"></div>
+            </div>
+            <div class="schedule-scroll week-scroll" id="scheduleScrollWeek" style="display:none;">
+              <div class="week-grid" id="weekGrid"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= REGISTRO DE PACIENTE VIEW ================= -->
+    <div class="view" id="view-registro-paciente">
+      <div class="content-registro">
+
+        <div class="breadcrumb"><a id="breadcrumbPacientes">Pacientes</a> / <span id="regBreadcrumbName">—</span></div>
+        <h1 class="page-title" style="margin-top:2px;">Registro de Paciente</h1>
+        <p class="page-subtitle" style="display:block; margin:4px 0 0 0;">Gerencie os dados, fichas e rotinas da paciente.</p>
+
+        <div class="registro-tabs">
+          <div class="registro-tab active" data-tab="dados">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
+            Dados
+          </div>
+          <div class="registro-tab" data-tab="anamnese">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3v2h6V3"/></svg>
+            Anamnese Clínica
+          </div>
+          <div class="registro-tab tab-especialidade" data-tab="hof" style="display:none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c-4 0-7 3.2-7 8 0 5.5 3.6 10 7 10s7-4.5 7-10c0-4.8-3-8-7-8z"/><path d="M9 15c1.7 1.2 4.3 1.2 6 0"/></svg>
+            Harmonização Facial
+          </div>
+          <div class="registro-tab tab-especialidade" data-tab="tricologia" style="display:none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 20c0-8 3-15 7-17M12 20c0-7 2-13 5-16M19 20c0-5 0-9 1-12"/></svg>
+            Tricologia
+          </div>
+          <div class="registro-tab tab-especialidade" data-tab="corporal" style="display:none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4.5" r="2"/><path d="M8 22l1.5-8M16 22l-1.5-8M6 9.5c2 .8 4 1.2 6 1.2s4-.4 6-1.2M12 10.7V15"/></svg>
+            Corporal
+          </div>
+          <div class="registro-tab" data-tab="avaliacao">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            Avaliação Cutânea
+          </div>
+          <div class="registro-tab" data-tab="fotos">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Fotos de Evolução
+          </div>
+          <div class="registro-tab" data-tab="planoskincare">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2h6v3.5l2 2V20a2 2 0 01-2 2H9a2 2 0 01-2-2V7.5l2-2z"/></svg>
+            Plano de SkinCare
+          </div>
+          <div class="registro-tab" data-tab="recomendacoes">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Recomendações
+          </div>
+          <div class="registro-tab" data-tab="historico">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Histórico
+          </div>
+        </div>
+
+        <!-- ---------- DADOS PANEL ---------- -->
+        <div class="registro-panel active" id="panel-dados">
+          <div class="registro-card">
+            <div class="photo-status-row">
+              <div class="photo-upload">
+                <div class="photo-circle" id="patientPhotoCircle">
+                  <div class="photo-circle-inner" id="patientPhotoInner">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <div class="photo-camera-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </div>
+                </div>
+                <input type="file" id="patientPhotoInput" accept="image/*" style="display:none">
+                <div>
+                  <div class="photo-upload-title">Foto do Perfil</div>
+                  <div class="photo-upload-sub">Adicione uma foto para facilitar a identificação.</div>
+                </div>
+              </div>
+              <div class="patient-header-badges" id="patientHeaderBadges"></div>
+              <div class="status-field">
+                <label>Status da Paciente</label>
+                <select id="regStatus">
+                  <option>Ativo</option>
+                  <option>Inativo</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="form-section-title">
+                <span class="form-section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></span>
+                Dados Pessoais
+              </div>
+              <div class="form-grid single">
+                <div class="form-field">
+                  <label>Nome Completo <span class="required">*</span></label>
+                  <input id="regNome" type="text">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="form-section-title">
+                <span class="form-section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.8a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.9.34 1.84.57 2.8.7A2 2 0 0122 16.92z"/></svg></span>
+                Contato
+              </div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>E-mail</label>
+                  <input id="regEmail" type="email" placeholder="email@exemplo.com">
+                </div>
+                <div class="form-field">
+                  <label>Telefone / WhatsApp <span class="required">*</span></label>
+                  <div class="phone-field">
+                    <select class="phone-code" id="regPhoneCode" aria-label="Código do país">
+                      <option value="">Selecionar</option>
+                      <option value="+55">🇧🇷 +55</option>
+                      <option value="+351">🇵🇹 +351</option>
+                      <option value="+34">🇪🇸 +34</option>
+                      <option value="+33">🇫🇷 +33</option>
+                      <option value="+39">🇮🇹 +39</option>
+                      <option value="+49">🇩🇪 +49</option>
+                      <option value="+44">🇬🇧 +44</option>
+                      <option value="+353">🇮🇪 +353</option>
+                      <option value="+31">🇳🇱 +31</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+244">🇦🇴 +244</option>
+                      <option value="+258">🇲🇿 +258</option>
+                    </select>
+                    <input class="phone-number" id="regPhoneNumber" placeholder="912 345 678">
+                    <svg class="whatsapp-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15L2 22l5.1-1.3A10 10 0 1012 2zm0 18a8 8 0 01-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1112 20z"/></svg>
+                  </div>
+                </div>
+                <div class="form-field"><label>Data de Nascimento</label><input id="regDataNascimento" type="date"></div>
+                <div class="form-field">
+                  <label>País</label>
+                  <select class="anamnese-select" id="regPais">
+                    <option value="">Selecionar</option>
+                    <option value="Brasil">Brasil</option>
+                    <option value="Estados Unidos">Estados Unidos</option>
+                    <optgroup label="União Europeia">
+                      <option value="Alemanha">Alemanha</option>
+                      <option value="Áustria">Áustria</option>
+                      <option value="Bélgica">Bélgica</option>
+                      <option value="Bulgária">Bulgária</option>
+                      <option value="Chipre">Chipre</option>
+                      <option value="Croácia">Croácia</option>
+                      <option value="Dinamarca">Dinamarca</option>
+                      <option value="Eslováquia">Eslováquia</option>
+                      <option value="Eslovênia">Eslovênia</option>
+                      <option value="Espanha">Espanha</option>
+                      <option value="Estônia">Estônia</option>
+                      <option value="Finlândia">Finlândia</option>
+                      <option value="França">França</option>
+                      <option value="Grécia">Grécia</option>
+                      <option value="Hungria">Hungria</option>
+                      <option value="Irlanda">Irlanda</option>
+                      <option value="Itália">Itália</option>
+                      <option value="Letônia">Letônia</option>
+                      <option value="Lituânia">Lituânia</option>
+                      <option value="Luxemburgo">Luxemburgo</option>
+                      <option value="Malta">Malta</option>
+                      <option value="Países Baixos">Países Baixos</option>
+                      <option value="Polônia">Polônia</option>
+                      <option value="Portugal">Portugal</option>
+                      <option value="República Tcheca">República Tcheca</option>
+                      <option value="Romênia">Romênia</option>
+                      <option value="Suécia">Suécia</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="registro-footer">
+              <div class="registro-footer-lgpd">
+                <button class="delete-link" id="btnExcluirCadastro" title="Apaga o cadastro e todos os dados da paciente (LGPD)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2"/></svg>
+                  Excluir cadastro e dados
+                </button>
+                <button class="export-link" id="btnExportarDadosPaciente" title="Baixar uma cópia de todos os dados da paciente (LGPD)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Exportar dados
+                </button>
+              </div>
+              <button class="btn-save" id="btnSalvarAlteracoes">Salvar Alterações</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- ANAMNESE CLÍNICA PANEL ---------- -->
+        <div class="registro-panel" id="panel-anamnese">
+
+          <div class="anamnese-card">
+            <div class="anamnese-card-head">
+              <div class="anamnese-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Anamnese Sistêmica
+              </div>
+              <button class="btn-link-outline" id="btnGerarLinkPaciente">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.07 0l1.93-1.93a5 5 0 00-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 00-7.07 0l-1.93 1.93a5 5 0 007.07 7.07L13.5 18.5"/></svg>
+                Gerar Link para Paciente
+              </button>
+            </div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Diabético</label>
+                <select class="anamnese-select" id="paDiabetico"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="paDiabeticoTipoWrap" style="display:none;">
+                <label>Qual tipo de diabetes?</label>
+                <select class="anamnese-select" id="paDiabeticoTipo"><option>Selecionar</option><option>Tipo 1</option><option>Tipo 2</option><option>Diabetes gestacional</option><option>Pré-diabetes</option></select>
+              </div>
+              <div class="form-field">
+                <label>Tireoide</label>
+                <select class="anamnese-select" id="paTireoide"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="paTireoideTipoWrap" style="display:none;">
+                <label>Qual alteração na tireoide?</label>
+                <select class="anamnese-select" id="paTireoideTipo"><option>Selecionar</option><option>Hipotireoidismo</option><option>Hipertireoidismo</option></select>
+              </div>
+              <div class="form-field">
+                <label>Hipertensão</label>
+                <select class="anamnese-select" id="paHipertensao"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Hipotensão</label>
+                <select class="anamnese-select" id="paHipotensao"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Cardiopatologia</label>
+                <select class="anamnese-select" id="paCardiopatologia"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Trombose</label>
+                <select class="anamnese-select" id="paTrombose"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Insuficiência Renal</label>
+                <select class="anamnese-select" id="paInsuficienciaRenal"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Hepatite</label>
+                <select class="anamnese-select" id="paHepatite"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Epilepsia</label>
+                <select class="anamnese-select" id="paEpilepsia"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>SOP</label>
+                <select class="anamnese-select" id="paSOP"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Antecedentes Oncológicos</label>
+                <select class="anamnese-select" id="paOncologicos"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Cirurgia Bariátrica</label>
+                <select class="anamnese-select" id="paBariatrico"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Dermatite</label>
+                <select class="anamnese-select" id="paDermatite"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="paDermatiteFrequenciaWrap" style="display:none;">
+                <label>Frequência da Dermatite</label>
+                <input type="text" id="paDermatiteFrequencia" placeholder="Ex: 2x ao ano">
+              </div>
+              <div class="form-field">
+                <label>Asma</label>
+                <select class="anamnese-select" id="paAsma"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="paAsmaFrequenciaWrap" style="display:none;">
+                <label>Frequência da Asma</label>
+                <input type="text" id="paAsmaFrequencia" placeholder="Ex: crises raras">
+              </div>
+              <div class="form-field">
+                <label>Ansiedade</label>
+                <select class="anamnese-select" id="paAnsiedade"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Depressão</label>
+                <select class="anamnese-select" id="paDepressao"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Gestante <span class="required">*</span></label>
+                <select class="anamnese-select" id="paGestante"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Lactante <span class="required">*</span></label>
+                <select class="anamnese-select" id="paLactante"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Alergias</label>
+                <select class="anamnese-select" id="paAlergias"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field" id="paAlergiaTipoWrap" style="display:none;">
+                <label>Qual tipo de alergia?</label>
+                <input type="text" id="paAlergiaTipo" placeholder="Ex: níquel, fragrância, ácido, conservante...">
+              </div>
+              <div class="form-field">
+                <label>Uso de medicamentos ou suplementos</label>
+                <input type="text" id="paMedicamentos" placeholder="Dosagens e horários...">
+                <div class="contraindicacao-alert" id="paMedicamentosAlert" style="display:none;"></div>
+              </div>
+            </div>
+            <div class="form-field" style="margin-top:18px;">
+              <label>Outras doenças</label>
+              <input type="text" id="paOutrasDoencas" placeholder="Exemplo: endometriose, doenças autoimunes, etc...">
+              <div class="contraindicacao-alert" id="paOutrasDoencasAlert" style="display:none;"></div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:20px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Estilo de Vida
+            </div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Atividade Física</label>
+                <select class="anamnese-select" id="paAtividadeFisica"><option>Selecionar</option><option>Sedentária</option><option>Leve</option><option>Moderada</option><option>Intensa</option></select>
+              </div>
+              <div class="form-field">
+                <label>Alimentação</label>
+                <select class="anamnese-select" id="paAlimentacao"><option>Selecionar</option><option>Saudável</option><option>Equilibrada</option><option>Alto consumo de açúcar, laticínios ou glúten</option></select>
+              </div>
+              <div class="form-field">
+                <label>Consumo de Água</label>
+                <select class="anamnese-select" id="paAgua"><option>Selecionar</option><option>Menos de 1L/dia</option><option>1-2L por dia</option><option>2L+ por dia</option></select>
+              </div>
+              <div class="form-field">
+                <label>Qualidade do Sono</label>
+                <select class="anamnese-select" id="paSono"><option>Selecionar</option><option>Ruim</option><option>Regular</option><option>Boa</option></select>
+              </div>
+              <div class="form-field">
+                <label>Exposição ao sol</label>
+                <select class="anamnese-select" id="paSol"><option>Selecionar</option><option>Rara</option><option>Ocasional</option><option>Frequente</option></select>
+              </div>
+              <div class="form-field">
+                <label>Tabagista</label>
+                <select class="anamnese-select" id="paTabagista"><option>Selecionar</option><option>Não</option><option>Sim</option><option>Ex-fumante</option></select>
+              </div>
+              <div class="form-field">
+                <label>Bebida Alcoólica</label>
+                <select class="anamnese-select" id="paAlcool"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Frequência do Álcool</label>
+                <input type="text" id="paAlcoolFrequencia" placeholder="Ex: socialmente, fins de semana">
+              </div>
+              <div class="form-field">
+                <label>Frequência de Evacuação</label>
+                <select class="anamnese-select" id="paEvacuacao"><option>Selecionar</option><option>Mais de 1 vez ao dia</option><option>1 vez ao dia</option><option>1 vez a cada 2 dias</option><option>Menos de 1 vez a cada 2 dias</option></select>
+              </div>
+              <div class="form-field">
+                <label>Frequência do Hábito Urinário</label>
+                <select class="anamnese-select" id="paHabitoUrinario"><option>Selecionar</option><option>Mais de 3 vezes ao dia</option><option>1 a 3 vezes ao dia</option><option>Menos de 1 vez a cada 2 dias</option></select>
+              </div>
+              <div class="form-field">
+                <label>Frequência Menstrual</label>
+                <select class="anamnese-select" id="paFrequenciaMenstrual"><option>Selecionar</option><option>Regulada</option><option>Desregulada</option><option>Não menstrua</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-card-head">
+              <div class="anamnese-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3v2h6V3"/></svg>
+                Anamnese Integrativa
+              </div>
+              <div class="toggle-row-header">
+                <button class="btn-link-outline" id="btnNovaPergunta">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Nova Pergunta
+                </button>
+                <label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label>
+              </div>
+            </div>
+            <div id="questionsContainer"></div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:20px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 4.6L18 9l-4.1 1.4L12 15l-1.9-4.6L6 9l4.1-1.4z"/></svg>
+              Descobrindo a Sua Pele
+            </div>
+            <div class="form-field" style="margin-bottom:18px;">
+              <label>Principal Queixa <span class="required">*</span></label>
+              <textarea class="anamnese-textarea" id="paPrincipalQueixa" placeholder="Descreva o motivo principal da consulta..."></textarea>
+            </div>
+            <div class="form-field" style="margin-bottom:18px;">
+              <label>Tratamentos Anteriores</label>
+              <input type="text" id="paTratamentosAnteriores" placeholder="Ex: Peeling, Laser...">
+            </div>
+            <div class="checkbox-columns">
+              <div>
+                <div class="category-block">
+                  <div class="category-label"><span class="category-dot" style="background:#e0705a;"></span> Tendência à Rosácea</div>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minhas bochechas ficam vermelhas após banho quente</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Meu rosto fica vermelho ao beber vinho ou álcool</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Fico vermelha ao comer alimentos apimentados</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Meu rosto esquenta facilmente em situações de emoção ou estresse</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Sinto sensação de calor no rosto sem motivo aparente</label>
+                </div>
+                <div class="category-block">
+                  <div class="category-label"><span class="category-dot" style="background:#3d8ac6;"></span> Comportamento da Oleosidade</div>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minha pele fica oleosa poucas horas após lavar</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> O brilho aumenta muito ao longo do dia</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Em alguns períodos minha pele fica mais oleosa que o normal</label>
+                </div>
+                <div class="category-block">
+                  <div class="category-label"><span class="category-dot" style="background:#e08a30;"></span> Variações e Gatilhos</div>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minha pele piora em períodos de estresse</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minha pele reage mal a mudanças bruscas de clima</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minha pele fica mais sensível após exposição ao sol</label>
+                </div>
+              </div>
+              <div>
+                <div class="category-block">
+                  <div class="category-label"><span class="category-dot" style="background:#e0a930;"></span> Barreira e Sensibilidade</div>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minha pele arde ao usar alguns produtos</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minha pele fica irritada com produtos novos</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minha pele repuxa após lavar</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Preciso aplicar hidratante imediatamente após a limpeza</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Sinto desconforto com vento ou frio</label>
+                </div>
+                <div class="category-block">
+                  <div class="category-label"><span class="category-dot" style="background:#d6317c;"></span> Influência Hormonal (Acne Cíclica)</div>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minha pele piora próximo ao período menstrual</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Costumo ter espinhas sempre na mesma fase do ciclo</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> As espinhas aparecem principalmente na região do queixo e mandíbula</label>
+                </div>
+                <div class="category-block">
+                  <div class="category-label"><span class="category-dot" style="background:#3fb56c;"></span> Percepção Global</div>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Sinto minha pele sensível na maior parte do tempo</label>
+                  <label class="checkbox-item"><input type="checkbox" class="pa-autopercepcao"> Minha pele costuma tolerar bem a maioria dos produtos</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:20px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 4.6L18 9l-4.1 1.4L12 15l-1.9-4.6L6 9l4.1-1.4z"/></svg>
+              Skincare
+            </div>
+
+            <label style="font-size:14px; font-weight:700; display:block; margin-bottom:10px;">Descreva sua rotina de SkinCare Atual</label>
+            <div id="skincareAtualContainer"></div>
+            <button class="btn-dashed" id="btnAddSkincareAtual">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Adicionar produto
+            </button>
+
+            <label style="font-size:14px; font-weight:700; display:block; margin:6px 0 10px 0;">Produtos que tenho mas não estou utilizando</label>
+            <div id="skincareParadoContainer"></div>
+            <button class="btn-dashed" id="btnAddSkincareParado">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Adicionar produto
+            </button>
+
+            <div class="form-grid" style="margin-top:6px;">
+              <div class="form-field">
+                <label>Consegue manter a rotina com regularidade?</label>
+                <select class="anamnese-select" id="paRegularidade"><option>Selecionar</option><option>Não</option><option>Sim</option></select>
+              </div>
+              <div class="form-field">
+                <label>Como você gostaria que fosse sua rotina?</label>
+                <select class="anamnese-select" id="paComoGostaria"><option>Selecionar</option><option>Mais simples</option><option>Mais completa</option><option>Manter como está</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Investimento Confortável
+            </div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Moeda</label>
+                <select class="anamnese-select" id="paInvestimentoMoeda">
+                  <option value="BRL">Real (R$)</option>
+                  <option value="USD">Dólar ($)</option>
+                  <option value="EUR">Euro (€)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Faixa confortável</label>
+                <select class="anamnese-select" id="paInvestimento"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Observações Adicionais
+            </div>
+            <textarea class="anamnese-textarea" id="paObservacoes" placeholder="Outras informações relevantes sobre a paciente..."></textarea>
+          </div>
+
+          <div class="anamnese-card consentimento-card">
+            <label class="consentimento-check" style="margin:0;">
+              <input type="checkbox" id="paEnviarConfirmacao" checked>
+              <span>Enviar para a paciente conferir e confirmar pelo WhatsApp
+                <span style="display:block; font-weight:500; font-size:12.5px; color:var(--text-muted); margin-top:3px;">Ela recebe um link com a ficha, confirma que as informações estão corretas, se responsabiliza por elas e autoriza o uso dos dados (RGPD/LGPD). Pode salvar em PDF. <a href="#" id="paConsentimentoVer" style="color:var(--pink); font-weight:700;">ver o que ela aceita</a></span></span>
+            </label>
+            <div class="consentimento-texto" id="paConsentimentoTexto" style="display:none; margin-top:10px;"></div>
+          </div>
+
+          <div class="anamnese-footer">
+            <button class="btn-save" id="btnSalvarAnamnese">Salvar Anamnese</button>
+          </div>
+        </div>
+
+        <!-- ---------- AVALIAÇÃO CUTÂNEA PANEL ---------- -->
+        <div class="registro-panel" id="panel-avaliacao">
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+              Classificação Estrutural da Pele
+            </div>
+
+            <div class="toggle-subtitle" style="margin-top:18px;">Fototipo Cutâneo — Escala de Fitzpatrick</div>
+            <div class="scale-row" id="fitzpatrickRow">
+              <div class="scale-card" data-group="fitzpatrick" data-value="I"><div class="sc-swatch" style="background:#F6DFCF;"></div><div class="sc-title">Tipo I</div><div class="sc-sub">Sempre queima</div></div>
+              <div class="scale-card" data-group="fitzpatrick" data-value="II"><div class="sc-swatch" style="background:#F0CDAE;"></div><div class="sc-title">Tipo II</div><div class="sc-sub">Queima fácil</div></div>
+              <div class="scale-card" data-group="fitzpatrick" data-value="III"><div class="sc-swatch" style="background:#D7AD84;"></div><div class="sc-title">Tipo III</div><div class="sc-sub">Queima moderado</div></div>
+              <div class="scale-card" data-group="fitzpatrick" data-value="IV"><div class="sc-swatch" style="background:#B8875A;"></div><div class="sc-title">Tipo IV</div><div class="sc-sub">Queima pouco</div></div>
+              <div class="scale-card" data-group="fitzpatrick" data-value="V"><div class="sc-swatch" style="background:#7C5232;"></div><div class="sc-title">Tipo V</div><div class="sc-sub">Queima raro</div></div>
+              <div class="scale-card" data-group="fitzpatrick" data-value="VI"><div class="sc-swatch" style="background:#4A2E1E;"></div><div class="sc-title">Tipo VI</div><div class="sc-sub">Nunca queima</div></div>
+            </div>
+
+            <div class="toggle-subtitle">Classificação Funcional da Pele — Sistema Baumann</div>
+            <div class="baumann-grid" id="baumannGrid">
+              <div>
+                <div class="baumann-col-label">Oleosidade</div>
+                <div class="baumann-option" data-group="oleosidade" data-value="D">Seca (D)</div>
+                <div class="baumann-option" data-group="oleosidade" data-value="O">Oleosa (O)</div>
+              </div>
+              <div>
+                <div class="baumann-col-label">Sensibilidade</div>
+                <div class="baumann-option" data-group="sensibilidade" data-value="S">Sensível (S)</div>
+                <div class="baumann-option" data-group="sensibilidade" data-value="R">Resistente (R)</div>
+              </div>
+              <div>
+                <div class="baumann-col-label">Pigmentação</div>
+                <div class="baumann-option" data-group="pigmentacao" data-value="P">Pigmentada (P)</div>
+                <div class="baumann-option" data-group="pigmentacao" data-value="N">Não-Pigmentada (N)</div>
+              </div>
+              <div>
+                <div class="baumann-col-label">Envelhecimento</div>
+                <div class="baumann-option" data-group="envelhecimento" data-value="W">Enrugada (W)</div>
+                <div class="baumann-option" data-group="envelhecimento" data-value="T">Firme (T)</div>
+              </div>
+            </div>
+            <div class="baumann-result">Resultado Automático: <span class="code" id="baumannResult">—</span></div>
+
+            <div class="toggle-subtitle">Envelhecimento Cutâneo — Escala de Glogau <span id="glogauTomAviso" style="text-transform:none; letter-spacing:0; font-weight:600;"></span></div>
+            <div class="scale-row" id="glogauRow">
+              <div class="scale-card rosacea-card" data-group="glogau" data-value="I"><img class="rosacea-foto glogau-foto" src="avaliacao/glogau-clara-1.jpg" alt="Escala de Glogau, grau I" loading="lazy"><div class="sc-title">Grau I</div><div class="sc-sub">25–35 anos</div><div class="sc-desc">Sinais mínimos de envelhecimento. Pele lisa, sem rugas visíveis, apenas alterações sutis de textura e luminosidade.</div></div>
+              <div class="scale-card rosacea-card" data-group="glogau" data-value="II"><img class="rosacea-foto glogau-foto" src="avaliacao/glogau-clara-2.jpg" alt="Escala de Glogau, grau II" loading="lazy"><div class="sc-title">Grau II</div><div class="sc-sub">35–50 anos</div><div class="sc-desc">Linhas finas iniciais, especialmente na região periorbicular. Leve irregularidade na textura da pele, com pequenas alterações de pigmentação e perda discreta de firmeza.</div></div>
+              <div class="scale-card rosacea-card" data-group="glogau" data-value="III"><img class="rosacea-foto glogau-foto" src="avaliacao/glogau-clara-3.jpg" alt="Escala de Glogau, grau III" loading="lazy"><div class="sc-title">Grau III</div><div class="sc-sub">50–60 anos</div><div class="sc-desc">Rugas mais evidentes, perda de elasticidade e início de flacidez. Manchas senis mais frequentes e textura menos uniforme.</div></div>
+              <div class="scale-card rosacea-card" data-group="glogau" data-value="IV"><img class="rosacea-foto glogau-foto" src="avaliacao/glogau-clara-4.jpg" alt="Escala de Glogau, grau IV" loading="lazy"><div class="sc-title">Grau IV</div><div class="sc-sub">60–70 anos</div><div class="sc-desc">Rugas profundas, flacidez moderada a acentuada, manchas pigmentares mais visíveis e alterações estruturais significativas da pele.</div></div>
+              <div class="scale-card rosacea-card" data-group="glogau" data-value="V"><img class="rosacea-foto glogau-foto" src="avaliacao/glogau-clara-5.jpg" alt="Escala de Glogau, grau V" loading="lazy"><div class="sc-title">Grau V</div><div class="sc-sub">70+ anos</div><div class="sc-desc">Rugas profundas e generalizadas, flacidez acentuada, lentigos e alterações pigmentares extensas, com perda significativa da estrutura e densidade da pele.</div></div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.5S6 9 6 14a6 6 0 0012 0c0-5-6-11.5-6-11.5z"/></svg>
+              Hidratação e Barreira Cutânea
+            </div>
+            <div class="toggle-subtitle">Nível de Hidratação</div>
+            <div class="scale-row" id="hidratacaoRow">
+              <div class="scale-card" data-group="hidratacao" data-value="hidratada"><div class="sc-title">Hidratada</div></div>
+              <div class="scale-card" data-group="hidratacao" data-value="leve"><div class="sc-title">Levemente Desidratada</div></div>
+              <div class="scale-card" data-group="hidratacao" data-value="moderada"><div class="sc-title">Moderadamente Desidratada</div></div>
+              <div class="scale-card" data-group="hidratacao" data-value="intensa"><div class="sc-title">Intensamente Desidratada</div></div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/></svg>
+              Integridade, Sensibilidade e Reatividade Cutânea
+            </div>
+            <div class="checkbox-columns">
+              <div>
+                <label class="checkbox-item"><input type="checkbox" class="av-integridade"> Barreira comprometida</label>
+                <label class="checkbox-item"><input type="checkbox" class="av-integridade"> Sensibilidade aumentada</label>
+                <label class="checkbox-item"><input type="checkbox" class="av-integridade"> Reatividade a produtos</label>
+                <label class="checkbox-item"><input type="checkbox" class="av-integridade"> Eritema recorrente</label>
+              </div>
+              <div>
+                <label class="checkbox-item"><input type="checkbox" class="av-integridade"> Descamação</label>
+                <label class="checkbox-item"><input type="checkbox" class="av-integridade"> Repuxamento</label>
+                <label class="checkbox-item"><input type="checkbox" class="av-integridade"> Ardor / Queimação</label>
+                <label class="checkbox-item"><input type="checkbox" class="av-integridade"> Prurido (coceira)</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+              Textura e Poros
+            </div>
+            <div class="checkbox-columns">
+              <div>
+                <div class="category-label">Textura</div>
+                <label class="checkbox-item"><input type="radio" name="textura"> Superfície uniforme</label>
+                <label class="checkbox-item"><input type="radio" name="textura"> Aspereza tátil</label>
+                <label class="checkbox-item"><input type="radio" name="textura"> Irregularidade superficial</label>
+              </div>
+              <div>
+                <div class="category-label">Poros</div>
+                <label class="checkbox-item"><input type="radio" name="poros"> Não aparentes</label>
+                <label class="checkbox-item"><input type="radio" name="poros"> Localizados</label>
+                <label class="checkbox-item"><input type="radio" name="poros"> Difusos</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-card-head" style="margin-bottom:0;">
+              <div class="anamnese-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+                Oleosidade e Brilho Cutâneo
+              </div>
+              <div class="toggle-row-header">
+                <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Presença de Oleosidade/Brilho:</span>
+                <label class="switch"><input type="checkbox" data-toggle-target="oleosidadeBody"><span class="switch-slider"></span></label>
+              </div>
+            </div>
+            <div class="toggle-section-body hidden" id="oleosidadeBody">
+              <div class="toggle-subtitle">Selecione as áreas oleosas</div>
+              <div class="chip-select" style="margin-bottom:18px;">
+                <div class="chip" data-chip-group="areas-oleosas">Testa</div>
+                <div class="chip" data-chip-group="areas-oleosas">Nariz</div>
+                <div class="chip" data-chip-group="areas-oleosas">Queixo</div>
+                <div class="chip" data-chip-group="areas-oleosas">Bochechas</div>
+              </div>
+              <div class="toggle-subtitle">Intensidade da Oleosidade</div>
+              <div class="scale-row">
+                <div class="scale-card" data-group="intensidade-oleosidade" data-value="leve"><div class="sc-title">Leve</div></div>
+                <div class="scale-card" data-group="intensidade-oleosidade" data-value="moderada"><div class="sc-title">Moderada</div></div>
+                <div class="scale-card" data-group="intensidade-oleosidade" data-value="intensa"><div class="sc-title">Intensa</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-card-head" style="margin-bottom:0;">
+              <div class="anamnese-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><circle cx="12" cy="14" r="1"/></svg>
+                Acne
+              </div>
+              <div class="toggle-row-header">
+                <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Presença de Acne Ativa:</span>
+                <label class="switch"><input type="checkbox" data-toggle-target="acneBody"><span class="switch-slider"></span></label>
+              </div>
+            </div>
+            <div class="toggle-section-body hidden" id="acneBody">
+              <div class="toggle-subtitle">Grau da Acne</div>
+              <div class="scale-row" style="margin-bottom:18px;">
+                <div class="scale-card rosacea-card" data-group="grau-acne" data-value="I"><img class="rosacea-foto acne-foto" src="avaliacao/exemplo-de-acne-grau-i.jpg" alt="Exemplo de acne grau I" loading="lazy"><div class="sc-title">Grau I</div><div class="sc-sub">Comedônica</div><div class="sc-desc">Presença de comedões (fechados e/ou abertos), com pouco ou nenhum processo inflamatório.</div></div>
+                <div class="scale-card rosacea-card" data-group="grau-acne" data-value="II"><img class="rosacea-foto acne-foto" src="avaliacao/exemplo-de-acne-grau-ii.jpg" alt="Exemplo de acne grau II" loading="lazy"><div class="sc-title">Grau II</div><div class="sc-sub">Papulopustulosa leve</div><div class="sc-desc">Surgimento de pápulas e pústulas (espinhas), além de comedões, com inflamação leve e localizada.</div></div>
+                <div class="scale-card rosacea-card" data-group="grau-acne" data-value="III"><img class="rosacea-foto acne-foto" src="avaliacao/exemplo-de-acne-grau-iii.jpg" alt="Exemplo de acne grau III" loading="lazy"><div class="sc-title">Grau III</div><div class="sc-sub">Papulopustulosa moderada</div><div class="sc-desc">Maior número de pápulas e pústulas, com tendência a coalescer. Pode haver lesões mais profundas e início de nódulos.</div></div>
+                <div class="scale-card rosacea-card" data-group="grau-acne" data-value="IV"><img class="rosacea-foto acne-foto" src="avaliacao/exemplo-de-acne-grau-iv.jpg" alt="Exemplo de acne grau IV" loading="lazy"><div class="sc-title">Grau IV</div><div class="sc-sub">Nodular</div><div class="sc-desc">Presença de nódulos inflamatórios (lesões profundas e dolorosas) e muitas pápulas e pústulas. Maior risco de cicatrizes.</div></div>
+                <div class="scale-card rosacea-card" data-group="grau-acne" data-value="V"><img class="rosacea-foto acne-foto" src="avaliacao/exemplo-de-acne-grau-v.jpg" alt="Exemplo de acne grau V" loading="lazy"><div class="sc-title">Grau V</div><div class="sc-sub">Cística</div><div class="sc-desc">Lesões císticas profundas, com inflamação intensa, maior risco de cicatrizes permanentes e alterações na textura da pele.</div></div>
+              </div>
+              <div class="toggle-subtitle">Tipos de Lesões Predominantes</div>
+              <div class="chip-select">
+                <div class="chip" data-chip-group="licoes-acne">Comedões</div>
+                <div class="chip" data-chip-group="licoes-acne">Pápulas</div>
+                <div class="chip" data-chip-group="licoes-acne">Pústulas</div>
+                <div class="chip" data-chip-group="licoes-acne">Nódulos</div>
+                <div class="chip" data-chip-group="licoes-acne">Cistos</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-card-head" style="margin-bottom:0;">
+              <div class="anamnese-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/></svg>
+                Rosácea
+              </div>
+              <div class="toggle-row-header">
+                <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Presença de Rosácea Ativa:</span>
+                <label class="switch"><input type="checkbox" data-toggle-target="rosaceaBody"><span class="switch-slider"></span></label>
+              </div>
+            </div>
+            <div class="toggle-section-body hidden" id="rosaceaBody">
+              <div class="toggle-subtitle">Subtipo</div>
+              <div class="scale-row">
+                <div class="scale-card rosacea-card" data-group="rosacea-subtipo" data-value="1"><img class="rosacea-foto" src="avaliacao/exemplo-de-rosacea-eritemato-telangiectasica.jpg" alt="Exemplo de rosácea eritemato-telangiectásica" loading="lazy"><div class="sc-title">Subtipo 1</div><div class="sc-sub">Eritemato-telangiectásica</div><div class="sc-desc">Vermelhidão persistente no rosto, com vasos sanguíneos dilatados (telangiectasias).</div></div>
+                <div class="scale-card rosacea-card" data-group="rosacea-subtipo" data-value="2"><img class="rosacea-foto" src="avaliacao/exemplo-de-rosacea-papulopustulosa.jpg" alt="Exemplo de rosácea papulopustulosa" loading="lazy"><div class="sc-title">Subtipo 2</div><div class="sc-sub">Papulopustulosa</div><div class="sc-desc">Vermelhidão acompanhada de pápulas (caroços) e pústulas (espinhas).</div></div>
+                <div class="scale-card rosacea-card" data-group="rosacea-subtipo" data-value="3"><img class="rosacea-foto" src="avaliacao/exemplo-de-rosacea-fimatosa.jpg" alt="Exemplo de rosácea fimatosa" loading="lazy"><div class="sc-title">Subtipo 3</div><div class="sc-sub">Fimatosa</div><div class="sc-desc">Espessamento da pele, com aumento do volume do nariz (rinofima) e irregularidade na textura da pele.</div></div>
+                <div class="scale-card rosacea-card" data-group="rosacea-subtipo" data-value="4"><img class="rosacea-foto" src="avaliacao/exemplo-de-rosacea-ocular.jpg" alt="Exemplo de rosácea ocular" loading="lazy"><div class="sc-title">Subtipo 4</div><div class="sc-sub">Ocular</div><div class="sc-desc">Vermelhidão, irritação, sensação de areia nos olhos, lacrimejamento e, em alguns casos, pálpebras inchadas.</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-card-head" style="margin-bottom:0;">
+              <div class="anamnese-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+                Discromias
+              </div>
+              <div class="toggle-row-header">
+                <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Presença de Discromias:</span>
+                <label class="switch"><input type="checkbox" data-toggle-target="discromiasBody"><span class="switch-slider"></span></label>
+              </div>
+            </div>
+            <div class="toggle-section-body hidden" id="discromiasBody">
+              <div class="foto-chip-grid">
+                <div class="chip foto-chip" data-chip-group="discromias" data-valor="Melasma"><img class="rosacea-foto disc-foto" src="avaliacao/exemplo-de-melasma.jpg" alt="Exemplo de melasma" loading="lazy"><div class="sc-title">Melasma</div><div class="sc-desc">Manchas acastanhadas irregulares, geralmente no rosto, causadas por fatores hormonais, exposição solar e predisposição genética.</div></div>
+                <div class="chip foto-chip" data-chip-group="discromias" data-valor="Hiperpigmentação Pós-Inflamatória"><img class="rosacea-foto disc-foto" src="avaliacao/exemplo-de-hiperpigmentacao-pos-inflamatoria.jpg" alt="Exemplo de hiperpigmentação pós-inflamatória" loading="lazy"><div class="sc-title">Hiperpigmentação Pós-Inflamatória</div><div class="sc-desc">Manchas escuras que surgem após processos inflamatórios, como acne, foliculite, dermatites ou traumas na pele.</div></div>
+                <div class="chip foto-chip" data-chip-group="discromias" data-valor="Efélides"><img class="rosacea-foto disc-foto" src="avaliacao/exemplo-de-efelides.jpg" alt="Exemplo de efélides" loading="lazy"><div class="sc-title">Efélides</div><div class="sc-desc">Pequenas manchas acastanhadas, mais comuns em áreas expostas ao sol, geralmente no rosto, ombros e braços.</div></div>
+                <div class="chip foto-chip" data-chip-group="discromias" data-valor="Lentigos Solares"><img class="rosacea-foto disc-foto" src="avaliacao/exemplo-de-lentigos-solares.jpg" alt="Exemplo de lentigos solares" loading="lazy"><div class="sc-title">Lentigos Solares</div><div class="sc-desc">Manchas bem delimitadas, de cor castanha, causadas pela exposição solar acumulada ao longo dos anos. Comuns em rosto, mãos e áreas expostas.</div></div>
+                <div class="chip foto-chip" data-chip-group="discromias" data-valor="Vitiligo"><img class="rosacea-foto disc-foto" src="avaliacao/exemplo-de-vitiligo.jpg" alt="Exemplo de vitiligo" loading="lazy"><div class="sc-title">Vitiligo</div><div class="sc-desc">Manchas brancas decorrentes da perda de melanócitos, podendo ocorrer em qualquer parte do corpo e ter caráter progressivo.</div></div>
+                <div class="chip foto-chip" data-chip-group="discromias" data-valor="Hipocromia"><img class="rosacea-foto disc-foto" src="avaliacao/exemplo-de-hipocromia.jpg" alt="Exemplo de hipocromia" loading="lazy"><div class="sc-title">Hipocromia</div><div class="sc-desc">Áreas de pele mais claras que o tom da pele normal, podendo ser congênitas ou adquiridas, associadas a processos inflamatórios, traumas ou doenças.</div></div>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:8px;">Pode marcar mais de uma.</div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-card-head" style="margin-bottom:0;">
+              <div class="anamnese-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                Olheiras
+              </div>
+              <div class="toggle-row-header">
+                <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Presença de Olheiras:</span>
+                <label class="switch"><input type="checkbox" data-toggle-target="olheirasBody"><span class="switch-slider"></span></label>
+              </div>
+            </div>
+            <div class="toggle-section-body hidden" id="olheirasBody">
+              <div class="scale-row">
+                <div class="scale-card rosacea-card" data-group="olheiras-tipo" data-value="vascular"><img class="rosacea-foto olheira-foto" src="avaliacao/exemplo-de-olheira-vascular.jpg" alt="Exemplo de olheira vascular" loading="lazy"><div class="sc-title">Vascular</div><div class="sc-sub">Vasos visíveis</div><div class="sc-desc">Causadas pela transparência da pele, que evidencia os vasos sanguíneos da região. Aparecem como tons azulados ou arroxeados, principalmente em peles mais finas.</div></div>
+                <div class="scale-card rosacea-card" data-group="olheiras-tipo" data-value="pigmentar"><img class="rosacea-foto olheira-foto" src="avaliacao/exemplo-de-olheira-pigmentar.jpg" alt="Exemplo de olheira pigmentar" loading="lazy"><div class="sc-title">Pigmentar</div><div class="sc-sub">Hiperpigmentação</div><div class="sc-desc">Resultam do excesso de melanina na região. Aparecem como tons acastanhados e são mais comuns em peles morenas e em quem tem predisposição genética.</div></div>
+                <div class="scale-card rosacea-card" data-group="olheiras-tipo" data-value="bolsa"><img class="rosacea-foto olheira-foto" src="avaliacao/exemplo-de-olheira-edematosa.jpg" alt="Exemplo de olheira edematosa" loading="lazy"><div class="sc-title">Edematosa</div><div class="sc-sub">Bolsa / edema</div><div class="sc-desc">Causadas pelo acúmulo e retenção de líquidos na região. Podem estar associadas a fatores como alergias, má circulação e noites mal dormidas.</div></div>
+                <div class="scale-card rosacea-card" data-group="olheiras-tipo" data-value="estrutural"><img class="rosacea-foto olheira-foto" src="avaliacao/exemplo-de-olheira-estrutural.jpg" alt="Exemplo de olheira estrutural" loading="lazy"><div class="sc-title">Estrutural</div><div class="sc-sub">Perda de volume</div><div class="sc-desc">Provocadas pela perda de volume, afinamento da pele e menor sustentação dos tecidos. Dão um aspecto de cansaço e olhos mais fundos.</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Observações Clínicas
+            </div>
+            <textarea class="anamnese-textarea" id="avObservacoes" placeholder="Digite aqui qualquer observação adicional, histórico relevante ou detalhes específicos sobre a avaliação."></textarea>
+          </div>
+
+          <div class="anamnese-footer">
+            <button class="btn-save" id="btnSalvarAvaliacao">Salvar Avaliação</button>
+          </div>
+        </div>
+
+        <!-- ---------- FOTOS DE EVOLUÇÃO PANEL ---------- -->
+        <div class="registro-panel" id="panel-fotos">
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:14px;">Adicionar Foto de Evolução</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Data da Foto</label>
+                <input type="date" id="fotoEvolucaoData">
+              </div>
+              <div class="form-field">
+                <label>Etiqueta (opcional)</label>
+                <input type="text" id="fotoEvolucaoEtiqueta" placeholder="Ex: Antes, 30 dias, Após peeling...">
+              </div>
+            </div>
+            <div class="form-field" style="margin-top:14px;">
+              <label>Observações (opcional)</label>
+              <textarea id="fotoEvolucaoObs" rows="2" placeholder="Alguma observação sobre esta foto..."></textarea>
+            </div>
+            <div class="form-field" style="margin-top:14px;">
+              <label>Foto</label>
+              <input type="file" id="fotoEvolucaoInput" accept="image/*">
+            </div>
+            <div class="anamnese-footer">
+              <button class="btn-save" id="btnAdicionarFotoEvolucao">Adicionar Foto</button>
+            </div>
+          </div>
+
+          <div class="anamnese-card" style="margin-top:20px;">
+            <div class="anamnese-title" style="margin-bottom:14px;">Linha do Tempo</div>
+            <div id="fotosEvolucaoGrid" class="fotos-evolucao-grid"></div>
+            <div id="fotosEvolucaoVazio" class="empty-state" style="display:none;">Nenhuma foto de evolução adicionada ainda.</div>
+          </div>
+        </div>
+
+        <!-- ---------- PLANO DE SKINCARE PANEL ---------- -->
+        <div class="registro-panel" id="panel-planoskincare">
+
+          <div class="anamnese-card">
+            <div class="skincare-meta-row">
+              <span class="skincare-meta-basic" id="skincareMetaBasic">— anos · —</span>
+              <span class="skincare-badge">Sistema Baumann: <span id="skincareBaumannBadge">—</span></span>
+              <span class="skincare-badge">Fototipo: <span id="skincareFototipoBadge">—</span></span>
+            </div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Objetivo do Plano de SkinCare <span class="required">*</span></label>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="skincareObjetivo" placeholder="Descreva aqui o objetivo principal desta rotina (ex.: controle da oleosidade, recuperação da barreira...)" style="flex:1;">
+                  <button type="button" class="btn-pill-outline" id="btnSugerirAtivosObjetivo" style="white-space:nowrap;">✨ Sugerir</button>
+                </div>
+              </div>
+              <div class="form-field">
+                <label>Duração (dias) <span class="required">*</span></label>
+                <input type="number" id="skincareDuracao" placeholder="Ex: 21" min="1" max="365" step="1" inputmode="numeric">
+              </div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <button class="btn-pill-outline" id="skcBtnToggleAssistente">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 4.6L18 9l-4.1 1.4L12 15l-1.9-4.6L6 9l4.1-1.4z"/></svg>
+              Assistente de Busca Guiada por Ativos
+            </button>
+            <p style="font-size:12.5px; color:var(--text-muted); margin:8px 0 0 0;">Escolha os ativos que deseja na rotina e veja quais produtos do Catálogo os contêm.</p>
+
+            <div class="toggle-subtitle">Função do produto na rotina</div>
+            <div class="chip-select" id="skcFuncaoExterno" style="margin-bottom:18px;"></div>
+
+            <div class="registro-card" id="skcAssistentePanel" style="display:none; margin-top:16px; padding:22px;">
+              <div class="anamnese-title" style="margin-bottom:16px;">Filtrar Ativos Disponíveis</div>
+
+              <div class="toggle-row-header" style="justify-content:space-between; margin-bottom:18px;">
+                <span style="font-size:13.5px; color:var(--text-dark);">A paciente é gestante/lactante?</span>
+                <label class="switch"><input type="checkbox" id="skcAssistGestante"><span class="switch-slider"></span></label>
+              </div>
+
+              <div class="toggle-subtitle">Classes de Ativos</div>
+              <div class="chip-select" id="skcAssistClasses" style="margin-bottom:8px;"></div>
+
+              <div class="anamnese-footer" style="justify-content:space-between; margin-top:20px;">
+                <button class="modal-btn-cancel" id="skcBtnLimparFiltros">Limpar Filtros</button>
+                <button class="btn-save" id="skcBtnAplicarFiltros">Aplicar Filtros</button>
+              </div>
+
+              <div class="toggle-subtitle">Ativos Desejados</div>
+              <div class="chip-select" id="skcAtivosDesejadosChips" style="margin-bottom:18px;"></div>
+            </div>
+
+            <div class="toggle-subtitle">Produtos Encontrados</div>
+            <div class="product-detail-list" id="skcProdutosEncontrados"></div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="anamnese-title" style="margin-bottom:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              Jornada da Rotina
+            </div>
+            <div id="jornadaContainer">
+              <div class="routine-empty">Nenhum produto adicionado ainda. Escolha uma função de produto ou ativos acima para montar a rotina.</div>
+            </div>
+          </div>
+
+          <div class="anamnese-card">
+            <div class="toggle-subtitle">Observações — Manhã</div>
+            <textarea class="anamnese-textarea" placeholder="Observações específicas para a rotina da manhã." style="min-height:70px;"></textarea>
+            <div class="toggle-subtitle">Observações — Noite</div>
+            <textarea class="anamnese-textarea" placeholder="Observações específicas para a rotina da noite." style="min-height:70px;"></textarea>
+          </div>
+
+          <div class="anamnese-footer">
+            <button class="btn-save" id="btnFinalizarSkincarePlano">Finalizar Plano de SkinCare</button>
+          </div>
+        </div>
+
+        <!-- ---------- RECOMENDAÇÕES PANEL ---------- -->
+        <div class="registro-panel" id="panel-recomendacoes">
+          <div class="historico-head-card">
+            <div>
+              <div class="historico-head-title">Planos de SkinCare Sugeridos</div>
+              <div class="historico-head-sub">Histórico de rotinas geradas para esta paciente</div>
+            </div>
+            <div class="historico-count-badge" id="recomendacoesCountBadge">0 planos</div>
+          </div>
+
+          <div id="recomendacoesList"></div>
+        </div>
+
+        <!-- ---------- HISTÓRICO CLÍNICO PANEL ---------- -->
+        <div class="registro-panel" id="panel-historico">
+          <div class="historico-head-card">
+            <div>
+              <div class="historico-head-title">Histórico Clínico</div>
+              <div class="historico-head-sub">Prontuário completo da paciente em modo leitura</div>
+            </div>
+            <div class="historico-count-badge" id="historicoCountBadge">0 registros</div>
+          </div>
+
+          <div id="anamnesesRespondidasContainer"></div>
+          <div id="planosSkincareHistoricoContainer"></div>
+          <div id="avaliacoesHistoricoContainer"></div>
+        </div>
+
+        <!-- Placeholder panels for tabs not yet built -->
+        <!-- ---------- ANAMNESES ESPECÍFICAS (montadas pelo JS; só aparecem se a área estiver ligada em Configurações) ---------- -->
+        <div class="registro-panel panel-especialidade" id="panel-hof" data-esp="hof"></div>
+        <div class="registro-panel panel-especialidade" id="panel-tricologia" data-esp="tricologia"></div>
+        <div class="registro-panel panel-especialidade" id="panel-corporal" data-esp="corporal"></div>
+
+        <div class="registro-panel" id="panel-placeholder">
+          <div class="registro-card empty-state">Esta aba estará disponível em breve.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= SKINCARE PLANO PDF (DOCUMENTO IMPRIMÍVEL) ================= -->
+    <div class="view" id="view-skincare-pdf">
+      <div class="content-produto">
+        <div class="pdf-toolbar">
+          <div class="breadcrumb"><a id="backFromPdf">← Voltar</a></div>
+          <button class="btn-pill-outline pdf-toolbar-btn" id="btnBaixarPdf">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Baixar PDF
+          </button>
+        </div>
+
+        <div class="pdf-doc" id="anamnesePdfDoc">
+          <div class="pdf-doc-header">
+            <div>
+              <div class="pdf-doc-brand" id="pdfAnamneseBrand">Profissional Skin Expert Pro</div>
+              <div class="pdf-doc-role" id="pdfAnamneseRole">Esteticista e Cosmetóloga</div>
+              <div class="pdf-doc-contact" id="pdfAnamneseContact">contato@skinexpertpro.app</div>
+            </div>
+            <div class="pdf-doc-meta">
+              Paciente: <b id="pdfAnamnesePaciente">—</b><br>
+              Data do registro: <b id="pdfAnamneseData">—</b>
+            </div>
+          </div>
+
+          <h2>Ficha de Anamnese</h2>
+
+          <div class="pdf-section-title">Anamnese Sistêmica</div>
+          <p id="pdfSistemica">—</p>
+          <p id="pdfTireoideExplicacao" style="display:none; font-size:12.5px; color:var(--text-muted); margin-top:-6px;"></p>
+
+          <div class="pdf-section-title">Estilo de Vida</div>
+          <p id="pdfEstiloVida">—</p>
+
+          <div class="pdf-section-title">Anamnese Integrativa</div>
+          <p id="pdfIntegrativa">—</p>
+
+          <div class="pdf-section-title">Descobrindo a Sua Pele</div>
+          <p><b>Principal Queixa:</b> <span id="pdfPrincipalQueixa">—</span></p>
+          <p><b>Tratamentos Anteriores:</b> <span id="pdfTratamentosAnteriores">—</span></p>
+          <p id="pdfAutopercepcao">—</p>
+
+          <div class="pdf-section-title">Skincare</div>
+          <p id="pdfSkincare">—</p>
+
+          <div class="pdf-section-title">Investimento Confortável</div>
+          <p id="pdfInvestimento">—</p>
+
+          <div class="pdf-section-title">Observações Adicionais</div>
+          <p id="pdfObservacoes">—</p>
+
+          <div class="pdf-signature">Documento gerado pelo Skin Expert Pro</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-plano-pdf">
+      <div class="content-produto">
+        <div class="pdf-toolbar">
+          <div class="breadcrumb"><a id="backFromPlanoPdf">← Voltar</a></div>
+          <button class="btn-pill-outline pdf-toolbar-btn" id="btnBaixarPdfPlano">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Baixar PDF
+          </button>
+        </div>
+
+        <div class="pdf-doc pdf-doc-landscape">
+          <div class="pdf-doc-header">
+            <div>
+              <div class="pdf-doc-brand" id="pdfPlanoBrand">Profissional Skin Expert Pro</div>
+              <div class="pdf-doc-role" id="pdfPlanoRole">Esteticista e Cosmetóloga</div>
+              <div class="pdf-doc-contact" id="pdfPlanoContact">contato@skinexpertpro.app</div>
+            </div>
+            <div class="pdf-doc-meta">
+              Paciente: <b id="pdfPlanoPaciente">—</b><br>
+              Data do plano: <b id="pdfPlanoData">—</b>
+            </div>
+          </div>
+
+          <h2>Plano de SkinCare</h2>
+          <p><b>Objetivo:</b> <span id="pdfPlanoObjetivo">—</span></p>
+          <p><b>Duração do acompanhamento:</b> <span id="pdfPlanoDuracao">—</span></p>
+
+          <div class="pdf-section-title">☀ Rotina da Manhã</div>
+          <div id="pdfPlanoManha" class="pdf-products-grid"></div>
+
+          <div class="pdf-section-title">🌙 Rotina da Noite</div>
+          <div id="pdfPlanoNoite" class="pdf-products-grid"></div>
+
+          <div class="pdf-signature">Documento gerado pelo Skin Expert Pro</div>
+        </div>
+      </div>
+    </div>
+    <div class="view" id="view-catalogo">
+      <div class="content-catalogo">
+
+        <div class="fin-tabs" style="margin-bottom:20px;">
+          <div class="fin-tab active" data-catalogosubview="produtos">Produtos</div>
+          <div class="fin-tab" data-catalogosubview="ativos">Dicionário de Ativos</div>
+        </div>
+
+        <div class="catalogo-subpanel active" id="catalogo-subpanel-produtos">
+
+        <div class="filter-bar">
+          <div class="search-input">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="catalogoSearch" placeholder="Buscar produto ou marca...">
+          </div>
+          <div class="select-box" style="position:relative;">
+            <select id="catalogoCategoria" style="border:none; outline:none; background:transparent; font-family:inherit; font-size:14px; font-weight:600; color: var(--text-dark); appearance:none; padding-right:4px;">
+              <option value="">Categoria: Todas</option>
+              <option>Demaquilante</option>
+              <option>Limpador</option>
+              <option>Tônico</option>
+              <option>Esfoliante</option>
+              <option>Hidratante</option>
+              <option>Área dos Olhos</option>
+              <option>Tratamento</option>
+              <option>Protetor Solar</option>
+            </select>
+          </div>
+          <div class="spacer-flex"></div>
+        </div>
+
+        <div class="catalogo-count">Produtos Cadastrados: <b id="catalogoCount">0</b></div>
+
+        <div class="card-table">
+          <div class="card-head"><div class="card-title">Lista de Produtos</div></div>
+          <table>
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Marca</th>
+                <th>Categoria</th>
+                <th>Função</th>
+                <th>Faixa de Preço</th>
+              </tr>
+            </thead>
+            <tbody id="catalogoBody"></tbody>
+          </table>
+          <div class="pagination-bar" id="catalogoPagination"></div>
+        </div>
+
+        </div>
+
+        <div class="catalogo-subpanel" id="catalogo-subpanel-ativos">
+
+          <div class="filter-bar">
+            <div class="search-input" style="flex:1 1 100%; width:100%;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="ativosSearch" placeholder="Buscar ativos...">
+            </div>
+          </div>
+
+          <div class="az-nav" id="azNav"></div>
+          <div id="ativosCardsContainer"></div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= VISUALIZAR PRODUTO VIEW ================= -->
+    <div class="view" id="view-produto">
+      <div class="content-produto">
+
+        <div class="breadcrumb"><a id="breadcrumbCatalogo">Catálogo de Produtos</a> / <span id="produtoBreadcrumbName">—</span></div>
+
+        <div class="produto-header">
+          <div class="produto-thumb-lg" id="produtoThumbLg">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 2h6v3.5l2 2V20a2 2 0 01-2 2H9a2 2 0 01-2-2V7.5l2-2z"/></svg>
+          </div>
+          <div class="produto-header-info">
+            <div class="produto-title" id="produtoNome">—</div>
+            <div class="produto-brand" id="produtoMarca">—</div>
+            <div class="produto-meta-row">
+              <span class="category-chip" id="produtoCategoria">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="registro-card">
+          <div class="produto-section">
+            <div class="produto-section-title">Descrição</div>
+            <div class="produto-section-text" id="produtoDescricao">—</div>
+          </div>
+          <div class="produto-section">
+            <div class="produto-section-title">Faixa de Investimento</div>
+            <span class="produto-price" id="produtoPreco">—</span>
+          </div>
+          <div class="produto-section">
+            <div class="produto-section-title">Instruções de Uso</div>
+            <div class="produto-section-text" id="produtoInstrucoes">—</div>
+          </div>
+          <div class="produto-section" style="margin-bottom:0;">
+            <div class="produto-section-title">Lista de Ingredientes</div>
+            <div id="produtoAtivosChips" class="ativo-links-row" style="margin-bottom:10px;"></div>
+            <div class="produto-section-text" id="produtoOutrosIngredientes" style="color:var(--text-muted); font-size:13px;">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= PLANOS VIEW ================= -->
+    <div class="view" id="view-configuracoes">
+      <div class="content-planos" style="max-width:1160px;">
+        <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px; align-items:flex-start;">
+        <div class="registro-card" style="flex:1; min-width:320px; margin-bottom:0;">
+          <div class="anamnese-title" style="margin-bottom:6px;">Meus Dados Profissionais</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">Essas informações aparecem no cabeçalho dos PDFs gerados para as suas pacientes (Ficha de Anamnese e Plano de SkinCare).</p>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Nome completo</label>
+            <input type="text" class="anamnese-select" id="cfgNomeProfissional" placeholder="Seu nome completo">
+          </div>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Título / Especialidade</label>
+            <input type="text" class="anamnese-select" id="cfgTituloProfissional" placeholder="Ex: Esteticista e Cosmetóloga">
+          </div>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Telefone / WhatsApp</label>
+            <input type="text" class="anamnese-select" id="cfgTelefoneProfissional" placeholder="Ex: (11) 91234-5678">
+          </div>
+
+          <div class="form-field" style="margin-bottom:8px;">
+            <label>E-mail</label>
+            <input type="text" class="anamnese-select" id="cfgEmailProfissional" disabled style="opacity:.7; cursor:not-allowed;">
+          </div>
+          <p style="font-size:12px; color:var(--text-muted); margin:0 0 20px 0;">O e-mail é o mesmo usado para fazer login e não pode ser editado aqui.</p>
+
+          <div class="anamnese-footer">
+            <button class="btn-save" id="btnSalvarDadosProfissionais">Salvar Meus Dados</button>
+          </div>
+        </div>
+
+        <div style="flex:1; min-width:320px; display:flex; flex-direction:column; gap:20px;">
+        <div class="registro-card" style="margin-bottom:0;" id="googleAgendaCard">
+          <div class="anamnese-title" style="margin-bottom:6px;">Google Agenda</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 6px 0;">Conecte sua Google Agenda para que cada atendimento marcado aqui crie automaticamente um evento na sua agenda do Google.</p>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;" id="googleAgendaStatusLabel">Status: <strong style="color:var(--text-muted);">Não conectado</strong></p>
+
+          <div class="anamnese-footer" style="gap:10px; display:flex;">
+            <button class="btn-save" id="btnConectarGoogleAgenda">Conectar Google Agenda</button>
+            <button class="btn-save" id="btnDesconectarGoogleAgenda" style="background:var(--tag-bg); color:var(--text-dark); display:none;">Desconectar</button>
+          </div>
+        </div>
+        <div class="registro-card" style="margin-bottom:0;">
+          <div class="anamnese-title" style="margin-bottom:6px;">Cor do Tema</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 14px 0;">Escolha as cores do seu painel. A mudança aparece na hora e fica salva na sua conta.</p>
+          <div class="tema-opcoes" id="temaOpcoes" role="radiogroup" aria-label="Cor do tema"></div>
+        </div>
+        </div>
+
+        <div class="registro-card" style="flex:1; min-width:320px; margin-bottom:0; display:none;" id="whatsappIntegrationCard">
+          <div class="anamnese-title" style="margin-bottom:6px;">Integração com WhatsApp</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 6px 0;">Conecte sua própria conta do WhatsApp Business (Meta Cloud API) para enviar confirmações de agendamento automaticamente para suas pacientes, com o seu número.</p>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;" id="whatsappStatusLabel">Status: <strong style="color:var(--text-muted);">Não conectado</strong></p>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Número do WhatsApp (visível para a paciente)</label>
+            <input type="text" class="anamnese-select" id="cfgWhatsappNumero" placeholder="Ex: (11) 91234-5678">
+          </div>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>Phone Number ID (Meta Business)</label>
+            <input type="text" class="anamnese-select" id="cfgWhatsappPhoneId" placeholder="Ex: 123456789012345">
+          </div>
+
+          <div class="form-field" style="margin-bottom:8px;">
+            <label>Access Token (Meta Business)</label>
+            <input type="password" class="anamnese-select" id="cfgWhatsappToken" placeholder="Token de acesso permanente">
+          </div>
+          <p style="font-size:12px; color:var(--text-muted); margin:0 0 20px 0;">Você gera esses dados no seu Meta Business Manager, ao criar sua conta do WhatsApp Business API. Podemos te ajudar com o passo a passo.</p>
+
+          <div class="anamnese-footer" style="gap:10px; display:flex;">
+            <button class="btn-save" id="btnSalvarWhatsapp">Salvar Integração</button>
+            <button class="btn-save" id="btnTestarWhatsapp" style="background:var(--tag-bg); color:var(--text-dark);">Testar Conexão</button>
+          </div>
+        </div>
+        </div>
+
+        <!-- ---------- CENTRO DE MENSAGENS ---------- -->
+        <div class="registro-card" id="centroMensagensCard" style="margin-bottom:20px;">
+          <div class="anamnese-title" style="margin-bottom:6px;">Centro de Mensagens</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Seus modelos de WhatsApp para confirmação, lembrete, pós-atendimento e mais. Você revisa o texto e envia com um clique — pelo seu próprio WhatsApp.</p>
+          <div class="fin-tabs" id="msgAbas" style="margin-bottom:16px; align-items:center;">
+            <div class="fin-tab active" data-msgaba="hoje">Enviar hoje <span class="msg-contador" id="msgContadorHoje"></span></div>
+            <div class="fin-tab" data-msgaba="modelos">Modelos</div>
+            <div class="fin-tab" data-msgaba="historico">Histórico</div>
+            <button class="btn-outline" type="button" id="btnMsgNova" style="margin-left:auto;">Enviar para uma paciente</button>
+          </div>
+          <div class="msg-painel ativo" id="msgPainel-hoje"><div id="msgHojeLista"></div></div>
+          <div class="msg-painel" id="msgPainel-modelos">
+            <div class="msg-variaveis">Variáveis: <code>{nome}</code> primeiro nome · <code>{nome_completo}</code> · <code>{servico}</code> · <code>{dia}</code> ex.: quinta-feira, 02/10 · <code>{data}</code> 02/10 · <code>{hora}</code> · <code>{profissional}</code> seu nome · <code>{link}</code> link de confirmação da anamnese</div>
+            <div id="msgModelosLista"></div>
+            <button class="btn-dashed" type="button" id="btnMsgNovoModelo" style="margin-top:10px;">+ Novo modelo</button>
+          </div>
+          <div class="msg-painel" id="msgPainel-historico">
+            <div class="search-input" style="max-width:320px; margin-bottom:12px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="msgHistoricoBusca" placeholder="Procurar por paciente ou modelo...">
+            </div>
+            <div id="msgHistoricoLista"></div>
+          </div>
+        </div>
+
+        <div class="registro-card" style="max-width:560px;" id="cfgAreasCard">
+          <div class="anamnese-title" style="margin-bottom:6px;">Áreas de Atuação</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Marque o que você atende. Cada área ligada adiciona a anamnese específica dela na ficha das pacientes.</p>
+          <label class="checkbox-item"><input type="checkbox" class="cfg-area" value="hof"> <span><b>Harmonização Facial</b><br><small style="color:var(--text-muted);">Toxina, preenchedores, bioestimuladores, fios</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" class="cfg-area" value="tricologia"> <span><b>Tricologia</b><br><small style="color:var(--text-muted);">Queda, couro cabeludo e saúde dos fios</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" class="cfg-area" value="corporal"> <span><b>Estética Corporal</b><br><small style="color:var(--text-muted);">Gordura localizada, celulite, flacidez, drenagem, pós-operatório</small></span></label>
+          <p style="font-size:12px; color:var(--text-muted); margin:6px 0 0 0;">Desligar uma área só esconde a aba: as fichas já preenchidas continuam guardadas.</p>
+        </div>
+
+        <div class="registro-card" style="max-width:560px;">
+          <div class="anamnese-title" style="margin-bottom:6px;">Preferências da Conta</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">A moeda vale para o Financeiro (comandas, controle, contas), os pacotes e o destaque das faixas de preço do Catálogo e do Plano de SkinCare.</p>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label>País de Atuação</label>
+            <select class="anamnese-select" id="cfgPaisAtuacao">
+              <option value="BR">Brasil</option>
+              <option value="PT">Portugal</option>
+              <option value="ES">Espanha</option>
+              <option value="FR">França</option>
+              <option value="IT">Itália</option>
+              <option value="DE">Alemanha</option>
+              <option value="EU">Outro país da União Europeia</option>
+              <option value="US">Estados Unidos</option>
+            </select>
+          </div>
+
+          <div class="form-field" style="margin-bottom:18px;">
+            <label for="cfgMoeda">Moeda do sistema</label>
+            <select class="anamnese-select" id="cfgMoeda">
+              <option value="">Automática (pelo país de atuação)</option>
+              <option value="BRL">Real (R$)</option>
+              <option value="EUR">Euro (€)</option>
+              <option value="USD">Dólar ($)</option>
+            </select>
+          </div>
+
+          <div class="anamnese-footer">
+            <button class="btn-save" id="btnSalvarConfiguracoes">Salvar Preferências</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="view" id="view-planos">
+      <div class="content-planos">
+
+        <div class="planos-hero">
+          <h2>Quanto da sua rotina você quer automatizar?</h2>
+          <p>Escolha o nível certo para o seu momento. Você pode mudar de plano a qualquer momento.</p>
+        </div>
+
+        <div class="planos-quicknav">
+          <button class="qn-btn active" data-plan="iniciante"><span class="qn-verb">Organiza ›</span> Iniciante</button>
+          <button class="qn-btn" data-plan="profissional"><span class="qn-verb">Automatiza ›</span> Profissional</button>
+          <button class="qn-btn" data-plan="business"><span class="qn-verb">Escala ›</span> Business</button>
+        </div>
+
+        <div class="planos-controls">
+          <div class="planos-control-group">
+            <span class="planos-control-label">Moeda:</span>
+            <div class="segmented" id="currencySegment">
+              <button class="active" data-currency="BRL">R$ BRL</button>
+              <button data-currency="EUR">€ EUR</button>
+              <button data-currency="USD">$ USD</button>
+            </div>
+          </div>
+          <div class="planos-control-group">
+            <span class="planos-control-label">Período:</span>
+            <div class="segmented" id="periodSegment">
+              <button class="active" data-period="mensal">Mensal</button>
+              <button data-period="trimestral">Trimestral<span class="discount-badge">-10%</span></button>
+              <button data-period="anual">Anual<span class="discount-badge">-20%</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="planos-grid" id="planosGrid">
+          <!-- plan cards injected by JS -->
+        </div>
+
+        <div class="planos-compare">
+          <h3>Compare rapidamente</h3>
+          <table class="compare-table">
+            <thead>
+              <tr><th>Funcionalidade</th><th>Iniciante</th><th>Profissional</th><th>Business</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Agenda organizada</td><td class="compare-check">✓</td><td class="compare-check">✓</td><td class="compare-check">✓</td></tr>
+              <tr><td>Link público de agendamento</td><td class="compare-dash">–</td><td class="compare-check">✓</td><td class="compare-check">✓</td></tr>
+              <tr><td>Secretária digital automática</td><td class="compare-dash">–</td><td class="compare-check">✓</td><td class="compare-check">✓</td></tr>
+              <tr><td>E-mail ao paciente</td><td class="compare-dash">–</td><td class="compare-check">✓</td><td class="compare-check">✓</td></tr>
+              <tr><td>SMS ao paciente</td><td class="compare-dash">–</td><td class="compare-dash">–</td><td class="compare-check">✓</td></tr>
+              <tr><td>Gestão multi-profissional</td><td class="compare-dash">–</td><td class="compare-dash">–</td><td class="compare-check">✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="planos-footer">
+          <div class="planos-trust-row">
+            <div>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Pagamento seguro via Stripe
+            </div>
+            <div>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Cancele quando quiser
+            </div>
+            <div>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+              Mude de plano a qualquer momento
+            </div>
+          </div>
+          <div class="planos-footer-note">Criado por Bruna Baezy — especialista em Estética Integrativa</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FINANCEIRO VIEW ================= -->
+    <div class="view" id="view-financeiro">
+      <div class="content-financeiro">
+
+        <div class="fin-tabs">
+          <div class="fin-tab active" data-fintab="comandas">Comandas</div>
+          <div class="fin-tab" data-fintab="controle">Controle Financeiro</div>
+          <div class="fin-tab" data-fintab="contas">Contas a Pagar/Receber</div>
+          <div class="fin-tab" data-fintab="formas">Formas de Pagamento</div>
+        </div>
+
+        <!-- ---------- COMANDAS ---------- -->
+        <div class="fin-panel active" id="finpanel-comandas">
+          <div class="fin-summary-row">
+            <div class="fin-summary-card pending"><div class="fin-summary-label">Em aberto</div><div class="fin-summary-value" id="sumComandasAberto">—</div><div class="fin-summary-sub" id="sumComandasAbertoN"></div></div>
+            <div class="fin-summary-card in"><div class="fin-summary-label">Recebido</div><div class="fin-summary-value" id="sumComandasRecebido">—</div><div class="fin-summary-sub" id="sumComandasRecebidoN"></div></div>
+            <div class="fin-summary-card"><div class="fin-summary-label">Total das comandas</div><div class="fin-summary-value" id="sumComandasTotal">—</div><div class="fin-summary-sub" id="sumComandasTotalN"></div></div>
+            <div class="fin-summary-card out"><div class="fin-summary-label">Descontos concedidos</div><div class="fin-summary-value" id="sumComandasDescontos">—</div><div class="fin-summary-sub" id="sumComandasTicket"></div></div>
+          </div>
+
+          <div class="fin-filter-bar">
+            <div class="search-input" style="min-width:220px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="comandasBusca" placeholder="Procurar por cliente, código ou serviço...">
+            </div>
+            <div class="fin-date-field"><label>De:</label><input type="date" id="comandasDateFrom"></div>
+            <div class="fin-date-field"><label>Até:</label><input type="date" id="comandasDateTo"></div>
+            <select class="select-box" id="comandasFiltroStatus" aria-label="Filtrar por status">
+              <option value="ativas">Fechadas e Em Aberto</option>
+              <option value="Em Aberto">Em Aberto</option>
+              <option value="Fechada">Fechadas</option>
+              <option value="Inativa">Inativas (canceladas)</option>
+              <option value="todas">Todas</option>
+            </select>
+            <div class="spacer-flex"></div>
+            <button class="btn-primary" id="btnNovaComanda"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova Comanda</button>
+          </div>
+
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Lista de Comandas</div><div class="fin-dica">Clique numa comanda para ver os itens e registrar o pagamento.</div></div>
+            <div class="fin-table-wrap">
+            <table>
+              <thead>
+                <tr><th>Código</th><th>Data</th><th>Cliente</th><th>Serviço(s)</th><th class="num">Valor</th><th class="num">Saldo</th><th>Pagamento</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="comandasBody"></tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- CONTROLE FINANCEIRO ---------- -->
+        <div class="fin-panel" id="finpanel-controle">
+          <div class="fin-filter-bar">
+            <div class="fin-date-field"><label>De:</label><input type="date" id="controleDateFrom"></div>
+            <div class="fin-date-field"><label>Até:</label><input type="date" id="controleDateTo"></div>
+            <select class="select-box" id="controleFiltroTipo" aria-label="Tipo">
+              <option value="">Receitas e despesas</option>
+              <option value="receita">Só receitas</option>
+              <option value="despesa">Só despesas</option>
+            </select>
+            <select class="select-box" id="controleFiltroCategoria" aria-label="Categoria"><option value="">Categoria: Todas</option></select>
+            <select class="select-box" id="controleFiltroStatus" aria-label="Situação">
+              <option value="">Pagos e pendentes</option>
+              <option value="pago">Só pagos</option>
+              <option value="pendente">Só pendentes</option>
+            </select>
+            <div class="spacer-flex"></div>
+            <button class="btn-outline" id="btnSalvarCsv"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Salvar em CSV</button>
+            <button class="btn-primary" id="btnNovoLancamento"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Lançamento</button>
+          </div>
+
+          <div class="fin-summary-row">
+            <div class="fin-summary-card in"><div class="fin-summary-label">Receitas (pagas)</div><div class="fin-summary-value" id="sumReceitas">—</div></div>
+            <div class="fin-summary-card out"><div class="fin-summary-label">Despesas (pagas)</div><div class="fin-summary-value" id="sumDespesas">—</div></div>
+            <div class="fin-summary-card"><div class="fin-summary-label">Saldo</div><div class="fin-summary-value" id="sumSaldo">—</div></div>
+            <div class="fin-summary-card pending"><div class="fin-summary-label">Pendentes</div><div class="fin-summary-value" id="sumPendentes">—</div><div class="fin-summary-sub" id="sumTransacoes"></div></div>
+          </div>
+
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Extrato Financeiro</div><div class="fin-dica">Pagamentos de comandas e contas pagas entram aqui sozinhos.</div></div>
+            <div class="fin-table-wrap">
+            <table>
+              <thead>
+                <tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Forma</th><th class="num">Valor</th><th>Situação</th><th></th></tr>
+              </thead>
+              <tbody id="controleBody"></tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- CONTAS A PAGAR/RECEBER ---------- -->
+        <div class="fin-panel" id="finpanel-contas">
+          <div class="fin-action-row">
+            <div class="fin-action-card" id="btnAddContaReceber" role="button" tabindex="0">
+              <div class="fin-action-icon receber">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+              </div>
+              <div class="fin-action-label">Adicionar Conta a Receber</div>
+            </div>
+            <div class="fin-action-card" id="btnAddContaPagar" role="button" tabindex="0">
+              <div class="fin-action-icon pagar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+              </div>
+              <div class="fin-action-label">Adicionar Conta a Pagar</div>
+            </div>
+          </div>
+
+          <div class="fin-filter-bar">
+            <div class="fin-date-field"><label>De:</label><input type="date" id="contasDateFrom"></div>
+            <div class="fin-date-field"><label>Até:</label><input type="date" id="contasDateTo"></div>
+            <select class="select-box" id="contasFiltroTipo" aria-label="Tipo">
+              <option value="">A pagar e a receber</option>
+              <option value="pagar">Só a pagar</option>
+              <option value="receber">Só a receber</option>
+            </select>
+            <select class="select-box" id="contasFiltroStatus" aria-label="Situação">
+              <option value="">Pendentes e pagas</option>
+              <option value="pendente">Só pendentes</option>
+              <option value="pago">Só pagas/recebidas</option>
+            </select>
+          </div>
+
+          <div class="fin-summary-row">
+            <div class="fin-summary-card out"><div class="fin-summary-label">A pagar</div><div class="fin-summary-value" id="sumContasPagar">—</div></div>
+            <div class="fin-summary-card pending"><div class="fin-summary-label">Pagas</div><div class="fin-summary-value" id="sumContasPagas">—</div></div>
+            <div class="fin-summary-card in"><div class="fin-summary-label">A receber</div><div class="fin-summary-value" id="sumContasReceber">—</div></div>
+            <div class="fin-summary-card pending"><div class="fin-summary-label">Recebidas</div><div class="fin-summary-value" id="sumContasRecebidas">—</div></div>
+          </div>
+
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Extrato de Contas</div><div class="fin-dica">Ao marcar como paga/recebida, a conta entra no Controle Financeiro. Contas mensais geram a do mês seguinte.</div></div>
+            <div class="fin-table-wrap">
+            <table>
+              <thead>
+                <tr><th>Vencimento</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th class="num">Valor</th><th>Forma</th><th>Recorrência</th><th>Situação</th><th></th></tr>
+              </thead>
+              <tbody id="contasBody"></tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- FORMAS DE PAGAMENTO ---------- -->
+        <div class="fin-panel" id="finpanel-formas">
+          <div class="card-table" style="max-width:640px;">
+            <div class="card-head"><div class="card-title">Formas de Pagamento</div><div class="fin-dica">As formas marcadas aparecem nas comandas, lançamentos e contas.</div></div>
+            <div id="formasLista" class="formas-lista"></div>
+            <div class="formas-add">
+              <input type="text" id="formaNovaNome" placeholder="Nova forma (ex.: Voucher, Link de pagamento)" maxlength="40">
+              <button class="btn-primary" id="btnAddForma"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Adicionar</button>
+            </div>
+            <div style="padding:0 20px 18px 20px;"><button class="btn-outline" id="btnFormasPadrao" type="button">Restaurar formas padrão da minha moeda</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= EQUIPE VIEW ================= -->
+    <div class="view" id="view-equipe">
+      <div class="content-equipe">
+
+        <div class="fin-tabs">
+          <!-- "Profissionais" fica escondida (público: profissional autônoma). O painel continua no código para um futuro plano com equipe. -->
+          <div class="fin-tab active" data-eqtab="servicos">Serviços</div>
+          <div class="fin-tab" data-eqtab="pacotes">Pacotes</div>
+          <div class="fin-tab" data-eqtab="categorias">Categorias</div>
+          <div class="fin-tab" data-eqtab="expedientes">Horários de Atendimento</div>
+        </div>
+
+        <!-- ---------- PROFISSIONAIS ---------- -->
+        <div class="fin-panel" id="eqpanel-profissionais" style="display:none;">
+          <div class="fin-filter-bar">
+            <div class="search-input" style="min-width:220px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Procurar por nome...">
+            </div>
+            <div class="select-box">
+              Perfil: Todos
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="spacer-flex"></div>
+            <button class="btn-primary" id="btnNovoProfissional">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo Profissional
+            </button>
+          </div>
+
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Lista de Profissionais</div></div>
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>Perfil de Acesso</th><th>Categoria</th><th>Descrição</th><th>Estado do Perfil</th></tr>
+              </thead>
+              <tbody id="profissionaisBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ---------- SERVIÇOS ---------- -->
+        <div class="fin-panel active" id="eqpanel-servicos">
+          <div class="fin-filter-bar">
+            <div class="search-input" style="min-width:220px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="servicosBusca" placeholder="Procurar por nome...">
+            </div>
+            <select class="select-box" id="servicosFiltroCategoria" aria-label="Filtrar por categoria">
+              <option value="">Categoria: Todas</option>
+            </select>
+            <div class="spacer-flex"></div>
+            <button class="btn-primary" id="btnNovoServico">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo Serviço
+            </button>
+          </div>
+
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Lista de Serviços</div></div>
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>Categoria</th><th>Preço</th><th>Duração</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="servicosBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ---------- CATEGORIAS ---------- -->
+        <div class="fin-panel" id="eqpanel-categorias">
+          <div class="fin-filter-bar">
+            <div class="search-input" style="min-width:220px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="categoriasBusca" placeholder="Procurar por nome...">
+            </div>
+            <div class="spacer-flex"></div>
+            <button class="btn-primary" id="btnNovaCategoria">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nova Categoria
+            </button>
+          </div>
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Lista de Categorias</div><div class="fin-dica">Clique numa categoria para editar. Só as ativas aparecem no cadastro de serviços.</div></div>
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>Tipo</th><th>Serviços</th><th>Situação</th><th></th></tr>
+              </thead>
+              <tbody id="categoriasBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ---------- PACOTES ---------- -->
+        <div class="fin-panel" id="eqpanel-pacotes">
+          <div class="fin-filter-bar">
+            <div class="search-input" style="min-width:220px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="pacotesBusca" placeholder="Procurar por nome do pacote ou serviço...">
+            </div>
+            <div class="spacer-flex"></div>
+            <button class="btn-primary" id="btnNovoPacote">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo Pacote
+            </button>
+          </div>
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Lista de Pacotes</div></div>
+            <table>
+              <thead>
+                <tr><th>Pacote</th><th>Serviços Inclusos</th><th>Valor</th><th></th></tr>
+              </thead>
+              <tbody id="pacotesBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ---------- EXPEDIENTES ---------- -->
+        <div class="fin-panel" id="eqpanel-expedientes">
+          <div class="fin-filter-bar">
+            <div class="search-input" style="min-width:220px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Procurar por nome...">
+            </div>
+            <div class="spacer-flex"></div>
+            <button class="btn-primary" id="btnNovoExpediente">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo Horário
+            </button>
+          </div>
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Horários de Atendimento</div></div>
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>Dias</th><th>Horário</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="expedientesBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="fin-panel" id="eqpanel-placeholder">
+          <div class="registro-card empty-state">Esta funcionalidade estará disponível em breve.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= FORMULAÇÕES COSMÉTICAS VIEW ================= -->
+  </div>
+  <!-- Menu do celular (só aparece em telas pequenas) -->
+  <nav class="mobile-nav" id="mobileNav" aria-label="Menu">
+    <button type="button" data-view="dashboard"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Dashboard</span></button>
+    <button type="button" data-view="agenda"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Agenda</span></button>
+    <button type="button" data-view="pacientes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>Pacientes</span></button>
+  </nav>
+</div>
+
+<!-- MODAL: appointment / block -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <h3 id="modalTitle">Novo Atendimento</h3>
+    <div class="modal-field" id="modalPatientField">
+      <label id="modalPatientLabel">Paciente</label>
+      <input id="apptPatient" type="text" placeholder="Nome do paciente" style="display:none;">
+      <div id="apptPatientSearchWrap" style="position:relative; display:none;">
+        <input id="apptPatientSearch" type="text" placeholder="Buscar paciente por nome..." autocomplete="off">
+        <div id="apptPatientResults" class="appt-patient-results"></div>
+      </div>
+      <select id="apptPatientSelect" style="display:none;"></select>
+    </div>
+    <div class="modal-field" id="modalServiceField">
+      <label for="apptServicoSearch">Serviço(s)</label>
+      <div id="apptServicosChips" class="serv-chips"></div>
+      <div id="apptServicoSearchWrap" style="position:relative;">
+        <input id="apptServicoSearch" type="text" placeholder="Buscar serviço por nome..." autocomplete="off">
+        <div id="apptServicoResults" class="appt-patient-results"></div>
+      </div>
+      <!-- lista interna dos serviços marcados (mantém a lógica de duração e de salvar) -->
+      <div id="apptServicosContainer" style="display:none;"></div>
+    </div>
+    <div class="modal-field">
+      <label for="apptDate">Data</label>
+      <input id="apptDate" type="date">
+    </div>
+    <div class="modal-field">
+      <label>Horário</label>
+      <input id="apptTime" type="time" value="09:00">
+    </div>
+    <div class="modal-field">
+      <label>Duração</label>
+      <div class="dur-picker" id="apptDurPicker">
+        <select class="dur-h" aria-label="Horas"></select>
+        <select class="dur-m" aria-label="Minutos"></select>
+        <span class="dur-total"></span>
+      </div>
+      <input type="hidden" id="apptDuration" value="60">
+    </div>
+    <div class="modal-field" id="modalObsField">
+      <label>Observações (opcional)</label>
+      <textarea id="apptObs" rows="3" placeholder="Ex: pele sensível, trazer exames, alergia a algum ativo..."></textarea>
+    </div>
+    <div class="modal-field" id="modalWhatsappField" style="display:none;">
+      <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:var(--text-dark); cursor:pointer; margin:0;">
+        <input type="checkbox" id="apptEnviarWhatsapp" style="width:16px; height:16px; accent-color:var(--sidebar-bg); cursor:pointer; flex-shrink:0; margin:0;">
+        Enviar confirmação por WhatsApp
+      </label>
+      <div style="font-size:12px; color:var(--text-muted); margin:4px 0 0 24px;">Abre o WhatsApp da paciente com a mensagem pronta — é só enviar.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalConfirm">Agendar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: novo lembrete -->
+<div class="modal-overlay" id="modalLembreteOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalLembreteTitulo" style="width:420px;">
+    <h3 id="modalLembreteTitulo">Novo Lembrete</h3>
+    <div class="modal-field">
+      <label for="lembreteTexto">Lembrete</label>
+      <textarea id="lembreteTexto" rows="3" placeholder="Ex: Trazer amostra do sérum de vitamina C"></textarea>
+    </div>
+    <div class="modal-field">
+      <label for="lembretePaciente">Paciente (opcional)</label>
+      <select id="lembretePaciente"></select>
+    </div>
+    <div class="modal-field">
+      <label for="lembreteData">Data</label>
+      <input id="lembreteData" type="date">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalLembreteCancelar">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalLembreteSalvar">Salvar lembrete</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: detalhes do atendimento (abre ao clicar num bloco da agenda) -->
+<div class="modal-overlay" id="modalApptDetOverlay">
+  <div class="modal-box appt-det-box" role="dialog" aria-modal="true" aria-labelledby="apptDetNome">
+    <button class="appt-det-close" id="apptDetClose" aria-label="Fechar">&times;</button>
+    <span class="appt-det-tag" id="apptDetTag">Atendimento</span>
+    <h3 class="appt-det-nome" id="apptDetNome">—</h3>
+    <p class="appt-det-servico" id="apptDetServico">—</p>
+
+    <div class="appt-det-grid">
+      <div class="appt-det-item full">
+        <div class="appt-det-label">Data</div>
+        <div class="appt-det-valor" id="apptDetData">—</div>
+      </div>
+      <div class="appt-det-item">
+        <div class="appt-det-label">Horário</div>
+        <div class="appt-det-valor" id="apptDetHorario">—</div>
+      </div>
+      <div class="appt-det-item">
+        <div class="appt-det-label">Duração</div>
+        <div class="appt-det-valor" id="apptDetDuracao">—</div>
+      </div>
+    </div>
+
+    <div id="apptDetRecorrenciaWrap">
+      <div class="appt-det-section">Histórico da paciente</div>
+      <div class="appt-det-grid">
+        <div class="appt-det-item">
+          <div class="appt-det-label">Última visita</div>
+          <div class="appt-det-valor" id="apptDetUltima">—</div>
+          <div class="appt-det-sub" id="apptDetUltimaSub"></div>
+        </div>
+        <div class="appt-det-item">
+          <div class="appt-det-label">Frequência</div>
+          <div class="appt-det-valor" id="apptDetFrequencia">—</div>
+          <div class="appt-det-sub" id="apptDetFrequenciaSub"></div>
+        </div>
+        <div class="appt-det-item">
+          <div class="appt-det-label">Atendimentos</div>
+          <div class="appt-det-valor" id="apptDetTotal">—</div>
+          <div class="appt-det-sub" id="apptDetTotalSub"></div>
+        </div>
+        <div class="appt-det-item">
+          <div class="appt-det-label">Próximo agendamento</div>
+          <div class="appt-det-valor" id="apptDetProximo">—</div>
+          <div class="appt-det-sub" id="apptDetProximoSub"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-field" style="margin-bottom:0;">
+      <label for="apptDetObs">Observações</label>
+      <textarea id="apptDetObs" rows="3" placeholder="Nenhuma observação. Escreva aqui para adicionar."></textarea>
+    </div>
+
+    <div class="appt-det-actions">
+      <div class="left">
+        <button class="modal-btn-danger" id="apptDetCancelar" title="A paciente cancelou: sai da agenda e a comanda fica inativa">Cancelar atendimento</button>
+        <button class="modal-btn-danger suave" id="apptDetExcluir" title="Desmarcar/excluir: apaga o atendimento e a comanda">Excluir</button>
+      </div>
+      <div class="right">
+        <button class="modal-btn-cancel" id="apptDetComanda" title="Abrir a comanda deste atendimento e registrar o pagamento">Comanda / pagamento</button>
+        <button class="modal-btn-cancel" id="apptDetFicha">Ver ficha</button>
+        <button class="modal-btn-cancel" id="apptDetWhatsapp" title="Escolher um modelo e enviar pelo WhatsApp">WhatsApp</button>
+        <button class="modal-btn-cancel" id="apptDetEditar">Editar</button>
+        <button class="modal-btn-confirm" id="apptDetSalvar">Salvar observação</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: nova paciente (cadastro com código do país) -->
+<div class="modal-overlay" id="modalNovaPacienteOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="npTitulo">
+    <h3 id="npTitulo">Nova Paciente</h3>
+    <div class="modal-field">
+      <label for="npNome">Nome completo <span class="required">*</span></label>
+      <input id="npNome" type="text" maxlength="120" placeholder="Nome e sobrenome">
+    </div>
+    <div class="modal-field">
+      <label for="npTelefone">Telefone / WhatsApp <span class="required">*</span></label>
+      <div class="phone-field">
+        <select class="phone-code" id="npPhoneCode" aria-label="Código do país"></select>
+        <input class="phone-number" id="npTelefone" type="tel" inputmode="tel" placeholder="912 345 678">
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Obrigatório, para evitar cadastros duplicados. Pode digitar com o código (ex.: +351 912…) que o país é escolhido sozinho.</div>
+    </div>
+    <div class="fin-form-2">
+      <div class="modal-field">
+        <label for="npPais">País</label>
+        <select id="npPais"></select>
+      </div>
+      <div class="modal-field">
+        <label for="npNascimento">Data de nascimento</label>
+        <input id="npNascimento" type="date">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="npCancelar">Cancelar</button>
+      <button class="modal-btn-confirm" id="npSalvar">Cadastrar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: LGPD — exportar dados da paciente -->
+<div class="modal-overlay" id="modalExportarOverlay">
+  <div class="modal-box lgpd-box" role="dialog" aria-modal="true" aria-labelledby="expTitulo">
+    <h3 id="expTitulo">Exportar dados</h3>
+    <p class="lgpd-texto">Uma cópia de tudo o que está guardado sobre esta paciente: cadastro, fichas de anamnese, avaliações, planos, fotos, atendimentos, comandas e mensagens. Use quando ela pedir os dados dela (direito de acesso — LGPD art. 18 e RGPD art. 15).</p>
+    <button class="lgpd-opcao" id="expRelatorio">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>
+      <div><b>Relatório para ler ou imprimir</b><span>Abre no navegador, com as fotos. Dá para salvar em PDF e enviar para a paciente.</span></div>
+    </button>
+    <button class="lgpd-opcao" id="expJson">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      <div><b>Arquivo de dados (JSON)</b><span>Formato técnico, para levar os dados para outro sistema (portabilidade).</span></div>
+    </button>
+    <p class="lgpd-texto" id="expStatus" style="margin:4px 0 0; min-height:18px;"></p>
+    <p class="lgpd-texto" style="margin:6px 0 0; font-size:12.5px;">O arquivo tem dados de saúde: envie só para a própria paciente e apague a cópia do seu computador depois.</p>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="expFechar">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: LGPD — apagar cadastro e todos os dados da paciente -->
+<div class="modal-overlay" id="modalApagarPacOverlay">
+  <div class="modal-box lgpd-box" role="dialog" aria-modal="true" aria-labelledby="apgTitulo">
+    <h3 id="apgTitulo">Excluir cadastro e dados</h3>
+    <div id="apgCorpo"><p class="lgpd-texto">Verificando os dados da paciente…</p></div>
+    <div class="modal-field lgpd-confirma" id="apgConfirmaWrap" style="display:none;">
+      <label for="apgConfirma">Para confirmar, digite <b>APAGAR</b></label>
+      <input id="apgConfirma" type="text" autocomplete="off" placeholder="APAGAR">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="apgCancelar">Cancelar</button>
+      <button class="modal-btn-danger forte" id="apgConfirmar" disabled>Apagar definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: enviar mensagem (Centro de Mensagens) -->
+<div class="modal-overlay" id="modalMsgOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="msgTitulo" style="width:520px;">
+    <h3 id="msgTitulo">Enviar mensagem</h3>
+    <div class="modal-field" id="msgCampoPaciente">
+      <label for="msgPaciente">Paciente</label>
+      <input id="msgPaciente" type="text" list="finPacientesLista" placeholder="Nome da paciente" autocomplete="off">
+    </div>
+    <div class="msg-para" id="msgPara"></div>
+    <div class="modal-field">
+      <label for="msgModelo">Modelo</label>
+      <select id="msgModelo"></select>
+    </div>
+    <div class="modal-field">
+      <label for="msgTexto">Mensagem <span style="font-weight:500; color:var(--text-muted);">· pode ajustar antes de enviar</span></label>
+      <textarea id="msgTexto" rows="7"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="msgCancelar">Cancelar</button>
+      <button class="modal-btn-confirm" id="msgEnviar">Abrir no WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: conta a pagar / receber -->
+<div class="modal-overlay" id="modalContaOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalContaTitle">
+    <h3 id="modalContaTitle">Adicionar Conta a Receber</h3>
+    <div class="modal-field">
+      <label for="contaDescricao">Descrição</label>
+      <input id="contaDescricao" type="text" placeholder="Ex.: Aluguel da sala, Compra de insumos" maxlength="120">
+    </div>
+    <div class="fin-form-2">
+      <div class="modal-field">
+        <label for="contaData">Vencimento</label>
+        <input id="contaData" type="date">
+      </div>
+      <div class="modal-field">
+        <label for="contaValor">Valor (<span class="fin-moeda-simbolo">R$</span>)</label>
+        <input id="contaValor" type="text" inputmode="decimal" placeholder="0,00">
+      </div>
+    </div>
+    <div class="fin-form-2">
+      <div class="modal-field">
+        <label for="contaCategoria">Categoria</label>
+        <input id="contaCategoria" type="text" list="finCategoriasLista" placeholder="Ex.: Aluguel" maxlength="40">
+      </div>
+      <div class="modal-field">
+        <label for="contaFormaPagamento">Forma de pagamento</label>
+        <select id="contaFormaPagamento"></select>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label for="contaRecorrencia">Recorrência</label>
+      <select id="contaRecorrencia">
+        <option value="Não">Não se repete</option>
+        <option value="Mensal">Mensal (cria a do mês seguinte quando esta for paga)</option>
+      </select>
+    </div>
+    <div class="modal-field fin-check">
+      <input type="checkbox" id="contaJaPago">
+      <label for="contaJaPago" id="contaJaPagoLabel">Já está pago</label>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalContaCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalContaConfirm">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: novo lançamento (Controle Financeiro) -->
+<div class="modal-overlay" id="modalLancOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalLancTitle">
+    <h3 id="modalLancTitle">Novo Lançamento</h3>
+    <div class="fin-tipo-toggle" role="radiogroup" aria-label="Tipo">
+      <button type="button" class="fin-tipo-btn ativo" data-tipo="receita">Receita (entrada)</button>
+      <button type="button" class="fin-tipo-btn" data-tipo="despesa">Despesa (saída)</button>
+    </div>
+    <div class="modal-field">
+      <label for="lancDescricao">Descrição</label>
+      <input id="lancDescricao" type="text" placeholder="Ex.: Venda de protetor solar, Luz" maxlength="120">
+    </div>
+    <div class="fin-form-2">
+      <div class="modal-field">
+        <label for="lancData">Data</label>
+        <input id="lancData" type="date">
+      </div>
+      <div class="modal-field">
+        <label for="lancValor">Valor (<span class="fin-moeda-simbolo">R$</span>)</label>
+        <input id="lancValor" type="text" inputmode="decimal" placeholder="0,00">
+      </div>
+    </div>
+    <div class="fin-form-2">
+      <div class="modal-field">
+        <label for="lancCategoria">Categoria</label>
+        <input id="lancCategoria" type="text" list="finCategoriasLista" placeholder="Ex.: Produtos" maxlength="40">
+      </div>
+      <div class="modal-field">
+        <label for="lancForma">Forma de pagamento</label>
+        <select id="lancForma"></select>
+      </div>
+    </div>
+    <div class="modal-field fin-check">
+      <input type="checkbox" id="lancPago" checked>
+      <label for="lancPago">Já foi pago</label>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalLancCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalLancConfirm">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: comanda (ver, editar itens, registrar pagamento, nova) -->
+<div class="modal-overlay" id="modalComandaOverlay">
+  <div class="modal-box comanda-box" role="dialog" aria-modal="true" aria-labelledby="comandaTitulo">
+    <div class="comanda-topo">
+      <h3 id="comandaTitulo">Comanda</h3>
+      <span id="comandaStatusPill"></span>
+    </div>
+    <div class="comanda-aviso" id="comandaAviso" style="display:none;"></div>
+    <div class="fin-form-2">
+      <div class="modal-field">
+        <label for="comandaCliente">Cliente</label>
+        <input id="comandaCliente" type="text" list="finPacientesLista" placeholder="Nome da cliente" maxlength="120">
+      </div>
+      <div class="modal-field">
+        <label for="comandaData">Data</label>
+        <input id="comandaData" type="date">
+      </div>
+    </div>
+
+    <div class="comanda-secao">Itens</div>
+    <div id="comandaItens" class="comanda-itens"></div>
+    <div class="comanda-add-item" id="comandaAddItem">
+      <input id="comandaItemNome" type="text" list="finServicosLista" placeholder="Serviço ou produto" maxlength="80">
+      <input id="comandaItemValor" type="text" inputmode="decimal" placeholder="0,00">
+      <button type="button" class="btn-outline" id="btnComandaAddItem">Adicionar</button>
+    </div>
+
+    <div class="desconto-row" id="comandaDescontoRow">
+      <label for="comandaDescontoTipo">Desconto</label>
+      <select id="comandaDescontoTipo">
+        <option value="">Sem desconto</option>
+        <option value="percent">Em porcentagem (%)</option>
+        <option value="valor">Em valor</option>
+      </select>
+      <input id="comandaDescontoValor" type="text" inputmode="decimal" placeholder="0" aria-label="Valor do desconto" disabled>
+      <button type="button" class="btn-outline" id="btnComandaAplicarDesconto">Aplicar</button>
+    </div>
+    <div class="desconto-resumo" id="comandaResumoDesconto"></div>
+
+    <div class="comanda-totais">
+      <div><span>Total</span><strong id="comandaTotal">—</strong></div>
+      <div><span>Pago</span><strong id="comandaPago">—</strong></div>
+      <div class="saldo"><span>Saldo</span><strong id="comandaSaldo">—</strong></div>
+    </div>
+
+    <div id="comandaPagamentosWrap">
+      <div class="comanda-secao">Pagamentos</div>
+      <div id="comandaPagamentos" class="comanda-pagamentos"></div>
+      <div class="comanda-pagar" id="comandaPagar">
+        <select id="comandaPagForma" aria-label="Forma de pagamento"></select>
+        <input id="comandaPagValor" type="text" inputmode="decimal" placeholder="0,00" aria-label="Valor recebido">
+        <input id="comandaPagData" type="date" aria-label="Data do pagamento">
+        <button type="button" class="btn-primary" id="btnComandaPagar">Registrar pagamento</button>
+      </div>
+    </div>
+
+    <div class="modal-actions comanda-acoes">
+      <button class="modal-btn-danger suave" id="btnComandaExcluir">Excluir comanda</button>
+      <div class="right">
+        <button class="modal-btn-cancel" id="btnComandaFechar">Fechar</button>
+        <button class="modal-btn-confirm" id="btnComandaSalvar">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<datalist id="finCategoriasLista"></datalist>
+<datalist id="finServicosLista"></datalist>
+<datalist id="finPacientesLista"></datalist>
+
+<!-- MODAL: novo profissional -->
+<div class="modal-overlay" id="modalProfissionalOverlay">
+  <div class="modal-box">
+    <h3>Novo Profissional</h3>
+    <div class="modal-field">
+      <label>Nome</label>
+      <input id="profNome" type="text" placeholder="Nome completo">
+    </div>
+    <div class="modal-field">
+      <label>Celular</label>
+      <input id="profCelular" type="text" placeholder="(11) 90000-0000">
+    </div>
+    <div class="modal-field">
+      <label>E-mail</label>
+      <input id="profEmail" type="email" placeholder="email@exemplo.com">
+    </div>
+    <div class="modal-field">
+      <label>Perfil de Acesso</label>
+      <select id="profPerfil">
+        <option>Administrador</option>
+        <option>Profissional</option>
+        <option>Atendente</option>
+        <option>Recepção</option>
+        <option>Leitura</option>
+        <option>Personalizado</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Categoria</label>
+      <input id="profCategoria" type="text" placeholder="Ex: Estética">
+    </div>
+    <div class="modal-field" style="display:flex; align-items:center; gap:10px;">
+      <input type="checkbox" id="profAtivado" style="width:16px; height:16px;" checked>
+      <label style="margin:0;">Ativo</label>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalProfissionalCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalProfissionalConfirm">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: novo serviço -->
+<div class="modal-overlay" id="modalServicoOverlay">
+  <div class="modal-box">
+    <h3 id="modalServicoTitle">Novo Serviço</h3>
+    <div class="modal-field">
+      <label>Nome do Serviço</label>
+      <input id="servNome" type="text" placeholder="Ex: Limpeza de Pele">
+    </div>
+    <div class="modal-field">
+      <label for="servCategoria">Categoria</label>
+      <select id="servCategoria"></select>
+    </div>
+    <div class="modal-field">
+      <label>Moeda</label>
+      <select id="servMoeda">
+        <option value="BRL">Real (R$)</option>
+        <option value="USD">Dólar ($)</option>
+        <option value="EUR">Euro (€)</option>
+      </select>
+      <div id="servMoedaAviso" style="display:none; font-size:12px; color:var(--text-muted); margin-top:6px; line-height:1.4;"></div>
+    </div>
+    <div class="modal-field">
+      <label>Preço Unitário</label>
+      <input id="servPreco" type="text" placeholder="0,00">
+    </div>
+    <div class="modal-field">
+      <label>Duração</label>
+      <div class="dur-picker" id="servDurPicker">
+        <select class="dur-h" aria-label="Horas"></select>
+        <select class="dur-m" aria-label="Minutos"></select>
+        <span class="dur-total"></span>
+      </div>
+      <input type="hidden" id="servDuracao" value="1h">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalServicoCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalServicoConfirm">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: nova categoria -->
+<div class="modal-overlay" id="modalCategoriaOverlay">
+  <div class="modal-box">
+    <h3 id="modalCategoriaTitle">Nova Categoria</h3>
+    <div class="modal-field">
+      <label for="catNome">Nome</label>
+      <input id="catNome" type="text" placeholder="Ex: Facial, Corporal..." maxlength="40">
+    </div>
+    <div class="modal-field">
+      <label>Tipo</label>
+      <select id="catTipo">
+        <option value="Serviço">Serviço</option>
+        <option value="Produto">Produto</option>
+      </select>
+    </div>
+    <input id="catProfissionais" type="hidden">
+    <div class="modal-field fin-check">
+      <input type="checkbox" id="catAtivado" checked>
+      <label for="catAtivado">Ativa (aparece no cadastro de serviços)</label>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalCategoriaCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalCategoriaConfirm">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: novo pacote -->
+<div class="modal-overlay" id="modalPacoteOverlay">
+  <div class="modal-box wide">
+    <h3 id="modalPacoteTitle">Criar Novo Pacote</h3>
+    <div class="modal-field">
+      <label>Nome do Pacote</label>
+      <input id="pacoteNome" type="text" placeholder="Ex: Ritual Facial Completo">
+    </div>
+    <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-muted); margin-bottom:8px;">Serviço(s)</label>
+    <div id="pacoteServicosContainer"></div>
+    <button class="btn-dashed" id="btnAddPacoteServico">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Adicionar Serviço
+    </button>
+    <div class="desconto-row">
+      <label for="pacoteDescontoTipo">Desconto</label>
+      <select id="pacoteDescontoTipo">
+        <option value="">Sem desconto</option>
+        <option value="percent">Em porcentagem (%)</option>
+        <option value="valor">Em valor</option>
+      </select>
+      <input id="pacoteDescontoValor" type="text" inputmode="decimal" placeholder="0" aria-label="Valor do desconto" disabled>
+    </div>
+    <div class="desconto-resumo" id="pacoteResumo"></div>
+    <div class="pacote-total-row">
+      <span class="pacote-total-label">Preço do Pacote</span>
+      <span class="pacote-total-value" id="pacoteTotalValue">R$ 0,00</span>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalPacoteCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalPacoteConfirm">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: novo expediente -->
+<div class="modal-overlay" id="modalExpedienteOverlay">
+  <div class="modal-box xwide">
+    <h3>Novo Horário de Atendimento</h3>
+    <div class="modal-field">
+      <label>Nome</label>
+      <input id="expedienteNome" type="text" placeholder="Ex: Horário Geral, Horário de Verão">
+    </div>
+    <label style="display:block; font-size:12.5px; color:var(--text-muted); margin-bottom:4px;">Informe os dias da semana e seus horários de trabalho. Informar um horário de almoço é opcional. Marque "Fechado" para os dias sem atendimento.</label>
+    <div class="expediente-grid" id="expedienteGrid">
+      <div></div>
+      <div class="eg-head">Dom</div><div class="eg-head">Seg</div><div class="eg-head">Ter</div><div class="eg-head">Qua</div><div class="eg-head">Qui</div><div class="eg-head">Sex</div><div class="eg-head">Sáb</div>
+      <div class="eg-row-label">Entrada</div>
+      <input type="time" class="eg-entrada" value="09:00"><input type="time" class="eg-entrada" value="09:00"><input type="time" class="eg-entrada" value="09:00"><input type="time" class="eg-entrada" value="09:00"><input type="time" class="eg-entrada" value="09:00"><input type="time" class="eg-entrada" value="09:00"><input type="time" class="eg-entrada" value="09:00">
+      <div class="eg-row-label">Intervalo</div>
+      <input type="checkbox" class="eg-intervalo"><input type="checkbox" class="eg-intervalo"><input type="checkbox" class="eg-intervalo"><input type="checkbox" class="eg-intervalo"><input type="checkbox" class="eg-intervalo"><input type="checkbox" class="eg-intervalo"><input type="checkbox" class="eg-intervalo">
+      <div class="eg-row-label">Saída</div>
+      <input type="time" class="eg-saida" value="18:00"><input type="time" class="eg-saida" value="18:00"><input type="time" class="eg-saida" value="18:00"><input type="time" class="eg-saida" value="18:00"><input type="time" class="eg-saida" value="18:00"><input type="time" class="eg-saida" value="18:00"><input type="time" class="eg-saida" value="18:00">
+      <div class="eg-row-label">Fechado</div>
+      <input type="checkbox" class="eg-fechado"><input type="checkbox" class="eg-fechado"><input type="checkbox" class="eg-fechado"><input type="checkbox" class="eg-fechado"><input type="checkbox" class="eg-fechado"><input type="checkbox" class="eg-fechado"><input type="checkbox" class="eg-fechado">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalExpedienteCancel">Fechar</button>
+      <button class="modal-btn-confirm" id="modalExpedienteConfirm">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: detalhe do ativo -->
+<div class="modal-overlay" id="modalAtivoOverlay">
+  <div class="modal-box wide">
+    <h3 id="ativoDetailNome">—</h3>
+    <div class="ativo-inci" id="ativoDetailInciBloco" style="display:none;">
+      <span class="ativo-detail-label" style="display:inline; margin-right:6px;">INCI</span>
+      <span class="ativo-inci-valor" id="ativoDetailInci"></span>
+      <div class="ativo-inci-nota" id="ativoDetailInciNota"></div>
+    </div>
+    <div class="ativo-detail-item" id="ativoDetailCompostosBloco" style="margin-bottom:14px; display:none;">
+      <div class="ativo-detail-label">Principais ativos</div>
+      <div class="ativo-compostos" id="ativoDetailCompostos"></div>
+    </div>
+    <div class="ativo-detail-item" style="margin-bottom:14px;">
+      <div class="ativo-detail-label">Mecanismo de Ação</div>
+      <div class="ativo-detail-value" id="ativoDetailMecanismo">—</div>
+    </div>
+    <div class="ativo-detail-grid">
+      <div class="ativo-detail-item"><div class="ativo-detail-label">pH de Estabilidade</div><div class="ativo-detail-value" id="ativoDetailPh">—</div></div>
+      <div class="ativo-detail-item"><div class="ativo-detail-label">Dosagem Usual</div><div class="ativo-detail-value" id="ativoDetailDosagem">—</div></div>
+      <div class="ativo-detail-item"><div class="ativo-detail-label">Fonte</div><div class="ativo-detail-value" id="ativoDetailFonte">—</div></div>
+      <div class="ativo-detail-item"><div class="ativo-detail-label">Período</div><div class="ativo-detail-value" id="ativoDetailPeriodo">—</div></div>
+      <div class="ativo-detail-item"><div class="ativo-detail-label">Vegano</div><div class="ativo-detail-value" id="ativoDetailVegano">—</div></div>
+      <div class="ativo-detail-item"><div class="ativo-detail-label">Orgânico</div><div class="ativo-detail-value" id="ativoDetailOrganico">—</div></div>
+      <div class="ativo-detail-item"><div class="ativo-detail-label">Permitido em Gestantes</div><div class="ativo-detail-value" id="ativoDetailGestantes">—</div></div>
+      <div class="ativo-detail-item"><div class="ativo-detail-label">Classe</div><div class="ativo-detail-value" id="ativoDetailClasse">—</div></div>
+    </div>
+    <div class="ativo-detail-item" style="margin-bottom:6px;">
+      <div class="ativo-detail-label">Incompatibilidade</div>
+      <div class="ativo-detail-value" id="ativoDetailIncompatibilidade">—</div>
+    </div>
+    <details class="inci-grupos" id="ativoDetailInciGrupos" style="display:none;">
+      <summary>INCI encontrados em formulações <span id="ativoDetailInciGruposQtd" style="font-weight:600;"></span></summary>
+      <div class="inci-grupos-corpo" id="ativoDetailInciGruposCorpo"></div>
+    </details>
+    <div class="ativo-nota" id="ativoDetailNota" style="display:none;"></div>
+    <div class="form-field" style="margin-top:16px; margin-bottom:16px;">
+      <label>Produtos do Catálogo que contêm este ativo <span id="ativoProdutosQtd" style="font-weight:600;"></span></label>
+      <div id="ativoProdutosContainer"></div>
+    </div>
+    <div class="form-field">
+      <label for="ativoDetailAnotacao">Minha Anotação <span style="font-weight:600; color:var(--text-muted); font-size:12px;">· pessoal, só você vê</span></label>
+      <textarea id="ativoDetailAnotacao" placeholder="Anote observações pessoais sobre o uso deste ativo..." style="width:100%; min-height:70px; padding:11px 14px; border:1px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; color:var(--text-dark); outline:none; resize:vertical;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalAtivoClose">Fechar</button>
+      <button class="modal-btn-confirm" id="modalAtivoSalvarAnotacao">Salvar Anotação</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: link gerado -->
+<div class="modal-overlay" id="modalLinkGeradoOverlay">
+  <div class="modal-box">
+    <h3>Link gerado com sucesso!</h3>
+    <p style="font-size:13.5px; color:var(--text-muted); margin:-6px 0 14px 0;">Copie o link abaixo e envie para a paciente (WhatsApp, e-mail, etc.):</p>
+    <div class="modal-field">
+      <input type="text" id="linkGeradoInput" readonly style="width:100%; padding:11px 14px; border:1px solid var(--border); border-radius:9px; font-size:13px; color:var(--text-dark); font-family:inherit;">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalLinkGeradoFechar">Fechar</button>
+      <button class="modal-btn-confirm" id="btnCopiarLinkGerado">Copiar Link</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/dados.js?v=20261005a"></script>
+<script src="js/app.js?v=20261007a"></script>
+
+</body>
+</html>
