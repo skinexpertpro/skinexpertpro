@@ -203,6 +203,9 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Baixar PDF
         </button>
+        <button class="historico-excluir-btn" data-excluir-plano="true" title="Excluir este plano" aria-label="Excluir este plano">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        </button>
         <svg class="historico-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </summary>
       <div class="historico-entry-body">
@@ -224,6 +227,11 @@
     details.querySelector('[data-pdf-plano]').addEventListener('click', (e) => {
       e.preventDefault();
       openPlanoPdf(plano);
+    });
+    const btnExcluir = details.querySelector('[data-excluir-plano]');
+    if(btnExcluir) btnExcluir.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation(); // não abre/fecha o cartão
+      abrirExcluirPlano(plano);
     });
   }
 
@@ -248,6 +256,7 @@
         planos = data.map(row => {
           const dt = new Date(row.data_gerada);
           return {
+            id: row.id,
             objetivo: row.objetivo,
             duracao: row.duracao_dias,
             dataGerada: `${dt.getDate()} de ${monthNames[dt.getMonth()]}, ${dt.getFullYear()}`,
@@ -299,6 +308,7 @@
     } else {
       const hoje = new Date();
       recomendacoesDataDemo.push({
+        id: 'demo-plano-' + Date.now(),
         pacienteId: currentPatient ? currentPatient.id : null,
         objetivo, duracao,
         dataGerada: `${hoje.getDate()} de ${monthNames[hoje.getMonth()]}, ${hoje.getFullYear()}`,
@@ -329,6 +339,7 @@
     data.forEach(row => {
       const dt = new Date(row.data_gerada);
       const plano = {
+        id: row.id,
         objetivo: row.objetivo,
         duracao: row.duracao_dias,
         dataGerada: `${dt.getDate()} de ${monthNames[dt.getMonth()]}, ${dt.getFullYear()}`,
@@ -361,3 +372,95 @@
   });
 
   document.getElementById('btnBaixarPdf').addEventListener('click', () => window.print());
+
+  /* ---------- Excluir um plano de SkinCare (pede a senha da profissional) ---------- */
+  const modalExcluirPlanoOverlay = document.getElementById('modalExcluirPlanoOverlay');
+  const expCiente = document.getElementById('expCiente');
+  const expSenha = document.getElementById('expSenha');
+  const expErro = document.getElementById('expErro');
+  const expConfirmar = document.getElementById('expConfirmar');
+  let excluirPlanoCtx = null; // { plano, paciente }
+
+  function atualizarBotaoExcluirPlano(){
+    const precisaSenha = !modoDemonstracao;
+    expConfirmar.disabled = !excluirPlanoCtx || !expCiente.checked || (precisaSenha && !expSenha.value);
+  }
+
+  function abrirExcluirPlano(plano){
+    const paciente = currentPatient;
+    if(!modalExcluirPlanoOverlay){ showToast('Atualize a página (Ctrl + Shift + R) para usar a exclusão.'); return; }
+    if(!paciente || !plano || !plano.id){ showToast('Não foi possível identificar este plano.'); return; }
+    excluirPlanoCtx = { plano, paciente };
+    const nome = paciente.name || 'esta paciente';
+    const titulo = plano.objetivo || 'Plano de SkinCare';
+    document.getElementById('expResumo').textContent =
+      `Você vai excluir o plano "${titulo}" de ${nome}, gerado em ${plano.dataGerada}${plano.duracao ? ' (acompanhamento de ' + plano.duracao + ' dias)' : ''}. ` +
+      'Ele some da aba Recomendações, do Histórico e dos Acompanhamentos. Esta ação não pode ser desfeita.';
+    document.getElementById('expCienteTexto').textContent = `Estou ciente de que estou excluindo o plano de SkinCare de ${nome}.`;
+    expCiente.checked = false;
+    expSenha.value = '';
+    expErro.textContent = '';
+    document.getElementById('expSenhaCampo').style.display = modoDemonstracao ? 'none' : '';
+    expConfirmar.textContent = 'Excluir plano';
+    atualizarBotaoExcluirPlano();
+    modalExcluirPlanoOverlay.classList.add('open');
+    setTimeout(() => expCiente.focus(), 50);
+  }
+
+  function fecharExcluirPlano(){
+    modalExcluirPlanoOverlay.classList.remove('open');
+    excluirPlanoCtx = null;
+    expSenha.value = '';
+  }
+
+  async function confirmarExcluirPlano(){
+    if(!excluirPlanoCtx || expConfirmar.disabled) return;
+    const { plano, paciente } = excluirPlanoCtx;
+    expErro.textContent = '';
+    expConfirmar.disabled = true;
+    expConfirmar.textContent = 'Verificando…';
+    const voltar = () => { expConfirmar.textContent = 'Excluir plano'; atualizarBotaoExcluirPlano(); };
+
+    if(modoDemonstracao || !isPacienteReal(paciente)){
+      const i = recomendacoesDataDemo.findIndex(pl => pl.id === plano.id);
+      if(i >= 0) recomendacoesDataDemo.splice(i, 1);
+    } else {
+      // 1) confere a senha da profissional logada
+      const { data: userData } = await supabaseClient.auth.getUser();
+      const email = userData && userData.user && userData.user.email;
+      if(!email){ expErro.textContent = 'Sessão expirada. Faça login novamente.'; voltar(); return; }
+      const { error: erroSenha } = await supabaseClient.auth.signInWithPassword({ email, password: expSenha.value });
+      if(erroSenha){
+        expErro.textContent = /invalid|credenciais|credentials/i.test(erroSenha.message || '') ? 'Senha incorreta. Nada foi excluído.' : 'Não foi possível conferir a senha: ' + erroSenha.message;
+        expSenha.value = ''; expSenha.focus(); voltar(); return;
+      }
+      // 2) exclui só este plano
+      const { data: apagados, error } = await supabaseClient.from('planos_skincare').delete().eq('id', plano.id).select('id');
+      if(error){ expErro.textContent = 'Nada foi excluído: ' + error.message; voltar(); return; }
+      if(!apagados || !apagados.length){
+        expErro.textContent = 'O banco de dados não permitiu excluir (falta a permissão de exclusão em planos_skincare). Nada foi excluído.';
+        voltar(); return;
+      }
+    }
+
+    fecharExcluirPlano();
+    showToast('Plano de SkinCare excluído.');
+    if(currentPatient === paciente){
+      await renderRecomendacoes();
+      try{ await renderPlanosSkincareHistorico(); updateHistoricoCountBadge(); }catch(e){}
+    }
+    try{
+      if(modoDemonstracao) aplicarAcompanhamentoNosPacientes(), renderPacientesTable();
+      else await carregarAcompanhamentos(); // recalcula "Última rotina" e Acompanhamentos sem este plano
+    }catch(e){ console.warn('Acompanhamentos:', e); }
+  }
+
+  if(modalExcluirPlanoOverlay){ // (só liga os botões se o index.html novo, com esta janela, já estiver no ar)
+  expCiente.addEventListener('change', atualizarBotaoExcluirPlano);
+  expSenha.addEventListener('input', () => { expErro.textContent = ''; atualizarBotaoExcluirPlano(); });
+  expSenha.addEventListener('keydown', (e) => { if(e.key === 'Enter') confirmarExcluirPlano(); });
+  expConfirmar.addEventListener('click', confirmarExcluirPlano);
+  document.getElementById('expCancelar').addEventListener('click', fecharExcluirPlano);
+  modalExcluirPlanoOverlay.addEventListener('click', (e) => { if(e.target === modalExcluirPlanoOverlay) fecharExcluirPlano(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modalExcluirPlanoOverlay.classList.contains('open')) fecharExcluirPlano(); });
+  }

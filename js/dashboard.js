@@ -58,8 +58,10 @@
         .order('data_gerada', { ascending: false });
       if(error){ console.warn('Acompanhamentos:', error.message); return; }
       (data || []).forEach(row => {
-        if(ultimoPlanoPorPaciente[row.paciente_id]) return; // já pegamos o mais recente
-        ultimoPlanoPorPaciente[row.paciente_id] = { inicioKey: dateKey(new Date(row.data_gerada)), dias: parseInt(row.duracao_dias, 10) || null };
+        const quando = new Date(row.data_gerada).getTime();
+        const atual = ultimoPlanoPorPaciente[row.paciente_id];
+        if(atual && atual.quando >= quando) return; // fica só o plano mais recente de cada paciente
+        ultimoPlanoPorPaciente[row.paciente_id] = { inicioKey: dateKey(new Date(row.data_gerada)), dias: parseInt(row.duracao_dias, 10) || null, quando };
       });
     }
     aplicarAcompanhamentoNosPacientes();
