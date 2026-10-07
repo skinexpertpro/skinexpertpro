@@ -499,3 +499,13 @@
     .content-produto{ padding:0 !important; }
     .pdf-doc{ border:none; padding:0; }
   }
+
+  /* ---------- Excluir plano de SkinCare ---------- */
+  .historico-excluir-btn{
+    display:flex; align-items:center; justify-content:center; width:34px; height:34px; flex-shrink:0;
+    background:#fff; border:1px solid var(--border); color: var(--text-muted); border-radius:999px; cursor:pointer;
+  }
+  .historico-excluir-btn:hover{ border-color:#f1c4c4; color:#b42318; background:#fff5f5; }
+  .exp-ciente{ display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color: var(--text-dark); margin:0 0 16px; cursor:pointer; line-height:1.45; }
+  .exp-ciente input{ width:16px; height:16px; margin-top:2px; flex-shrink:0; accent-color: var(--sidebar-bg); cursor:pointer; }
+  .exp-erro{ color:#b42318; font-size:13px; min-height:18px; margin:-4px 0 6px; }
