@@ -256,6 +256,8 @@
         rotina: null, acomp: { type: 'dash' }, status: row.status || 'Ativo',
       });
     });
+    // Recoloca "Última rotina" e "Acompanhamento" (senão voltam a "--" toda vez que a lista recarrega)
+    try{ aplicarAcompanhamentoNosPacientes(); }catch(e){}
     renderPacientesTable();
   }
 
