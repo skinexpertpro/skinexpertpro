@@ -236,6 +236,7 @@
     else { document.getElementById('panel-placeholder').classList.add('active'); }
     if(tabName === 'planoskincare'){ updateSkincareMeta(); atualizarProdutosSeAntigo(); }
     if(tabName === 'fotos') renderFotosEvolucao();
+    if(tabName === 'recomendacoes') renderRecomendacoes(); // busca os planos da paciente aberta (inclusive os antigos)
     if(typeof ESPECIALIDADES !== 'undefined' && ESPECIALIDADES[tabName]){
       if(!areasAtuacao[tabName]){ switchRegistroTab('dados'); return; }
       carregarEspecifica(tabName);

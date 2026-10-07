@@ -230,16 +230,19 @@
   async function renderRecomendacoes(){
     const list = document.getElementById('recomendacoesList');
     const badge = document.getElementById('recomendacoesCountBadge');
+    const paciente = currentPatient; // a paciente aberta quando a busca começou
     list.innerHTML = '';
 
     let planos = [];
 
-    if(isPacienteReal(currentPatient)){
+    if(isPacienteReal(paciente)){
       const { data, error } = await supabaseClient
         .from('planos_skincare')
         .select('*')
-        .eq('paciente_id', currentPatient.id)
+        .eq('paciente_id', paciente.id)
         .order('data_gerada', { ascending: false });
+      if(currentPatient !== paciente) return; // trocou de paciente enquanto carregava: não mostra a lista errada
+      if(error) console.warn('Recomendações:', error.message);
 
       if(!error && data){
         planos = data.map(row => {
@@ -254,9 +257,10 @@
         });
       }
     } else {
-      planos = recomendacoesDataDemo.slice().reverse();
+      planos = recomendacoesDataDemo.filter(pl => paciente && String(pl.pacienteId) === String(paciente.id)).reverse();
     }
 
+    list.innerHTML = ''; // limpa de novo: evita lista duplicada se abriu a aba duas vezes rápido
     badge.textContent = planos.length + (planos.length === 1 ? ' plano' : ' planos');
 
     if(planos.length === 0){
@@ -295,6 +299,7 @@
     } else {
       const hoje = new Date();
       recomendacoesDataDemo.push({
+        pacienteId: currentPatient ? currentPatient.id : null,
         objetivo, duracao,
         dataGerada: `${hoje.getDate()} de ${monthNames[hoje.getMonth()]}, ${hoje.getFullYear()}`,
         manha, noite,
