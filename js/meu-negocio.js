@@ -126,13 +126,15 @@
         <td><span class="category-chip">${escHTML(s.categoria || 'Geral')}</span></td>
         <td>${formatServicoPreco(s.preco, s.moeda)}</td>
         <td>${escHTML(s.duracao || '—')}</td>
-        <td>
+        <td><div class="fin-acoes" style="justify-content:flex-start;">
           <button class="icon-btn" title="Editar" data-edit-servico="${idx}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg>
           </button>
-        </td>
+          <button class="comanda-apagar" type="button" title="Excluir serviço" aria-label="Excluir serviço ${escHTML(s.nome)}" data-apagar-servico="${idx}">${ICONE_LIXEIRA}</button>
+        </div></td>
       `;
       tr.querySelector('[data-edit-servico]').addEventListener('click', () => openServicoModal(idx));
+      tr.querySelector('[data-apagar-servico]').addEventListener('click', (e) => { e.stopPropagation(); apagarServico(s); });
       body.appendChild(tr);
     });
   }
@@ -219,6 +221,31 @@
     renderCategorias(); // atualiza a contagem de serviços por categoria
     modalServicoOverlay.classList.remove('open');
   });
+
+  /* ---------- Excluir serviço ---------- */
+  // Atendimentos e comandas antigos guardam o NOME do serviço, então continuam iguais.
+  // Pacotes usam o preço do serviço: se ele estiver num pacote, pede para tirar de lá antes.
+  async function apagarServico(s){
+    let emPacotes = [];
+    try{ emPacotes = pacotesData.filter(p => (p.servicos || []).some(sv => sv.nome === s.nome)).map(p => p.nome); }catch(e){}
+    if(emPacotes.length){
+      alert(`O serviço "${s.nome}" faz parte do(s) pacote(s): ${emPacotes.join(', ')}.\n\nTire o serviço desse(s) pacote(s) (ou apague o pacote) antes de excluir — senão o preço do pacote mudaria.`);
+      return;
+    }
+    if(!confirm(`Excluir o serviço "${s.nome}"?\n\nEle deixa de aparecer na agenda e nas comandas novas. Atendimentos e comandas que já existem continuam com o nome dele.`)) return;
+    if(s.id && !modoDemonstracao){
+      const usuario = await usuarioParaSalvar();
+      if(!usuario) return; // sessão caiu: não apaga só na tela
+      const { data: apagados, error } = await supabaseClient.from('servicos').delete().eq('id', s.id).select('id');
+      if(error){ showToast('Nada foi excluído: ' + error.message); return; }
+      if(!apagados || !apagados.length){ showToast('O banco de dados não permitiu excluir o serviço (falta a permissão de exclusão). Nada foi excluído.'); return; }
+    }
+    const i = servicosData.indexOf(s);
+    if(i !== -1) servicosData.splice(i, 1);
+    renderServicos();
+    renderCategorias(); // atualiza a contagem de serviços por categoria
+    showToast(`Serviço "${s.nome}" excluído.`);
+  }
 
   /* ---------- Categorias ---------- */
   const categoriasData = [
