@@ -251,8 +251,9 @@
     { id:'azul',  nome:'Azul com Dourado',  cor1:'#14284a', cor2:'#a9762f', cor3:'#e2e8f2' },
     { id:'verde', nome:'Verde com Dourado', cor1:'#1d3a2b', cor2:'#a9762f', cor3:'#e1ede5' },
     { id:'terracota', nome:'Terracota com Dourado', cor1:'#5a3326', cor2:'#a9762f', cor3:'#f4e5dc' },
-    { id:'grafite',   nome:'Grafite com Dourado',   cor1:'#232428', cor2:'#a9762f', cor3:'#e9e8e4' },
   ];
+  // Quem usava um tema que saiu da lista (ex.: Grafite) volta para o Bordô.
+  try{ const t0 = document.documentElement.getAttribute('data-tema'); if(t0 && !TEMAS.some(x => x.id === t0)) aplicarTema('bordo'); }catch(e){}
   function temaAtual(){
     const t = document.documentElement.getAttribute('data-tema') || 'bordo';
     return TEMAS.some(x => x.id === t) ? t : 'bordo';
