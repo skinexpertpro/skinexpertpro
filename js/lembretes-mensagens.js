@@ -377,22 +377,46 @@
       });
     }
 
-    // Histórico
-    const busca = semAcento((document.getElementById('msgHistoricoBusca') || {}).value || '').trim();
-    const hist = document.getElementById('msgHistoricoLista');
+    // O histórico de mensagens fica no Histórico de cada paciente (não mais numa lista geral aqui)
+    try{ renderMensagensDaPaciente(); }catch(e){}
+  }
+
+  /* ---------- Mensagens enviadas: aparecem no Histórico da paciente ---------- */
+  // O registro continua o mesmo por trás (é ele que marca "✓ enviado" nos lembretes e entra na exportação LGPD).
+  function renderMensagensDaPaciente(){
+    const box = document.getElementById('mensagensPacienteContainer');
+    if(!box) return;
+    box.innerHTML = '';
+    const p = currentPatient;
+    if(!p) return;
+    const pid = String(p.id);
     const nomes = Object.fromEntries(listaModelos().map(m => [m.id, m.titulo]));
-    const filtrados = mensagensHistorico.filter(h => !busca || semAcento(h.paciente + ' ' + (nomes[h.modelo] || h.modelo)).includes(busca));
-    hist.innerHTML = filtrados.length ? '' : `<div class="msg-vazio">${mensagensHistorico.length ? 'Nada encontrado.' : 'Nenhuma mensagem enviada ainda.'}</div>`;
-    filtrados.slice(0, 100).forEach(h => {
+    const lista = (mensagensHistorico || []).filter(h => h.pacienteId != null ? String(h.pacienteId) === pid : h.paciente === p.name);
+    const card = document.createElement('div');
+    card.className = 'registro-card msg-paciente-card';
+    card.innerHTML = `
+      <div class="msg-paciente-topo">
+        <div class="msg-paciente-titulo">Mensagens enviadas pelo WhatsApp</div>
+        <div class="historico-count-badge">${lista.length} ${lista.length === 1 ? 'mensagem' : 'mensagens'}</div>
+      </div>
+      <div class="msg-paciente-lista"></div>
+      <div class="msg-paciente-nota">Registradas quando você abre o WhatsApp pelo app.</div>`;
+    const alvo = card.querySelector('.msg-paciente-lista');
+    if(!lista.length){
+      alvo.innerHTML = '<div class="msg-vazio">Nenhuma mensagem enviada para esta paciente ainda.</div>';
+    }
+    lista.forEach(h => {
       const dt = new Date(h.em);
       const row = document.createElement('div');
       row.className = 'msg-hist-item';
+      row.title = 'Clique para ver a mensagem inteira';
       row.innerHTML = `<div class="quando">${isNaN(dt) ? '' : dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
-        <div style="min-width:0;"><strong>${escHTML(h.paciente || 'Paciente')}</strong> · ${escHTML(nomes[h.modelo] || h.modelo || '')}<div class="txt">${escHTML(h.texto || '')}</div></div>`;
-      hist.appendChild(row);
+        <div style="min-width:0;"><strong>${escHTML(nomes[h.modelo] || h.modelo || 'Mensagem')}</strong><div class="txt">${escHTML(h.texto || '')}</div></div>`;
+      row.addEventListener('click', () => row.classList.toggle('aberto'));
+      alvo.appendChild(row);
     });
+    box.appendChild(card);
   }
-  document.getElementById('msgHistoricoBusca').addEventListener('input', renderCentroMensagens);
   document.getElementById('btnMsgNovoModelo').addEventListener('click', () => {
     mensagensModelos.extras = mensagensModelos.extras || [];
     mensagensModelos.extras.push({ id: 'm' + Date.now(), titulo: 'Novo modelo', texto: 'Oi, {nome}! ' });

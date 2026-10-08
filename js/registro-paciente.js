@@ -245,6 +245,7 @@
       renderAnamnesesRespondidas().then(updateHistoricoCountBadge);
       renderPlanosSkincareHistorico().then(updateHistoricoCountBadge);
       renderAvaliacoesHistorico().then(updateHistoricoCountBadge);
+      try{ renderMensagensDaPaciente(); }catch(e){} // mensagens de WhatsApp enviadas para esta paciente
     }
   }
 
