@@ -53,3 +53,11 @@
     #publicConfirmarScreen{ padding:0 !important; background:#fff !important; }
     #publicConfirmarScreen .anamnese-card{ break-inside:avoid; border:1px solid #ddd; }
   }
+
+  /* ---------- Mensagens enviadas (Histórico da paciente) ---------- */
+  .msg-paciente-card{ margin-top:16px; }
+  .msg-paciente-topo{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }
+  .msg-paciente-titulo{ font-weight:700; font-size:14.5px; color: var(--text-dark); }
+  .msg-paciente-lista .msg-hist-item{ cursor:pointer; }
+  .msg-paciente-lista .msg-hist-item.aberto .txt{ display:block; -webkit-line-clamp:unset; overflow:visible; white-space:pre-wrap; }
+  .msg-paciente-nota{ font-size:11.5px; color: var(--text-muted); margin-top:10px; }
