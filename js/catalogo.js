@@ -69,13 +69,13 @@
     return null;
   }
 
-  // Moeda a usar para a paciente atual: prioriza o que foi definido na anamnese clínica
-  // (campo "Investimento"); se ainda não houver isso, deduz pelo país do cadastro;
-  // e por último cai na moeda padrão do profissional.
+  // Moeda a usar para a paciente atual: o PAÍS DE RESIDÊNCIA (aba Dados) manda.
+  // Sem país no cadastro: usa a moeda da anamnese (campo "Investimento") e,
+  // por último, a moeda padrão do profissional.
   function moedaAnamnesePaciente(){
-    if(currentPatient && currentPatient.moedaAnamnese) return currentPatient.moedaAnamnese;
     const moedaPais = currentPatient ? moedaPorPais(currentPatient.pais) : null;
     if(moedaPais) return moedaPais;
+    if(currentPatient && currentPatient.moedaAnamnese) return currentPatient.moedaAnamnese;
     return moedaPreferidaAtual();
   }
   function faixasOrdenadasPorMoeda(i){

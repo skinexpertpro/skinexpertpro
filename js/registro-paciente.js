@@ -293,7 +293,14 @@
       }).eq('id', currentPatient.id);
 
       if(error){ showToast('Erro ao salvar: ' + error.message); return; }
+      const antiga = currentPatient;
       await loadPacientesFromSupabase();
+      // a lista foi recarregada: a paciente aberta passa a ser a versão nova (com o país de residência atualizado)
+      const nova = patients.find(x => String(x.id) === String(antiga.id));
+      if(nova){
+        if(antiga.moedaAnamnese) nova.moedaAnamnese = antiga.moedaAnamnese;
+        currentPatient = nova;
+      }
     } else {
       Object.assign(currentPatient, {
         name: nome, status, email, phoneCode, phoneNumber,
@@ -304,6 +311,7 @@
     }
 
     document.getElementById('regBreadcrumbName').textContent = nome;
+    try{ renderSkcProdutosEncontrados(); }catch(e){} // país mudou: os preços da rotina passam para a moeda nova
     showToast('Dados salvos com sucesso!');
   });
   // Excluir cadastro e Exportar dados (LGPD): ver o bloco "LGPD — DIREITOS DA PACIENTE" mais abaixo.
