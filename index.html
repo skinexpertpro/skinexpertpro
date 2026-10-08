@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="css/catalogo.css?v=20261006a">
 <link rel="stylesheet" href="css/planos.css?v=20261006a">
 <link rel="stylesheet" href="css/financeiro.css?v=20261006a">
-<link rel="stylesheet" href="css/mensagens.css?v=20261006a">
+<link rel="stylesheet" href="css/mensagens.css?v=20261008a">
 <link rel="stylesheet" href="css/login.css?v=20261006a">
 <link rel="stylesheet" href="css/meu-negocio.css?v=20261007a">
 <link rel="stylesheet" href="css/modais.css?v=20261006a">
@@ -1587,6 +1587,7 @@
           <div id="anamnesesRespondidasContainer"></div>
           <div id="planosSkincareHistoricoContainer"></div>
           <div id="avaliacoesHistoricoContainer"></div>
+          <div id="mensagensPacienteContainer"></div>
         </div>
 
         <!-- Placeholder panels for tabs not yet built -->
@@ -1891,7 +1892,6 @@
           <div class="fin-tabs" id="msgAbas" style="margin-bottom:16px; align-items:center;">
             <div class="fin-tab active" data-msgaba="hoje">Enviar hoje <span class="msg-contador" id="msgContadorHoje"></span></div>
             <div class="fin-tab" data-msgaba="modelos">Modelos</div>
-            <div class="fin-tab" data-msgaba="historico">Histórico</div>
             <button class="btn-outline" type="button" id="btnMsgNova" style="margin-left:auto;">Enviar para uma paciente</button>
           </div>
           <div class="msg-painel ativo" id="msgPainel-hoje"><div id="msgHojeLista"></div></div>
@@ -1899,13 +1899,6 @@
             <div class="msg-variaveis">Variáveis: <code>{nome}</code> primeiro nome · <code>{nome_completo}</code> · <code>{servico}</code> · <code>{dia}</code> ex.: quinta-feira, 02/10 · <code>{data}</code> 02/10 · <code>{hora}</code> · <code>{profissional}</code> seu nome · <code>{link}</code> link de confirmação da anamnese</div>
             <div id="msgModelosLista"></div>
             <button class="btn-dashed" type="button" id="btnMsgNovoModelo" style="margin-top:10px;">+ Novo modelo</button>
-          </div>
-          <div class="msg-painel" id="msgPainel-historico">
-            <div class="search-input" style="max-width:320px; margin-bottom:12px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" id="msgHistoricoBusca" placeholder="Procurar por paciente ou modelo...">
-            </div>
-            <div id="msgHistoricoLista"></div>
           </div>
         </div>
 
@@ -3013,12 +3006,12 @@
 <!-- Lógica do app: um arquivo por área. A ordem importa: não troque a sequência (nucleo.js sempre primeiro, celular.js sempre por último). -->
 <script src="js/nucleo.js?v=20261007b"></script>
 <script src="js/pacientes.js?v=20261007c"></script>
-<script src="js/registro-paciente.js?v=20261007c"></script>
+<script src="js/registro-paciente.js?v=20261008a"></script>
 <script src="js/plano-skincare.js?v=20261007c"></script>
 <script src="js/catalogo.js?v=20261007b"></script>
 <script src="js/planos.js?v=20261007b"></script>
 <script src="js/agenda.js?v=20261007c"></script>
-<script src="js/lembretes-mensagens.js?v=20261007b"></script>
+<script src="js/lembretes-mensagens.js?v=20261008b"></script>
 <script src="js/dashboard.js?v=20261007c"></script>
 <script src="js/financeiro.js?v=20261007c"></script>
 <script src="js/meu-negocio.js?v=20261008a"></script>
