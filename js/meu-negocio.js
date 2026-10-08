@@ -324,10 +324,10 @@
         <td>${c.ativado ? '<span class="status-active">Ativa</span>' : '<span class="pill pill-gray">Inativa</span>'}</td>
         <td><div class="fin-acoes">
           <button type="button" class="fin-btn-mini">${c.ativado ? 'Desativar' : 'Ativar'}</button>
-          <button type="button" class="comanda-apagar" title="Apagar categoria" aria-label="Apagar categoria ${escHTML(c.nome)}">${ICONE_LIXEIRA}</button>
         </div></td>
       `;
-      const [bAtivar, bApagar] = tr.querySelectorAll('button');
+      // Categorias não são excluídas, só desativadas (para não mexer em serviços e comandas que já existem)
+      const [bAtivar] = tr.querySelectorAll('button');
       bAtivar.addEventListener('click', (e) => {
         e.stopPropagation();
         c.ativado = !c.ativado;
@@ -335,7 +335,6 @@
         renderCategorias();
         showToast(c.ativado ? `Categoria "${c.nome}" ativada.` : `Categoria "${c.nome}" desativada — ela some do cadastro de serviços, mas os serviços dela continuam.`);
       });
-      bApagar.addEventListener('click', (e) => { e.stopPropagation(); apagarCategoria(c); });
       tr.addEventListener('click', () => abrirCategoria(c));
       body.appendChild(tr);
     });
@@ -357,21 +356,6 @@
     }
     afetados.forEach(sv => { sv.categoria = para; });
     return true;
-  }
-
-  async function apagarCategoria(c){
-    const usados = c.tipo === 'Produto' ? [] : servicosDaCategoria(c.nome);
-    const msg = usados.length
-      ? `Apagar a categoria "${c.nome}"?\n\n${usados.length} serviço(s) usam esta categoria e vão para "Geral".`
-      : `Apagar a categoria "${c.nome}"?`;
-    if(!confirm(msg)) return;
-    if(usados.length && !await trocarCategoriaDosServicos(c.nome, 'Geral')) return;
-    const i = categoriasData.indexOf(c);
-    if(i !== -1) categoriasData.splice(i, 1);
-    salvarConfig('categorias', categoriasData);
-    renderCategorias();
-    renderServicos();
-    showToast(`Categoria "${c.nome}" apagada.`);
   }
 
   const modalCategoriaOverlay = document.getElementById('modalCategoriaOverlay');
