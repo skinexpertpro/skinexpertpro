@@ -52,13 +52,6 @@
     --pink: #8e4f38; --pink-light: #f4e5dc; --yellow: #c99a3f; --block-red: #b5543a;
     --gold: #a9762f; --gold-dark: #8a5f22; --gold-light: #f6ead2;
   }
-  html[data-tema="grafite"]{
-    --sidebar-bg: #232428; --sidebar-active: #3a3c42; --sidebar-text: #ecebe6; --sidebar-text-dim: #c29a5e; --sidebar-text-bright:#ffffff;
-    --bg: #f5f4f0; --border: #e3e0d9; --text-dark: #1e1f22; --text-muted: #75726c;
-    --dot-blue: #b8863a; --tag-bg: #f0e8d8; --tag-text: #7f6330; --gray-pill-bg: #eeede9; --gray-pill-text: #75726c;
-    --pink: #2f3136; --pink-light: #e9e8e4; --yellow: #c99a3f; --block-red: #b5543a;
-    --gold: #a9762f; --gold-dark: #8a5f22; --gold-light: #f4ead6;
-  }
 
   /* Seletor de tema (Configurações) */
   .tema-opcoes{ display:flex; flex-wrap:wrap; gap:18px; margin:6px 0 20px 0; }
