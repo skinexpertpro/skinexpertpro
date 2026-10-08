@@ -88,6 +88,25 @@
   ];
   let editingServicoIndex = -1;
 
+  /* ---------- Serviços desativados ----------
+     Em vez de excluir, o serviço é DESATIVADO: some das listas para agendamentos, comandas e pacotes
+     novos, mas tudo o que já existe (atendimentos, comandas, pacotes) continua igual. Pode reativar. */
+  let servicosInativos = new Set(); // ids salvos em configuracoes_profissional, chave 'servicos_inativos'
+  function chaveServico(s){ return s && s.id ? String(s.id) : 'nome:' + ((s && s.nome) || ''); }
+  function servicoAtivo(s){ return !servicosInativos.has(chaveServico(s)); }
+  function servicosAtivos(){ return servicosData.filter(servicoAtivo); }
+
+  async function alternarServicoAtivo(s){
+    const chave = chaveServico(s);
+    const desativar = servicoAtivo(s);
+    if(desativar && !confirm(`Desativar o serviço "${s.nome}"?\n\nEle deixa de aparecer para novos agendamentos, comandas e pacotes. Atendimentos, comandas e pacotes que já existem continuam iguais.\n\nVocê pode reativar quando quiser.`)) return;
+    if(!modoDemonstracao && !(await usuarioParaSalvar())) return; // sessão caiu: não muda só na tela
+    if(desativar) servicosInativos.add(chave); else servicosInativos.delete(chave);
+    if(!modoDemonstracao) await salvarConfig('servicos_inativos', [...servicosInativos]);
+    renderServicos();
+    showToast(desativar ? `Serviço "${s.nome}" desativado.` : `Serviço "${s.nome}" reativado.`);
+  }
+
   async function loadServicos(){
     const { data: userData } = await supabaseClient.auth.getUser();
     if(!userData || !userData.user) return; // segue com o seed local (modo demonstração)
@@ -97,10 +116,14 @@
       .eq('profissional_id', userData.user.id)
       .order('created_at', { ascending: true });
     if(error) return;
+    try{
+      const inativos = await lerConfig('servicos_inativos');
+      if(Array.isArray(inativos)) servicosInativos = new Set(inativos.map(String));
+    }catch(e){}
     if(data && data.length > 0){
       servicosData = data.map(s => ({ id: s.id, nome: s.nome, categoria: s.categoria, moeda: s.moeda, preco: parseFloat(s.preco), duracao: s.duracao }));
-      renderServicos();
     }
+    renderServicos();
   }
 
   function renderServicos(){
@@ -118,11 +141,14 @@
       body.innerHTML = `<tr><td colspan="5" class="fin-vazio">${servicosData.length ? 'Nenhum serviço com esses filtros.' : 'Nenhum serviço cadastrado. Use "Novo Serviço".'}</td></tr>`;
       return;
     }
+    lista.sort((a, b) => (servicoAtivo(a) ? 0 : 1) - (servicoAtivo(b) ? 0 : 1)); // desativados por último
     lista.forEach(s => {
       const idx = servicosData.indexOf(s);
+      const ativo = servicoAtivo(s);
       const tr = document.createElement('tr');
+      if(!ativo) tr.className = 'servico-inativo';
       tr.innerHTML = `
-        <td style="font-weight:700; color:var(--text-dark);">${escHTML(s.nome)}</td>
+        <td style="font-weight:700; color:var(--text-dark);">${escHTML(s.nome)}${ativo ? '' : ' <span class="pill-desativado">Desativado</span>'}</td>
         <td><span class="category-chip">${escHTML(s.categoria || 'Geral')}</span></td>
         <td>${formatServicoPreco(s.preco, s.moeda)}</td>
         <td>${escHTML(s.duracao || '—')}</td>
@@ -130,11 +156,11 @@
           <button class="icon-btn" title="Editar" data-edit-servico="${idx}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg>
           </button>
-          <button class="comanda-apagar" type="button" title="Excluir serviço" aria-label="Excluir serviço ${escHTML(s.nome)}" data-apagar-servico="${idx}">${ICONE_LIXEIRA}</button>
+          <button class="icon-btn servico-ativar-btn" type="button" data-ativar-servico="${idx}" title="${ativo ? 'Desativar serviço' : 'Reativar serviço'}" aria-label="${ativo ? 'Desativar' : 'Reativar'} serviço ${escHTML(s.nome)}">${ativo ? ICONE_DESATIVAR : ICONE_REATIVAR}</button>
         </div></td>
       `;
       tr.querySelector('[data-edit-servico]').addEventListener('click', () => openServicoModal(idx));
-      tr.querySelector('[data-apagar-servico]').addEventListener('click', (e) => { e.stopPropagation(); apagarServico(s); });
+      tr.querySelector('[data-ativar-servico]').addEventListener('click', (e) => { e.stopPropagation(); alternarServicoAtivo(s); });
       body.appendChild(tr);
     });
   }
@@ -222,30 +248,8 @@
     modalServicoOverlay.classList.remove('open');
   });
 
-  /* ---------- Excluir serviço ---------- */
-  // Atendimentos e comandas antigos guardam o NOME do serviço, então continuam iguais.
-  // Pacotes usam o preço do serviço: se ele estiver num pacote, pede para tirar de lá antes.
-  async function apagarServico(s){
-    let emPacotes = [];
-    try{ emPacotes = pacotesData.filter(p => (p.servicos || []).some(sv => sv.nome === s.nome)).map(p => p.nome); }catch(e){}
-    if(emPacotes.length){
-      alert(`O serviço "${s.nome}" faz parte do(s) pacote(s): ${emPacotes.join(', ')}.\n\nTire o serviço desse(s) pacote(s) (ou apague o pacote) antes de excluir — senão o preço do pacote mudaria.`);
-      return;
-    }
-    if(!confirm(`Excluir o serviço "${s.nome}"?\n\nEle deixa de aparecer na agenda e nas comandas novas. Atendimentos e comandas que já existem continuam com o nome dele.`)) return;
-    if(s.id && !modoDemonstracao){
-      const usuario = await usuarioParaSalvar();
-      if(!usuario) return; // sessão caiu: não apaga só na tela
-      const { data: apagados, error } = await supabaseClient.from('servicos').delete().eq('id', s.id).select('id');
-      if(error){ showToast('Nada foi excluído: ' + error.message); return; }
-      if(!apagados || !apagados.length){ showToast('O banco de dados não permitiu excluir o serviço (falta a permissão de exclusão). Nada foi excluído.'); return; }
-    }
-    const i = servicosData.indexOf(s);
-    if(i !== -1) servicosData.splice(i, 1);
-    renderServicos();
-    renderCategorias(); // atualiza a contagem de serviços por categoria
-    showToast(`Serviço "${s.nome}" excluído.`);
-  }
+  const ICONE_DESATIVAR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg>';
+  const ICONE_REATIVAR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 102.1-9.4L1 10"/></svg>';
 
   /* ---------- Categorias ---------- */
   const categoriasData = [
@@ -492,8 +496,8 @@
   function addPacoteServicoRow(nomeInicial, qtdInicial){
     const row = document.createElement('div');
     row.className = 'pacote-row';
-    const nomes = servicosData.map(x => x.nome);
-    if(nomeInicial && !nomes.includes(nomeInicial)) nomes.push(nomeInicial); // serviço que saiu do cadastro
+    const nomes = servicosAtivos().map(x => x.nome);
+    if(nomeInicial && !nomes.includes(nomeInicial)) nomes.push(nomeInicial); // serviço desativado ou que saiu do cadastro
     const options = nomes.map(n => `<option value="${escHTML(n)}" data-preco="${precoServicoPorNome(n)}">${escHTML(n)}</option>`).join('');
     row.innerHTML = `
       <select class="ps-servico"><option value="">Selecione o Serviço</option>${options}</select>

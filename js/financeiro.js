@@ -147,7 +147,7 @@
     try{ controleData.forEach(m => m.categoria && cats.add(m.categoria)); contasData.forEach(c => c.categoria && cats.add(c.categoria)); }catch(e){}
     document.getElementById('finCategoriasLista').innerHTML = [...cats].map(c => `<option value="${escHTML(c)}"></option>`).join('');
     let servs = [];
-    try{ servs = servicosData.map(s => s.nome); }catch(e){}
+    try{ servs = servicosAtivos().map(s => s.nome); }catch(e){} // desativados não aparecem nas sugestões
     let pacs = [];
     try{ pacs = pacotesData.map(p => 'Pacote: ' + p.nome); }catch(e){}
     document.getElementById('finServicosLista').innerHTML = servs.concat(pacs).map(n => `<option value="${escHTML(n)}"></option>`).join('');

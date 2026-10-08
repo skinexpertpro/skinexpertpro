@@ -907,8 +907,10 @@
 
   // Permite marcar mais de um serviço para o mesmo atendimento (ex: Limpeza de Pele + Drenagem).
   function popularServicosCheckboxes(){
-    apptServicosContainer.innerHTML = servicosData.length
-      ? servicosData.map(s => `
+    let lista = servicosData;
+    try{ lista = servicosAtivos(); }catch(e){} // serviços desativados não aparecem para novos agendamentos
+    apptServicosContainer.innerHTML = lista.length
+      ? lista.map(s => `
           <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text-dark); cursor:pointer; margin:0;">
             <input type="checkbox" class="appt-servico-check" value="${s.nome}" data-duracao="${s.duracao}" style="width:15px; height:15px; accent-color:var(--sidebar-bg); cursor:pointer; flex-shrink:0; margin:0;">
             ${s.nome} <span style="color:var(--text-muted); font-size:12px;">(${s.duracao})</span>
@@ -1092,7 +1094,7 @@
         if(!cb){
           const lbl = document.createElement('label');
           cb = document.createElement('input');
-          cb.type = 'checkbox'; cb.className = 'appt-servico-check'; cb.value = nome; cb.dataset.duracao = '';
+          cb.type = 'checkbox'; cb.className = 'appt-servico-check'; cb.value = nome; cb.dataset.duracao = ((servicosData.find(x => x.nome === nome) || {}).duracao) || '';
           lbl.appendChild(cb);
           apptServicosContainer.appendChild(lbl);
         }
