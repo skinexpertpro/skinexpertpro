@@ -30,3 +30,14 @@
   .pacote-total-row{ display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
   .pacote-total-label{ font-size:15px; font-weight:700; }
   .pacote-total-value{ font-family:'Playfair Display', serif; font-size:20px; font-weight:700; color: var(--pink); }
+
+  /* ---------- Serviços desativados ---------- */
+  tr.servico-inativo td{ color: var(--text-muted) !important; }
+  tr.servico-inativo td:not(:last-child){ opacity:.6; }
+  .pill-desativado{
+    display:inline-block; margin-left:8px; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700;
+    background:#eeeeee; color:#8a8a8a; vertical-align:middle;
+  }
+  .servico-ativar-btn{ color: var(--text-muted); }
+  .servico-ativar-btn:hover{ color:#b42318; }
+  tr.servico-inativo .servico-ativar-btn{ color: var(--green-text, #2e7d32); }
