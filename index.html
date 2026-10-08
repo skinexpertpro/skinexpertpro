@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/seguranca-tema.js?v=20261005a"></script>
 <!-- Estilos: um arquivo por área. A ordem importa: não troque a sequência; celular.css sempre por último. -->
-<link rel="stylesheet" href="css/base.css?v=20261006a">
+<link rel="stylesheet" href="css/base.css?v=20261008e">
 <link rel="stylesheet" href="css/dashboard.css?v=20261007a">
 <link rel="stylesheet" href="css/pacientes.css?v=20261006a">
 <link rel="stylesheet" href="css/agenda.css?v=20261006a">
@@ -1886,23 +1886,6 @@
         </div>
         </div>
 
-        <!-- ---------- CENTRO DE MENSAGENS ---------- -->
-        <div class="registro-card" id="centroMensagensCard" style="margin-bottom:20px;">
-          <div class="anamnese-title" style="margin-bottom:6px;">Centro de Mensagens</div>
-          <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Seus modelos de WhatsApp para confirmação, lembrete, pós-atendimento e mais. Você revisa o texto e envia com um clique — pelo seu próprio WhatsApp.</p>
-          <div class="fin-tabs" id="msgAbas" style="margin-bottom:16px; align-items:center;">
-            <div class="fin-tab active" data-msgaba="hoje">Enviar hoje <span class="msg-contador" id="msgContadorHoje"></span></div>
-            <div class="fin-tab" data-msgaba="modelos">Modelos</div>
-            <button class="btn-outline" type="button" id="btnMsgNova" style="margin-left:auto;">Enviar para uma paciente</button>
-          </div>
-          <div class="msg-painel ativo" id="msgPainel-hoje"><div id="msgHojeLista"></div></div>
-          <div class="msg-painel" id="msgPainel-modelos">
-            <div class="msg-variaveis">Variáveis: <code>{nome}</code> primeiro nome · <code>{nome_completo}</code> · <code>{servico}</code> · <code>{dia}</code> ex.: quinta-feira, 02/10 · <code>{data}</code> 02/10 · <code>{hora}</code> · <code>{profissional}</code> seu nome · <code>{link}</code> link de confirmação da anamnese</div>
-            <div id="msgModelosLista"></div>
-            <button class="btn-dashed" type="button" id="btnMsgNovoModelo" style="margin-top:10px;">+ Novo modelo</button>
-          </div>
-        </div>
-
         <div class="registro-card" style="max-width:560px;" id="cfgAreasCard">
           <div class="anamnese-title" style="margin-bottom:6px;">Áreas de Atuação</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Marque o que você atende. Cada área ligada adiciona a anamnese específica dela na ficha das pacientes.</p>
@@ -1942,6 +1925,23 @@
 
           <div class="anamnese-footer">
             <button class="btn-save" id="btnSalvarConfiguracoes">Salvar Preferências</button>
+          </div>
+        </div>
+
+        <!-- ---------- CENTRO DE MENSAGENS ---------- -->
+        <div class="registro-card" id="centroMensagensCard" style="margin-top:20px; margin-bottom:20px;">
+          <div class="anamnese-title" style="margin-bottom:6px;">Centro de Mensagens</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Seus modelos de WhatsApp para confirmação, lembrete, pós-atendimento e mais. Você revisa o texto e envia com um clique — pelo seu próprio WhatsApp.</p>
+          <div class="fin-tabs" id="msgAbas" style="margin-bottom:16px; align-items:center;">
+            <div class="fin-tab active" data-msgaba="hoje">Enviar hoje <span class="msg-contador" id="msgContadorHoje"></span></div>
+            <div class="fin-tab" data-msgaba="modelos">Modelos</div>
+            <button class="btn-outline" type="button" id="btnMsgNova" style="margin-left:auto;">Enviar para uma paciente</button>
+          </div>
+          <div class="msg-painel ativo" id="msgPainel-hoje"><div id="msgHojeLista"></div></div>
+          <div class="msg-painel" id="msgPainel-modelos">
+            <div class="msg-variaveis">Variáveis: <code>{nome}</code> primeiro nome · <code>{nome_completo}</code> · <code>{servico}</code> · <code>{dia}</code> ex.: quinta-feira, 02/10 · <code>{data}</code> 02/10 · <code>{hora}</code> · <code>{profissional}</code> seu nome · <code>{link}</code> link de confirmação da anamnese</div>
+            <div id="msgModelosLista"></div>
+            <button class="btn-dashed" type="button" id="btnMsgNovoModelo" style="margin-top:10px;">+ Novo modelo</button>
           </div>
         </div>
 
@@ -3017,7 +3017,7 @@
 <script src="js/financeiro.js?v=20261007c"></script>
 <script src="js/meu-negocio.js?v=20261008a"></script>
 <script src="js/formulacoes.js?v=20261007b"></script>
-<script src="js/anamneses.js?v=20261007c"></script>
+<script src="js/anamneses.js?v=20261008e"></script>
 <script src="js/login.js?v=20261007b"></script>
 <script src="js/lgpd.js?v=20261007b"></script>
 <script src="js/anamneses-especificas.js?v=20261007b"></script>
