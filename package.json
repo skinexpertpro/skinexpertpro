@@ -1,0 +1,25 @@
+{
+  "name": "skinexpertpro",
+  "version": "1.0.0",
+  "description": "Skin Expert Pro - Professional skin care management system",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skinexpertpro/skinexpertpro.git"
+  },
+  "keywords": [
+    "skincare",
+    "management"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skinexpertpro/skinexpertpro/issues"
+  },
+  "homepage": "https://github.com/skinexpertpro/skinexpertpro#readme",
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
+  }
+}
