@@ -1809,7 +1809,7 @@
     <!-- ================= PLANOS VIEW ================= -->
     <div class="view" id="view-configuracoes">
       <div class="content-planos" style="max-width:1160px;">
-        <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px; align-items:flex-start;">
+        <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px; align-items:stretch;">
         <div class="registro-card" style="flex:1; min-width:320px; margin-bottom:0;">
           <div class="anamnese-title" style="margin-bottom:6px;">Meus Dados Profissionais</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">Essas informações aparecem no cabeçalho dos PDFs gerados para as suas pacientes (Ficha de Anamnese e Plano de SkinCare).</p>
@@ -1851,7 +1851,7 @@
             <button class="btn-save" id="btnDesconectarGoogleAgenda" style="background:var(--tag-bg); color:var(--text-dark); display:none;">Desconectar</button>
           </div>
         </div>
-        <div class="registro-card" style="margin-bottom:0;">
+        <div class="registro-card" style="margin-bottom:0; flex:1;">
           <div class="anamnese-title" style="margin-bottom:6px;">Cor do Tema</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 14px 0;">Escolha as cores do seu painel. A mudança aparece na hora e fica salva na sua conta.</p>
           <div class="tema-opcoes" id="temaOpcoes" role="radiogroup" aria-label="Cor do tema"></div>
@@ -1886,7 +1886,8 @@
         </div>
         </div>
 
-        <div class="registro-card" style="max-width:560px;" id="cfgAreasCard">
+        <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px; align-items:stretch;">
+        <div class="registro-card" style="flex:1; min-width:320px; margin-bottom:0;" id="cfgAreasCard">
           <div class="anamnese-title" style="margin-bottom:6px;">Áreas de Atuação</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Marque o que você atende. Cada área ligada adiciona a anamnese específica dela na ficha das pacientes.</p>
           <label class="checkbox-item"><input type="checkbox" class="cfg-area" value="hof"> <span><b>Harmonização Facial</b><br><small style="color:var(--text-muted);">Toxina, preenchedores, bioestimuladores, fios</small></span></label>
@@ -1895,7 +1896,7 @@
           <p style="font-size:12px; color:var(--text-muted); margin:6px 0 0 0;">Desligar uma área só esconde a aba: as fichas já preenchidas continuam guardadas.</p>
         </div>
 
-        <div class="registro-card" style="max-width:560px;">
+        <div class="registro-card" style="flex:1; min-width:320px; margin-bottom:0;">
           <div class="anamnese-title" style="margin-bottom:6px;">Preferências da Conta</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">A moeda vale para o Financeiro (comandas, controle, contas), os pacotes e o destaque das faixas de preço do Catálogo e do Plano de SkinCare.</p>
 
@@ -1927,9 +1928,10 @@
             <button class="btn-save" id="btnSalvarConfiguracoes">Salvar Preferências</button>
           </div>
         </div>
+        </div>
 
         <!-- ---------- CENTRO DE MENSAGENS ---------- -->
-        <div class="registro-card" id="centroMensagensCard" style="margin-top:20px; margin-bottom:20px;">
+        <div class="registro-card" id="centroMensagensCard" style="margin-bottom:20px;">
           <div class="anamnese-title" style="margin-bottom:6px;">Centro de Mensagens</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">Seus modelos de WhatsApp para confirmação, lembrete, pós-atendimento e mais. Você revisa o texto e envia com um clique — pelo seu próprio WhatsApp.</p>
           <div class="fin-tabs" id="msgAbas" style="margin-bottom:16px; align-items:center;">
@@ -3023,5 +3025,11 @@
 <script src="js/anamneses-especificas.js?v=20261007b"></script>
 <script src="js/celular.js?v=20261007b"></script>
 
+<!-- Vercel Speed Insights: mede a velocidade das telas (sem cookies). Tira tudo depois do "?" do endereço antes de enviar, para não levar links de pacientes. -->
+<script>
+  window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+  window.speedInsightsBeforeSend = function (data) { try { data.url = String(data.url || '').split('?')[0].split('#')[0]; } catch (e) {} return data; };
+</script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
 </body>
 </html>
