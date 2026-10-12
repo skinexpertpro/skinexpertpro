@@ -290,8 +290,17 @@
   document.getElementById('btnFinalizarSkincarePlano').addEventListener('click', async () => {
     const objetivo = document.getElementById('skincareObjetivo').value.trim();
     const duracao = document.getElementById('skincareDuracao').value.trim();
-    const manha = routineEntries.filter(e => e.period === 'manha').map(e => ({ name: e.product.name, brand: e.product.brand, image: e.product.image || '', categoria: e.category || e.product.category || '', usage: e.usage || e.product.usage || '', func: e.product.func || '', why: e.why || [] }));
-    const noite = routineEntries.filter(e => e.period === 'noite').map(e => ({ name: e.product.name, brand: e.product.brand, image: e.product.image || '', categoria: e.category || e.product.category || '', usage: e.usage || e.product.usage || '', func: e.product.func || '', why: e.why || [] }));
+    // O que vai para o plano salvo (e para o PDF da paciente): inclui o link do produto e a frequência de uso
+    const paraPlano = e => ({
+      name: e.product.name, brand: e.product.brand, image: e.product.image || '',
+      categoria: e.category || e.product.category || '', usage: e.usage || e.product.usage || '',
+      func: e.product.func || '', why: e.why || [],
+      link: (e.link || '').trim(),
+      frequencia: e.frequency || 'diario',
+      dias: e.frequency === 'personalizar' ? (e.selectedDays || []).slice().sort((a, b) => a - b) : [],
+    });
+    const manha = routineEntries.filter(e => e.period === 'manha').map(paraPlano);
+    const noite = routineEntries.filter(e => e.period === 'noite').map(paraPlano);
 
     if(isPacienteReal(currentPatient)){
       const { data: userData } = await supabaseClient.auth.getUser();
