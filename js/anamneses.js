@@ -208,7 +208,23 @@
       const usageHtml = p.usage
         ? `<div class="pdf-product-usage-title">Modo de uso</div><div class="pdf-product-usage">${p.usage}</div>`
         : '';
-      return `<div class="pdf-product"><img class="pdf-product-thumb" src="${fotoAtualDoProduto(p)}" alt="${p.name}"><div class="pdf-product-info">${etapaHtml}<div class="pdf-product-name">${p.name}</div><div class="pdf-product-brand">${p.brand}</div>${usageHtml}${whyHtml}</div></div>`;
+      // Frequência: "Diário" fica implícito; dias escolhidos aparecem para a paciente
+      const NOMES_DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const freqHtml = (p.frequencia === 'personalizar' && p.dias && p.dias.length)
+        ? `<div class="pdf-product-freq"><b>Quando usar:</b> ${p.dias.map(d => NOMES_DIAS[d]).filter(Boolean).join(', ')}</div>`
+        : '';
+      // Link do produto (onde comprar): clicável no PDF e com o site escrito, para quem imprimir
+      let linkHtml = '';
+      const linkBruto = String(p.link || '').trim();
+      if(linkBruto){
+        const url = /^https?:\/\//i.test(linkBruto) ? linkBruto : 'https://' + linkBruto;
+        let site = url;
+        try{ site = new URL(url).hostname.replace(/^www\./, ''); }catch(e){}
+        if(/^https?:\/\//i.test(url)){
+          linkHtml = `<div class="pdf-product-link"><b>Onde comprar:</b> <a href="${escHTML(url)}" target="_blank" rel="noopener">${escHTML(site)} ↗</a></div>`;
+        }
+      }
+      return `<div class="pdf-product"><img class="pdf-product-thumb" src="${fotoAtualDoProduto(p)}" alt="${p.name}"><div class="pdf-product-info">${etapaHtml}<div class="pdf-product-name">${p.name}</div><div class="pdf-product-brand">${p.brand}</div>${usageHtml}${freqHtml}${linkHtml}${whyHtml}</div></div>`;
     }
 
     function ordenarPorEtapa(lista){
