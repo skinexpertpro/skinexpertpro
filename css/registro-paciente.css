@@ -485,6 +485,9 @@
   .pdf-product-desc{ font-size:13px; color: var(--text-dark); line-height:1.6; }
   .pdf-product-usage-title{ font-size:9.5px; font-weight:700; color: var(--text-muted); text-transform:uppercase; letter-spacing:.03em; margin-top:6px; }
   .pdf-product-usage{ font-size:12px; color: var(--text-dark); line-height:1.5; margin-top:2px; }
+  .pdf-product-freq{ font-size:12px; color: var(--text-dark); margin-top:6px; }
+  .pdf-product-link{ font-size:12px; color: var(--text-dark); margin-top:6px; word-break:break-word; }
+  .pdf-product-link a{ color: var(--sidebar-bg); font-weight:700; text-decoration:underline; }
   .pdf-product-freq{ font-size:11.5px; color: var(--gold-dark); font-weight:700; margin-top:4px; }
   .pdf-product-why{ margin-top:6px; padding:8px 10px; background: var(--gold-light); border-radius:8px; }
   .pdf-product-why-title{ font-size:9.5px; font-weight:700; color: var(--gold-dark); text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px; }
