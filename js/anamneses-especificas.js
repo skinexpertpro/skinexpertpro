@@ -460,6 +460,77 @@
 
   // (a verificação "já está logada?" fica no fim do celular.js, depois que todos os arquivos carregaram)
 
+  /* ---------- Formulário público: o que é obrigatório e aviso do que falta ---------- */
+  // Textos livres que a paciente pode deixar em branco (nem toda paciente tem algo a dizer aqui).
+  const PUB_OPCIONAIS = new Set(['pubIntegrativa', 'pubTratamentosAnteriores', 'pubMedicamentos', 'pubOutrasDoencas',
+    'pubSkincareAtual', 'pubSkincareParado', 'pubObservacoes']);
+  function campoVisivel(el){ return !!el && el.offsetParent !== null; }
+  function nomeDoCampoPublico(el){
+    const f = el.closest('.form-field');
+    const l = f && f.querySelector('label');
+    const t = l ? l.textContent.replace('*', '').trim() : '';
+    return t || el.getAttribute('placeholder') || 'Campo';
+  }
+  function camposFaltandoAnamnesePublica(){
+    const container = document.getElementById('publicFormContent');
+    const lista = [];
+    container.querySelectorAll('select, input[type="text"], textarea').forEach(el => {
+      if(!el.id || !el.id.startsWith('pub') || PUB_OPCIONAIS.has(el.id) || !campoVisivel(el)) return;
+      const vazio = el.tagName === 'SELECT' ? (!el.value || el.value === 'Selecionar') : !el.value.trim();
+      if(vazio) lista.push({ el, bloco: el.closest('.form-field'), nome: nomeDoCampoPublico(el) });
+    });
+    return lista;
+  }
+  function marcarCampoFaltando(f){
+    const alvo = f.bloco || f.el;
+    if(!alvo || alvo.classList.contains('campo-faltando')) return;
+    alvo.classList.add('campo-faltando');
+    const aviso = document.createElement('div');
+    aviso.className = 'campo-faltando-aviso';
+    aviso.textContent = f.el.type === 'checkbox' ? 'Marque pelo menos uma opção.' : 'Preencha este campo.';
+    alvo.appendChild(aviso);
+  }
+  function limparMarcaFaltando(el){
+    const alvo = el.classList && el.classList.contains('pub-autopercepcao') ? el.closest('.anamnese-card') : el.closest('.form-field');
+    if(!alvo || !alvo.classList.contains('campo-faltando')) return;
+    alvo.classList.remove('campo-faltando');
+    alvo.querySelectorAll('.campo-faltando-aviso').forEach(a => a.remove());
+  }
+  function prepararObrigatoriosAnamnesePublica(){
+    const container = document.getElementById('publicFormContent');
+    if(!container) return;
+    // "Frequência do Álcool" só aparece (e só é obrigatória) para quem respondeu "Sim"
+    const alcool = document.getElementById('pubAlcool');
+    const alcoolFreq = document.getElementById('pubAlcoolFrequencia');
+    const alcoolWrap = alcoolFreq && alcoolFreq.closest('.form-field');
+    if(alcool && alcoolWrap){
+      const atualizar = () => { const sim = alcool.value === 'Sim'; alcoolWrap.style.display = sim ? '' : 'none'; if(!sim) alcoolFreq.value = ''; };
+      alcool.addEventListener('change', atualizar);
+      atualizar();
+    }
+    // Asterisco (*) em tudo que é obrigatório, inclusive os campos que só aparecem com "Sim"
+    container.querySelectorAll('select, input[type="text"], textarea').forEach(el => {
+      if(!el.id || !el.id.startsWith('pub') || PUB_OPCIONAIS.has(el.id) || el.id === 'pubInvestimentoMoeda') return;
+      const l = el.closest('.form-field') && el.closest('.form-field').querySelector('label');
+      if(l && !l.querySelector('.required')){
+        const ast = document.createElement('span');
+        ast.className = 'required';
+        ast.textContent = ' *';
+        l.appendChild(ast);
+      }
+    });
+    if(!document.getElementById('pubNotaObrigatorios')){
+      const nota = document.createElement('p');
+      nota.id = 'pubNotaObrigatorios';
+      nota.className = 'pub-nota-obrigatorios';
+      nota.textContent = 'Os campos com * são obrigatórios. Os demais você pode deixar em branco.';
+      container.insertBefore(nota, container.firstChild);
+    }
+    // Some o destaque vermelho assim que a paciente responde
+    container.addEventListener('input', e => limparMarcaFaltando(e.target));
+    container.addEventListener('change', e => limparMarcaFaltando(e.target));
+  }
+
   if(anamneseToken){
     authScreenEl.style.display = 'none';
     appRootEl.style.display = 'none';
@@ -487,35 +558,29 @@
 
       document.getElementById('pubConsentimentoTexto').textContent = CONSENTIMENTO_TEXTO;
       document.getElementById('pubConsentimento').addEventListener('change', () => document.getElementById('pubConsentimentoCard').classList.remove('consentimento-alerta'));
+      prepararObrigatoriosAnamnesePublica();
 
       document.getElementById('btnEnviarAnamnesePublica').addEventListener('click', async () => {
-        const container = document.getElementById('publicFormContent');
-        let primeiroCampoFaltando = null;
-
-        container.querySelectorAll('select.anamnese-select').forEach(sel => {
-          if(!primeiroCampoFaltando && (!sel.value || sel.value === 'Selecionar')) primeiroCampoFaltando = sel;
-        });
-        const investimentoSel = document.getElementById('pubInvestimento');
-        if(!primeiroCampoFaltando && investimentoSel && !investimentoSel.value) primeiroCampoFaltando = investimentoSel;
-        container.querySelectorAll('input[type="text"], textarea').forEach(inp => {
-          if(!primeiroCampoFaltando && inp.offsetParent !== null && !inp.value.trim()) primeiroCampoFaltando = inp;
-        });
-        const algumaAutopercepcaoMarcada = container.querySelectorAll('.pub-autopercepcao:checked').length > 0;
-        if(!primeiroCampoFaltando && !algumaAutopercepcaoMarcada){
-          primeiroCampoFaltando = container.querySelector('.pub-autopercepcao');
+        // Confere só o que a paciente está VENDO (ex.: "Qual tipo de diabetes?" só conta se respondeu "Sim")
+        // e mostra exatamente o que falta, com o campo destacado.
+        const faltando = camposFaltandoAnamnesePublica();
+        // As frases de "Descobrindo a Sua Pele" são opcionais: a paciente marca só as que fazem sentido para ela.
+        if(faltando.length){
+          faltando.forEach(f => marcarCampoFaltando(f));
+          const nomes = faltando.map(f => f.nome);
+          showToast(faltando.length === 1
+            ? 'Falta preencher: ' + nomes[0] + '.'
+            : 'Faltam ' + faltando.length + ' respostas: ' + nomes.slice(0, 3).join(', ') + (faltando.length > 3 ? '…' : '.') + ' Os campos estão marcados em vermelho.');
+          const primeiro = faltando[0];
+          (primeiro.bloco || primeiro.el).scrollIntoView({ behavior: 'smooth', block: 'center' });
+          try{ primeiro.el.focus({ preventScroll: true }); }catch(e){}
+          return;
         }
-
-        if(!primeiroCampoFaltando && !document.getElementById('pubConsentimento').checked){
+        if(!document.getElementById('pubConsentimento').checked){
           const card = document.getElementById('pubConsentimentoCard');
           card.classList.add('consentimento-alerta');
           card.scrollIntoView({ behavior: 'smooth', block: 'center' });
           showToast('Para enviar, leia e marque a autorização de uso dos seus dados.');
-          return;
-        }
-        if(primeiroCampoFaltando){
-          showToast('Todos os campos são obrigatórios — falta preencher algo no formulário.');
-          primeiroCampoFaltando.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          primeiroCampoFaltando.focus({ preventScroll: true });
           return;
         }
 
