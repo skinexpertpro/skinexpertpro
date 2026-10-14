@@ -1138,6 +1138,11 @@
       else { alteracoes.paciente_id = pacienteId; alteracoes.servico_nome = servicoNome; alteracoes.observacoes = observacoes || null; }
       modalConfirm.disabled = true;
       let { error } = await supabaseClient.from('agendamentos').update(alteracoes).eq('id', item.id);
+      if(error && 'motivo' in alteracoes && /motivo/i.test(error.message || '')){
+        delete alteracoes.motivo;
+        alteracoes.observacoes = label; // banco sem a coluna "motivo": o motivo do bloqueio fica em "observacoes"
+        ({ error } = await supabaseClient.from('agendamentos').update(alteracoes).eq('id', item.id));
+      }
       if(error && 'observacoes' in alteracoes && /observacoes/i.test(error.message || '')){
         delete alteracoes.observacoes;
         ({ error } = await supabaseClient.from('agendamentos').update(alteracoes).eq('id', item.id));
@@ -1328,7 +1333,7 @@
 
     if(usuarioLogado && modalMode === 'block'){
       const motivo = apptPatient.value.trim() || 'Horário bloqueado';
-      const { data: inserted, error } = await supabaseClient.from('agendamentos').insert({
+      const registroBloqueio = {
         profissional_id: usuarioLogado.id,
         data: key,
         hora: hora,
@@ -1336,7 +1341,18 @@
         duracao_minutos: duracao,
         tipo: 'block',
         motivo: motivo,
-      }).select().single();
+      };
+      let { data: inserted, error } = await supabaseClient.from('agendamentos').insert(registroBloqueio).select().single();
+      // Banco sem a coluna "motivo": guarda o motivo em "observacoes" (e, se nem essa existir, salva sem o texto)
+      if(error && /motivo/i.test(error.message || '')){
+        delete registroBloqueio.motivo;
+        registroBloqueio.observacoes = motivo;
+        ({ data: inserted, error } = await supabaseClient.from('agendamentos').insert(registroBloqueio).select().single());
+        if(error && /observacoes/i.test(error.message || '')){
+          delete registroBloqueio.observacoes;
+          ({ data: inserted, error } = await supabaseClient.from('agendamentos').insert(registroBloqueio).select().single());
+        }
+      }
 
       if(error){ showToast(mensagemErroAgenda(error, 'Erro ao bloquear horário: ')); return; }
 
@@ -1465,12 +1481,12 @@
           id: row.id,
           time: (row.hora || '00:00:00').slice(0,5),
           duration: parseInt(row.duracao_min || row.duracao_minutos, 10) || 60,
-          label: row.tipo === 'block' ? (row.motivo || 'Horário bloqueado')
+          label: row.tipo === 'block' ? (row.motivo || row.observacoes || 'Horário bloqueado')
             : (row.pacientes?.nome || (patients.find(pp => String(pp.id) === String(row.paciente_id)) || {}).name || 'Paciente sem nome'),
           servico: row.servico_nome || null,
           type: row.tipo === 'block' ? 'block' : 'appt',
           pacienteId: row.paciente_id || null,
-          observacoes: row.observacoes || '',
+          observacoes: (row.tipo === 'block' && !row.motivo) ? '' : (row.observacoes || ''), // em bloqueio sem "motivo", observacoes guarda o motivo
           googleEventId: row.google_event_id || null,
         });
       });
