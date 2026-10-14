@@ -124,8 +124,7 @@
   .form-grid.single{ grid-template-columns: 1fr; }
   .form-field label{ display:block; font-size:13px; font-weight:700; color: var(--text-dark); margin-bottom:8px; }
   .form-field label .required{ color: var(--pink); }
-  #publicFormContent .form-field > label::after{ content: " *"; color: var(--pink); }
-  #publicFormContent .form-field > label .required{ display:none; }
+  /* Formulário da paciente: o asterisco (*) aparece só nos campos obrigatórios (colocado pelo anamneses-especificas.js) */
   .form-field input{
     width:100%; padding:11px 14px; border:1px solid var(--border); border-radius:10px; font-size:14px;
     font-family:inherit; color: var(--text-dark); outline:none;

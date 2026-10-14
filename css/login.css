@@ -51,3 +51,9 @@
   .public-submitted h2{ font-family:'Playfair Display', serif; font-size:22px; margin:0 0 8px 0; }
   .public-submitted p{ color: var(--text-muted); }
   .public-invalid{ text-align:center; padding:60px 20px; color: var(--text-muted); }
+
+  /* ---------- Formulário público: campos que faltam ---------- */
+  .pub-nota-obrigatorios{ font-size:13px; color: var(--text-muted); margin:0 0 14px 4px; }
+  .campo-faltando select, .campo-faltando input, .campo-faltando textarea{ border-color:#d64545 !important; background:#fff7f7; }
+  .campo-faltando > label{ color:#b42318; }
+  .campo-faltando-aviso{ color:#b42318; font-size:12px; font-weight:600; margin-top:5px; }
