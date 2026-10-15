@@ -2407,8 +2407,12 @@
       <textarea id="lembreteTexto" rows="3" placeholder="Ex: Trazer amostra do sérum de vitamina C"></textarea>
     </div>
     <div class="modal-field">
-      <label for="lembretePaciente">Paciente (opcional)</label>
-      <select id="lembretePaciente"></select>
+      <label for="lembretePacienteBusca">Paciente (opcional)</label>
+      <div id="lembretePacienteWrap" style="position:relative;">
+        <input id="lembretePacienteBusca" type="text" placeholder="Buscar paciente por nome..." autocomplete="off">
+        <div id="lembretePacienteResultados" class="appt-patient-results"></div>
+      </div>
+      <input type="hidden" id="lembretePaciente">
     </div>
     <div class="modal-field">
       <label for="lembreteData">Data</label>
@@ -3015,7 +3019,7 @@
 <script src="js/planos.js?v=20261007b"></script>
 <script src="js/agenda.js?v=20261014a"></script>
 <script src="js/lembretes-mensagens.js?v=20261008b"></script>
-<script src="js/dashboard.js?v=20261007c"></script>
+<script src="js/dashboard.js?v=20261015a"></script>
 <script src="js/financeiro.js?v=20261007c"></script>
 <script src="js/meu-negocio.js?v=20261008a"></script>
 <script src="js/formulacoes.js?v=20261007b"></script>
