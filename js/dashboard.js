@@ -203,11 +203,61 @@
 
   /* ---------- Novo lembrete ---------- */
   const modalLembreteOverlay = document.getElementById('modalLembreteOverlay');
+  // Paciente do lembrete: campo de busca (digita o nome e escolhe na lista), em vez de uma lista enorme para rolar
+  const lembBusca = document.getElementById('lembretePacienteBusca');
+  const lembResultados = document.getElementById('lembretePacienteResultados');
+  const lembId = document.getElementById('lembretePaciente');
+  const lembWrap = document.getElementById('lembretePacienteWrap');
+  let lembAtivo = 0;
+  const semAcentoLemb = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  function pacientesParaLembrete(termo){
+    const t = semAcentoLemb(termo);
+    if(!t) return [];
+    return patients.filter(p => semAcentoLemb(p.name).includes(t))
+      .sort((a, b) => (semAcentoLemb(a.name).startsWith(t) ? 0 : 1) - (semAcentoLemb(b.name).startsWith(t) ? 0 : 1) || (a.name || '').localeCompare(b.name || '', 'pt'))
+      .slice(0, 8);
+  }
+  function renderBuscaPacienteLembrete(){
+    const lista = pacientesParaLembrete(lembBusca.value);
+    if(!lembBusca.value.trim()){ lembResultados.classList.remove('open'); return; }
+    if(lembAtivo >= lista.length) lembAtivo = 0;
+    lembResultados.innerHTML = lista.length
+      ? lista.map((p, i) => `<div class="appt-patient-result-item${i === lembAtivo ? ' ativo' : ''}" data-id="${escHTML(p.id)}">${escHTML(p.name)}</div>`).join('')
+      : '<div class="appt-patient-result-empty">Nenhuma paciente encontrada.</div>';
+    lembResultados.classList.add('open');
+  }
+  function escolherPacienteLembrete(p){
+    lembId.value = p.id;
+    lembBusca.value = p.name || '';
+    lembResultados.classList.remove('open');
+  }
+  function limparPacienteLembrete(){
+    lembId.value = '';
+    lembBusca.value = '';
+    lembResultados.classList.remove('open');
+  }
+  if(lembBusca){
+    lembBusca.addEventListener('input', () => { lembId.value = ''; lembAtivo = 0; renderBuscaPacienteLembrete(); });
+    lembBusca.addEventListener('focus', () => { if(lembBusca.value.trim() && !lembId.value) renderBuscaPacienteLembrete(); });
+    lembBusca.addEventListener('keydown', (e) => {
+      const lista = pacientesParaLembrete(lembBusca.value);
+      if(!lista.length || !lembResultados.classList.contains('open')) return;
+      if(e.key === 'ArrowDown'){ e.preventDefault(); lembAtivo = (lembAtivo + 1) % lista.length; renderBuscaPacienteLembrete(); }
+      else if(e.key === 'ArrowUp'){ e.preventDefault(); lembAtivo = (lembAtivo - 1 + lista.length) % lista.length; renderBuscaPacienteLembrete(); }
+      else if(e.key === 'Enter'){ e.preventDefault(); escolherPacienteLembrete(lista[lembAtivo] || lista[0]); }
+      else if(e.key === 'Escape'){ e.stopPropagation(); lembResultados.classList.remove('open'); }
+    });
+    lembResultados.addEventListener('mousedown', (e) => {
+      const item = e.target.closest('.appt-patient-result-item');
+      if(!item) return;
+      e.preventDefault();
+      const p = patients.find(x => String(x.id) === String(item.dataset.id));
+      if(p) escolherPacienteLembrete(p);
+    });
+    document.addEventListener('click', (e) => { if(lembWrap && !lembWrap.contains(e.target)) lembResultados.classList.remove('open'); });
+  }
   document.getElementById('btnLembrete').addEventListener('click', () => {
-    const sel = document.getElementById('lembretePaciente');
-    const ordenadas = patients.slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt'));
-    sel.innerHTML = '<option value="">— Sem paciente —</option>' +
-      ordenadas.map(p => `<option value="${p.id}">${(p.name || '').replace(/</g, '&lt;')}</option>`).join('');
+    limparPacienteLembrete();
     document.getElementById('lembreteTexto').value = '';
     document.getElementById('lembreteData').value = dateKey(today);
     modalLembreteOverlay.classList.add('open');
@@ -218,6 +268,12 @@
   document.getElementById('modalLembreteSalvar').addEventListener('click', () => {
     const texto = document.getElementById('lembreteTexto').value.trim();
     if(!texto){ showToast('Escreva o lembrete.'); return; }
+    // Digitou um nome mas não escolheu na lista: se só uma paciente combina, usa ela; senão pede para escolher
+    if(lembBusca.value.trim() && !lembId.value){
+      const achadas = pacientesParaLembrete(lembBusca.value);
+      if(achadas.length === 1) escolherPacienteLembrete(achadas[0]);
+      else { showToast(achadas.length ? 'Escolha a paciente na lista.' : 'Nenhuma paciente com esse nome. Apague o nome ou escolha da lista.'); lembBusca.focus(); renderBuscaPacienteLembrete(); return; }
+    }
     const pacienteId = document.getElementById('lembretePaciente').value || null;
     const paciente = pacienteId ? patients.find(p => String(p.id) === String(pacienteId)) : null;
     const data = document.getElementById('lembreteData').value || dateKey(today);
