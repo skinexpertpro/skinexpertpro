@@ -54,7 +54,13 @@
     const abrir = !contaMenu.classList.contains('open');
     if(abrir){
       const nome = (typeof perfilProfissional !== 'undefined' && perfilProfissional && perfilProfissional.nome) || '';
-      document.getElementById('contaNome').textContent = nome || 'Minha conta';
+      const caixa = document.getElementById('contaNome');
+      caixa.textContent = '';
+      const rot = document.createElement('div'); rot.textContent = 'Perfil:';
+      rot.style.cssText = 'font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:2px;';
+      const nm = document.createElement('div'); nm.textContent = nome || 'Minha conta';
+      nm.style.cssText = 'font-size:14px;font-weight:600;color:var(--text-dark);';
+      caixa.append(rot, nm);
     }
     contaMenu.classList.toggle('open', abrir);
     btnConta.setAttribute('aria-expanded', abrir ? 'true' : 'false');
