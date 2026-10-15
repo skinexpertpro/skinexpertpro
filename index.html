@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="css/registro-paciente.css?v=20261014a">
 <link rel="stylesheet" href="css/catalogo.css?v=20261006a">
 <link rel="stylesheet" href="css/planos.css?v=20261006a">
-<link rel="stylesheet" href="css/financeiro.css?v=20261006a">
+<link rel="stylesheet" href="css/financeiro.css?v=20261015a">
 <link rel="stylesheet" href="css/mensagens.css?v=20261008a">
 <link rel="stylesheet" href="css/login.css?v=20261014a">
 <link rel="stylesheet" href="css/meu-negocio.css?v=20261007a">
@@ -2026,6 +2026,7 @@
           <div class="fin-tab" data-fintab="controle">Controle Financeiro</div>
           <div class="fin-tab" data-fintab="contas">Contas a Pagar/Receber</div>
           <div class="fin-tab" data-fintab="formas">Formas de Pagamento</div>
+          <div class="fin-tab" data-fintab="relatorios">Relatórios</div>
         </div>
 
         <!-- ---------- COMANDAS ---------- -->
@@ -2157,6 +2158,49 @@
               </thead>
               <tbody id="contasBody"></tbody>
             </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- RELATÓRIOS (só leitura: monta o resumo a partir das comandas, controle e contas) ---------- -->
+        <div class="fin-panel" id="finpanel-relatorios">
+          <div class="fin-filter-bar">
+            <select class="select-box" id="relPeriodo" aria-label="Período do relatório">
+              <option value="mes">Este mês</option>
+              <option value="mespassado">Mês passado</option>
+              <option value="3meses">Últimos 3 meses</option>
+              <option value="ano">Este ano</option>
+              <option value="personalizado">Escolher datas</option>
+            </select>
+            <div class="fin-date-field rel-datas" style="display:none;"><label>De:</label><input type="date" id="relDe"></div>
+            <div class="fin-date-field rel-datas" style="display:none;"><label>Até:</label><input type="date" id="relAte"></div>
+            <div class="fin-dica" id="relPeriodoTexto"></div>
+          </div>
+
+          <div class="fin-summary-row" id="relResumo"></div>
+          <div class="fin-summary-row" id="relResumo2"></div>
+
+          <div class="card-table rel-card">
+            <div class="card-head"><div class="card-title">Receitas x Despesas</div><div class="fin-dica">Últimos 6 meses até o fim do período. Passe o mouse num mês para ver os valores.</div></div>
+            <div class="rel-corpo" id="relMensal"></div>
+          </div>
+
+          <div class="rel-grade">
+            <div class="card-table rel-card">
+              <div class="card-head"><div class="card-title">Serviços e produtos vendidos</div><div class="fin-dica">Pelas comandas do período, já com desconto.</div></div>
+              <div class="rel-corpo" id="relServicos"></div>
+            </div>
+            <div class="card-table rel-card">
+              <div class="card-head"><div class="card-title">Recebimentos por forma de pagamento</div><div class="fin-dica">Receitas pagas no período.</div></div>
+              <div class="rel-corpo" id="relFormas"></div>
+            </div>
+            <div class="card-table rel-card">
+              <div class="card-head"><div class="card-title">Despesas por categoria</div><div class="fin-dica">Despesas pagas no período.</div></div>
+              <div class="rel-corpo" id="relDespesas"></div>
+            </div>
+            <div class="card-table rel-card">
+              <div class="card-head"><div class="card-title">Clientes que mais compraram</div><div class="fin-dica">Valor das comandas no período.</div></div>
+              <div class="rel-corpo" id="relClientes"></div>
             </div>
           </div>
         </div>
@@ -3014,6 +3058,7 @@
 <script src="js/lembretes-mensagens.js?v=20261008b"></script>
 <script src="js/dashboard.js?v=20261015a"></script>
 <script src="js/financeiro.js?v=20261007c"></script>
+<script src="js/relatorios.js?v=20261015a"></script>
 <script src="js/meu-negocio.js?v=20261008a"></script>
 <script src="js/formulacoes.js?v=20261007b"></script>
 <script src="js/anamneses.js?v=20261012a"></script>
