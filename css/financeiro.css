@@ -135,3 +135,43 @@
   .fin-action-icon.compra{ background: var(--tag-bg); color: var(--tag-text); }
   .fin-action-label{ font-weight:700; font-size:13.5px; color: var(--text-dark); }
   .fin-summary-card.pending .fin-summary-value{ color: var(--gold-dark); }
+
+  /* ---------- Relatórios ---------- */
+  #finpanel-relatorios .fin-summary-row{ margin-bottom:16px; }
+  #finpanel-relatorios .fin-summary-row + .rel-card{ margin-top:22px; }
+  .rel-var{ font-size:12px; color: var(--text-muted); }
+  .rel-var.bom{ color: var(--green-text); font-weight:600; }
+  .rel-var.ruim{ color: var(--block-red); font-weight:600; }
+  .rel-card{ margin-bottom:20px; }
+  .rel-corpo{ padding:6px 24px 22px; }
+  .rel-grade{ display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:stretch; }
+  .rel-grade .rel-card{ margin-bottom:0; }
+  @media (max-width: 980px){ .rel-grade{ grid-template-columns: 1fr; } }
+  .rel-vazio{ font-size:13px; color: var(--text-muted); padding:14px 0 4px; }
+
+  .rel-barras{ display:flex; flex-direction:column; gap:14px; padding-top:8px; }
+  .rel-barra-topo{ display:flex; justify-content:space-between; gap:12px; font-size:13.5px; color: var(--text-dark); margin-bottom:6px; }
+  .rel-barra-nome{ font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rel-barra-valor{ font-variant-numeric: tabular-nums; white-space:nowrap; }
+  .rel-barra-trilho{ height:8px; border-radius:4px; background:#f3efe9; overflow:hidden; }
+  .rel-barra{ height:100%; border-radius:4px; }
+  .rel-barra-det{ font-size:11.5px; color: var(--text-muted); margin-top:4px; }
+
+  .rel-legenda{ display:flex; gap:18px; font-size:12.5px; color: var(--text-dark); padding:6px 0 10px; }
+  .rel-legenda i, .rel-tooltip i{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+  .rel-grafico{ position:relative; display:flex; gap:10px; height:220px; padding-top:70px; border-bottom:1px solid var(--border); }
+  .rel-mes{ flex:1; display:flex; flex-direction:column; justify-content:flex-end; cursor:default; outline:none; border-radius:8px; }
+  .rel-mes.foco, .rel-mes:focus-visible{ background:#faf6f0; }
+  .rel-mes-barras{ flex:1; display:flex; align-items:flex-end; justify-content:center; gap:2px; }
+  .rel-col{ width:min(26px, 38%); border-radius:4px 4px 0 0; }
+  .rel-mes-rotulo{ text-align:center; font-size:12px; color: var(--text-muted); padding:8px 0 0; transform:translateY(100%); margin-bottom:-2px; }
+  .rel-grafico{ margin-bottom:30px; }
+  .rel-tooltip{ position:absolute; top:0; left:0; background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.08);
+    padding:8px 12px; font-size:12.5px; color: var(--text-dark); pointer-events:none; opacity:0; transition:opacity .12s; white-space:nowrap; z-index:2; }
+  .rel-tooltip.on{ opacity:1; }
+  .rel-tooltip div{ display:flex; align-items:center; gap:4px; margin-top:3px; }
+  .rel-tooltip b{ margin-left:auto; padding-left:14px; font-variant-numeric: tabular-nums; }
+  .rel-tooltip .lucro{ border-top:1px solid var(--border); padding-top:4px; margin-top:5px; }
+  .rel-ver-tabela{ margin-top:4px; font-size:13px; }
+  .rel-ver-tabela summary{ cursor:pointer; color: var(--text-muted); font-weight:600; }
+  .rel-tabela-mensal{ width:100%; margin-top:10px; }
