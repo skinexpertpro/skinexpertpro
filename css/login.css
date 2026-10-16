@@ -57,3 +57,9 @@
   .campo-faltando select, .campo-faltando input, .campo-faltando textarea{ border-color:#d64545 !important; background:#fff7f7; }
   .campo-faltando > label{ color:#b42318; }
   .campo-faltando-aviso{ color:#b42318; font-size:12px; font-weight:600; margin-top:5px; }
+
+  /* ---------- Links legais no rodapé do login ---------- */
+  .auth-legal{ margin-top:20px; padding-top:14px; border-top:1px solid var(--border); text-align:center; font-size:12px; color: var(--text-muted); }
+  .auth-legal a{ color: var(--text-muted); text-decoration:none; }
+  .auth-legal a:hover{ color: var(--sidebar-bg); text-decoration:underline; }
+  .auth-legal span{ margin:0 6px; }
