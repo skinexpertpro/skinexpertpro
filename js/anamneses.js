@@ -429,8 +429,14 @@
     document.getElementById('btnDesconectarGoogleAgenda').addEventListener('click', async () => {
       const { data: userData } = await supabaseClient.auth.getUser();
       if(!userData || !userData.user) return;
+      // Apaga a conexão inteira (inclusive os tokens do Google), como prometido na Política de Privacidade.
+      // Se o banco não permitir apagar (falta a regra de DELETE no Supabase), pelo menos desativa e avisa no console.
       try{
-        await supabaseClient.from('integracoes_google_agenda').update({ ativo: false }).eq('profissional_id', userData.user.id);
+        const { error } = await supabaseClient.from('integracoes_google_agenda').delete().eq('profissional_id', userData.user.id);
+        if(error){
+          console.warn('Não foi possível apagar a conexão com a Google Agenda; ela foi só desativada.', error);
+          await supabaseClient.from('integracoes_google_agenda').update({ ativo: false }).eq('profissional_id', userData.user.id);
+        }
       } catch(err){
         console.warn('Não foi possível desconectar a Google Agenda.', err);
       }
