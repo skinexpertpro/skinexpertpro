@@ -127,7 +127,7 @@
     <div id="publicFormContent">
 
       <div class="anamnese-card">
-        <div class="anamnese-title" style="margin-bottom:20px;">Anamnese Sistêmica</div>
+        <div class="anamnese-title" style="margin-bottom:20px;">Anamnese Clínica</div>
                     <div class="form-grid">
               <div class="form-field">
                 <label>Diabético</label>
@@ -288,7 +288,8 @@
             </div>
       </div>
 
-      <div class="anamnese-card">
+      <!-- Anamnese Integrativa: oculta por enquanto (para voltar, apague o style="display:none;") -->
+      <div class="anamnese-card" style="display:none;">
         <div class="anamnese-title" style="margin-bottom:16px;">Anamnese Integrativa</div>
         <div class="form-field">
           <label>Há algo mais que gostaria de contar sobre sua pele, sua rotina ou seu momento de vida atual?</label>
@@ -876,7 +877,7 @@
             <div class="anamnese-card-head">
               <div class="anamnese-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Anamnese Sistêmica
+                Anamnese Clínica
               </div>
               <button class="btn-link-outline" id="btnGerarLinkPaciente">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.07 0l1.93-1.93a5 5 0 00-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 00-7.07 0l-1.93 1.93a5 5 0 007.07 7.07L13.5 18.5"/></svg>
@@ -1046,7 +1047,8 @@
             </div>
           </div>
 
-          <div class="anamnese-card">
+          <!-- Anamnese Integrativa: oculta por enquanto (para voltar, apague o style="display:none;") -->
+          <div class="anamnese-card" style="display:none;">
             <div class="anamnese-card-head">
               <div class="anamnese-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3v2h6V3"/></svg>
@@ -1629,15 +1631,17 @@
 
           <h2>Ficha de Anamnese</h2>
 
-          <div class="pdf-section-title">Anamnese Sistêmica</div>
+          <div class="pdf-section-title">Anamnese Clínica</div>
           <p id="pdfSistemica">—</p>
           <p id="pdfTireoideExplicacao" style="display:none; font-size:12.5px; color:var(--text-muted); margin-top:-6px;"></p>
 
           <div class="pdf-section-title">Estilo de Vida</div>
           <p id="pdfEstiloVida">—</p>
 
-          <div class="pdf-section-title">Anamnese Integrativa</div>
-          <p id="pdfIntegrativa">—</p>
+          <div id="pdfIntegrativaBloco" style="display:none;">
+            <div class="pdf-section-title">Anamnese Integrativa</div>
+            <p id="pdfIntegrativa">—</p>
+          </div>
 
           <div class="pdf-section-title">Descobrindo a Sua Pele</div>
           <p><b>Principal Queixa:</b> <span id="pdfPrincipalQueixa">—</span></p>
@@ -3067,7 +3071,7 @@
 <script src="js/relatorios.js?v=20261015a"></script>
 <script src="js/meu-negocio.js?v=20261008a"></script>
 <script src="js/formulacoes.js?v=20261007b"></script>
-<script src="js/anamneses.js?v=20261016a"></script>
+<script src="js/anamneses.js?v=20261016c"></script>
 <script src="js/login.js?v=20261007b"></script>
 <script src="js/lgpd.js?v=20261007b"></script>
 <script src="js/anamneses-especificas.js?v=20261014a"></script>
