@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Conectando a Google Agenda · Skin Expert Pro</title>
+<style>
+  body{ margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#f7f1e8;
+        font-family:Inter, system-ui, -apple-system, Segoe UI, sans-serif; color:#2b1a1f; }
+  .caixa{ background:#fff; border:1px solid #eadfce; border-radius:14px; padding:32px 36px; max-width:380px; margin:16px; text-align:center; }
+  h1{ font-family:'Playfair Display', Georgia, serif; font-size:20px; margin:0 0 8px; color:#4a1524; }
+  p{ font-size:14px; color:#7a6a63; margin:0; line-height:1.5; }
+  a{ color:#4a1524; font-weight:600; }
+  .giro{ width:28px; height:28px; border:3px solid #eadfce; border-top-color:#a9762f; border-radius:50%; margin:0 auto 16px; animation:g 0.9s linear infinite; }
+  @keyframes g{ to{ transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="caixa">
+    <div class="giro"></div>
+    <h1>Conectando sua Google Agenda…</h1>
+    <p id="msg">Só um instante.</p>
+  </div>
+<script>
+  // O Google devolve aqui (?code=...&state=... ou ?error=...). Repassamos tudo, sem mudar nada,
+  // para a função do Supabase que termina a conexão e volta para o app.
+  (function(){
+    var FUNCAO = 'https://fpnphcbczyhhllmhqusy.supabase.co/functions/v1/google-agenda-callback';
+    var q = window.location.search;
+    if(q && q.length > 1){
+      window.location.replace(FUNCAO + q + '&via=site');
+    } else {
+      document.getElementById('msg').innerHTML = 'Nada para conectar aqui. <a href="/">Voltar para o Skin Expert Pro</a>';
+      document.querySelector('.giro').style.display = 'none';
+    }
+  })();
+</script>
+</body>
+</html>
