@@ -169,8 +169,9 @@
   /* ---------- Google Agenda (cada profissional conecta sua própria conta do Google) ---------- */
   // Troque pelo Client ID gerado no Google Cloud Console (OAuth 2.0 Client ID, tipo "Aplicativo da Web").
   const GOOGLE_CLIENT_ID = '26417237147-prh95l1dug846iarojmcq2mgahme58gc.apps.googleusercontent.com';
-  // URL da Edge Function que recebe o retorno do Google (precisa ser a mesma cadastrada no Google Cloud Console).
-  const GOOGLE_REDIRECT_URI = SUPABASE_URL + '/functions/v1/google-agenda-callback';
+  // Endereço de retorno do Google: uma página do próprio site (assim o Google mostra skinexpertpro.com, e não supabase.co).
+  // Essa página só repassa a resposta para a Edge Function google-agenda-callback. Precisa estar cadastrado no Google Cloud Console.
+  const GOOGLE_REDIRECT_URI = 'https://www.skinexpertpro.com/google-agenda.html';
 
   let googleAgendaConectado = false;
 
