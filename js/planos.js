@@ -53,8 +53,8 @@
   const currencySymbols = { BRL: "R$", EUR: "€", USD: "$" };
   const periodConfig = {
     mensal: { months: 1, discount: 0, label: "/mês" },
-    trimestral: { months: 3, discount: 0.10, label: "/trimestre" },
-    anual: { months: 12, discount: 0.20, label: "/ano" },
+    trimestral: { months: 3, discount: 0.05, label: "/trimestre" },
+    anual: { months: 12, discount: 0.10, label: "/ano" },
   };
 
   let currentCurrency = "BRL";
