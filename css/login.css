@@ -63,3 +63,22 @@
   .auth-legal a{ color: var(--text-muted); text-decoration:none; }
   .auth-legal a:hover{ color: var(--sidebar-bg); text-decoration:underline; }
   .auth-legal span{ margin:0 6px; }
+
+  /* ---------- Apresentação do app ao lado do login (o Google exige que a página inicial explique o app) ---------- */
+  .auth-screen{ gap:56px; flex-wrap:wrap; }
+  .auth-intro{ max-width:460px; color: var(--text-dark); }
+  .auth-intro-tag{ display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--gold-dark, #8a5f22);
+    background: var(--gold-light); border-radius:999px; padding:5px 12px; margin-bottom:16px; }
+  .auth-intro h1{ font-family:'Playfair Display', serif; font-size:34px; line-height:1.15; color: var(--sidebar-bg); margin:0 0 14px; }
+  .auth-intro-lead{ font-size:15px; line-height:1.6; color: var(--text-muted); margin:0 0 20px; }
+  .auth-intro-lista{ list-style:none; margin:0 0 20px; padding:0; display:flex; flex-direction:column; gap:12px; }
+  .auth-intro-lista li{ position:relative; padding-left:22px; font-size:14px; line-height:1.5; color: var(--text-muted); }
+  .auth-intro-lista li::before{ content:''; position:absolute; left:2px; top:7px; width:8px; height:8px; border-radius:50%; background: var(--gold); }
+  .auth-intro-lista strong{ color: var(--text-dark); font-weight:700; }
+  .auth-intro-nota{ font-size:12.5px; line-height:1.55; color: var(--text-muted); margin:0; padding-top:14px; border-top:1px solid var(--border); }
+  .auth-intro-nota a{ color: var(--sidebar-bg); }
+  @media (max-width: 900px){
+    .auth-screen{ flex-direction:column; gap:28px; padding:28px 16px; }
+    .auth-intro{ order:2; max-width:420px; }
+    .auth-intro h1{ font-size:26px; }
+  }
