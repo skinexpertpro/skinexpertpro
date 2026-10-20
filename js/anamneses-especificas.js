@@ -653,20 +653,34 @@
         btn.disabled = true;
         btn.textContent = 'Enviando...';
 
-        const { error: insertError } = await inserirAnamneseComConsentimento(payload);
-        // Este link já tinha sido enviado (o banco não aceita duas respostas para o mesmo link):
-        // mostra como enviado, sem criar outra pré-ficha.
-        const jaEnviada = insertError && (insertError.code === '23505' || /duplicate|unique/i.test(insertError.message || ''));
-        if(insertError && !jaEnviada){
-          showToast('Erro ao enviar: ' + insertError.message);
-          btn.disabled = false;
-          btn.textContent = 'Enviar Respostas';
-          return;
-        }
+        // Envio pela função segura do banco (enviar_anamnese_publica): ela confere o link, grava a ficha
+        // com a paciente e a profissional do próprio link e marca o link como respondido, tudo de uma vez.
+        // Assim a paciente (que não está logada) não precisa de permissão direta na tabela anamneses.
+        const { data: resultadoEnvio, error: erroEnvio } = await supabaseClient.rpc('enviar_anamnese_publica', { p_token: anamneseToken, p_dados: payload });
+        const semFuncaoNova = erroEnvio && /enviar_anamnese_publica|function|schema cache/i.test(erroEnvio.message || '');
 
-        const { error: erroMarcar } = await supabaseClient.rpc('marcar_link_respondido', { p_token: anamneseToken });
-        if(erroMarcar && /marcar_link_respondido|function|schema cache/i.test(erroMarcar.message || '')){
-          await supabaseClient.from('links_anamnese').update({ respondida: true }).eq('token', anamneseToken);
+        if(!semFuncaoNova){
+          if(erroEnvio || resultadoEnvio === 'invalido'){
+            showToast(erroEnvio ? 'Erro ao enviar: ' + erroEnvio.message : 'Este link não é mais válido. Peça um novo link à sua profissional.');
+            btn.disabled = false;
+            btn.textContent = 'Enviar Respostas';
+            return;
+          }
+          // 'ok' ou 'ja_respondida' (link já enviado antes): mostra como enviado, sem criar outra ficha.
+        } else {
+          // Compatibilidade: banco ainda sem a função nova — usa o caminho antigo.
+          const { error: insertError } = await inserirAnamneseComConsentimento(payload);
+          const jaEnviada = insertError && (insertError.code === '23505' || /duplicate|unique/i.test(insertError.message || ''));
+          if(insertError && !jaEnviada){
+            showToast('Erro ao enviar: ' + insertError.message);
+            btn.disabled = false;
+            btn.textContent = 'Enviar Respostas';
+            return;
+          }
+          const { error: erroMarcar } = await supabaseClient.rpc('marcar_link_respondido', { p_token: anamneseToken });
+          if(erroMarcar && /marcar_link_respondido|function|schema cache/i.test(erroMarcar.message || '')){
+            await supabaseClient.from('links_anamnese').update({ respondida: true }).eq('token', anamneseToken);
+          }
         }
 
         document.getElementById('publicFormContent').style.display = 'none';
