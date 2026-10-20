@@ -86,3 +86,9 @@
     .legal-topo, .legal-indice, .legal-rodape{ display:none; }
     body{ background:#fff; }
   }
+
+  /* ---------- Ícone oficial do Skin Expert Pro (substitui a bolinha dourada) ---------- */
+  .brand-logo, .auth-logo .brand-logo, .public-header .brand-logo, .legal-marca .brand-logo{
+    background: url(../img/icone-192.png) center / cover no-repeat !important;
+    border-radius: 24% !important;
+  }

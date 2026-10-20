@@ -202,3 +202,9 @@
   .conta-item{ display:flex; align-items:center; gap:10px; width:100%; background:none; border:none; padding:10px; border-radius:8px;
     font-family:inherit; font-size:14px; font-weight:600; color:var(--text-dark); cursor:pointer; text-align:left; }
   .conta-item:hover{ background:#f7f8f9; }
+
+  /* ---------- Ícone oficial do Skin Expert Pro (substitui a bolinha dourada) ---------- */
+  .brand-logo, .auth-logo .brand-logo, .public-header .brand-logo, .legal-marca .brand-logo{
+    background: url(../img/icone-192.png) center / cover no-repeat !important;
+    border-radius: 24% !important;
+  }
