@@ -14,7 +14,14 @@
   const CONSENTIMENTO_VERSAO = 'v1.1 · 01/10/2026';
   const CONSENTIMENTO_TEXTO = 'Autorizo a profissional responsável pelo meu atendimento a coletar e guardar os dados pessoais e de saúde que informei nesta ficha, exclusivamente para avaliar a minha pele, planejar e registrar os meus tratamentos e entrar em contato comigo sobre os meus atendimentos.\n\nSei que estes dados são confidenciais e não serão compartilhados com terceiros para outros fins. A qualquer momento posso pedir para consultar, corrigir, receber uma cópia ou apagar os meus dados, ou retirar este consentimento, falando diretamente com a profissional.';
   const DECLARACAO_ANAMNESE = 'Declaro que as informações desta ficha são verdadeiras e completas, que me responsabilizo por elas e que vou avisar a profissional se algo mudar (por exemplo: medicamentos, gestação, alergias ou problemas de saúde).';
-  function linkConfirmacaoAnamnese(token){ return window.location.origin + window.location.pathname + '?confirmar=' + token; }
+  // Endereço que vai nos links enviados às pacientes: sempre o domínio oficial,
+  // mesmo que a profissional esteja usando o endereço antigo (skinexpertpro.vercel.app).
+  function enderecoPublico(){
+    return /(^|\.)skinexpertpro\.com$/i.test(window.location.hostname)
+      ? window.location.origin + window.location.pathname
+      : 'https://www.skinexpertpro.com/';
+  }
+  function linkConfirmacaoAnamnese(token){ return enderecoPublico() + '?confirmar=' + token; }
   function camposConsentimento(){
     return { consentimento_em: new Date().toISOString(), consentimento_versao: CONSENTIMENTO_VERSAO, consentimento_texto: CONSENTIMENTO_TEXTO };
   }

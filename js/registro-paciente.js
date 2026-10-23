@@ -329,7 +329,7 @@
 
     if(error){ showToast('Não foi possível gerar o link: ' + error.message); return; }
 
-    const link = window.location.origin + window.location.pathname + '?anamnese=' + data.token;
+    const link = enderecoPublico() + '?anamnese=' + data.token;
     document.getElementById('linkGeradoInput').value = link;
     document.getElementById('modalLinkGeradoOverlay').classList.add('open');
   });
