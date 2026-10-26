@@ -60,7 +60,7 @@
 
   // Versão para celular (menu embaixo, áreas só do computador, sem modo demonstração).
   // false = celular continua como antes. Para ligar, troque para true.
-  var VERSAO_CELULAR = false;
+  var VERSAO_CELULAR = true;
   if(VERSAO_CELULAR) document.documentElement.classList.add('celular-ativo');
 
   /* ================= CELULAR: "EM BREVE" =================
