@@ -93,8 +93,11 @@
     setTimeout(avisarHorariosDuplicados, comandasCriadas ? 5000 : 0); // não cobre o aviso das comandas
   }
 
-  document.getElementById('authDemoLink').addEventListener('click', () => {
-    if(ehCelular()) return; // no celular não existe modo demonstração
+  /* ---------- Modo demonstração: agora só com login e senha ----------
+     Crie no Supabase (Authentication › Users › Add user) um usuário com o e-mail abaixo e a senha que quiser.
+     Quem entrar com ele vê o app com dados de exemplo e nada é salvo. A senha é conferida pelo Supabase. */
+  const EMAIL_DEMONSTRACAO = 'demonstracao@skinexpertpro.com';
+  function entrarModoDemonstracao(){
     modoDemonstracao = true;
     document.body.classList.add('modo-demo');
     authScreenEl.style.display = 'none';
@@ -103,7 +106,7 @@
     carregarIntegracaoWhatsappDemo();
     try{ carregarAcompanhamentos(); }catch(e){}
     showToast('Modo demonstração — os dados aqui não são salvos.');
-  });
+  }
 
   authSubmitBtnEl.addEventListener('click', async () => {
     hideAuthError();
@@ -132,7 +135,14 @@
       } else {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
         if(error) throw error;
-        await enterApp();
+        if(email.toLowerCase() === EMAIL_DEMONSTRACAO){
+          // Login de demonstração: a senha foi conferida; fecha a sessão real e abre com dados de exemplo.
+          await supabaseClient.auth.signOut();
+          document.getElementById('authSenha').value = '';
+          entrarModoDemonstracao();
+        } else {
+          await enterApp();
+        }
       }
     } catch(err){
       showAuthError(err.message || 'Ocorreu um erro. Tente novamente.');
