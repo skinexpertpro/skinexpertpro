@@ -60,3 +60,46 @@
     /* Atendimento: botões empilhados e o de comanda em destaque */
     html.celular-ativo #apptDetComanda{ order:-1; }
   }
+
+  /* ================= CELULAR — ajustes de layout (revisão 1) ================= */
+  @media (max-width: 760px){
+    /* 1. Margens menores: o conteúdo usa a largura da tela */
+    html.celular-ativo .content-dash, html.celular-ativo .content-agenda,
+    html.celular-ativo .content-pacientes, html.celular-ativo .content-registro{ padding:14px 12px 24px; }
+    html.celular-ativo .content-dash, html.celular-ativo .col{ gap:14px; }
+    html.celular-ativo .card{ padding:16px 14px 18px; }
+    html.celular-ativo .card-table .card-head{ padding:16px 14px 4px; }
+    html.celular-ativo .registro-card{ padding:18px 14px; }
+    html.celular-ativo .schedule-card{ padding:16px 12px; }
+
+    /* 7. Quadros vazios não ocupam meia tela */
+    html.celular-ativo .empty-state{ padding:18px 8px; font-size:13.5px; }
+
+    /* 2. Ficha: campos um embaixo do outro, nada cortado na direita */
+    html.celular-ativo .content-registro .form-grid,
+    html.celular-ativo .content-registro .checkbox-columns{ grid-template-columns:1fr; gap:14px; }
+    html.celular-ativo .content-registro .form-grid > *{ min-width:0; }
+    html.celular-ativo .content-registro input, html.celular-ativo .content-registro select,
+    html.celular-ativo .content-registro textarea{ max-width:100%; box-sizing:border-box; }
+    html.celular-ativo .content-registro textarea{ width:100%; }
+    html.celular-ativo .photo-status-row{ gap:14px; margin-bottom:20px; }
+
+    /* 3. Título repetido: o topo já diz "Registro de Paciente" */
+    html.celular-ativo .content-registro > .page-title,
+    html.celular-ativo .content-registro > .page-subtitle{ display:none !important; }
+    html.celular-ativo .content-registro > .breadcrumb{ font-size:14px; }
+
+    /* 4. Abas da ficha em grade: todas aparecem, sem precisar arrastar */
+    html.celular-ativo .registro-tabs{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; overflow:visible; margin:12px 0 14px; }
+    html.celular-ativo .registro-tab{ justify-content:center; padding:10px 8px; font-size:12.5px; min-width:0; white-space:normal; text-align:center; line-height:1.2; }
+
+    /* 5. Agenda: os horários do dia primeiro, o calendário do mês depois */
+    html.celular-ativo .agenda-grid{ display:flex; flex-direction:column; gap:14px; }
+    html.celular-ativo .agenda-grid > .schedule-card{ order:1; }
+    html.celular-ativo .agenda-grid > .agenda-lateral{ order:2; width:100%; align-self:stretch; }
+
+    /* 6. Lista de pacientes: nome numa linha só */
+    html.celular-ativo #view-pacientes .patient-avatar{ display:none; }
+    html.celular-ativo #view-pacientes .patient-name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:44vw; }
+    html.celular-ativo #view-pacientes .filter-bar{ gap:8px; }
+  }
