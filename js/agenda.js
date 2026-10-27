@@ -1185,10 +1185,25 @@
 
   async function sincronizarComGoogleAgenda(agendamentoId){
     if(!googleAgendaConectado) return;
+    let motivo = '';
     try{
-      await supabaseClient.functions.invoke('sincronizar-google-agenda', { body: { agendamentoId } });
+      const { data, error } = await supabaseClient.functions.invoke('sincronizar-google-agenda', { body: { agendamentoId } });
+      if(error){
+        motivo = error.message || 'erro desconhecido';
+        // Tenta ler a explicação que a função devolveu (ex.: "invalid_grant" = precisa reconectar)
+        try{ if(error.context && error.context.text){ const t = await error.context.text(); if(t) motivo = t; } }catch(_){}
+      } else if(data && (data.error || data.erro)){
+        motivo = typeof (data.error || data.erro) === 'string' ? (data.error || data.erro) : JSON.stringify(data.error || data.erro);
+      }
     } catch(e){
-      console.warn('Não foi possível sincronizar com a Google Agenda.', e);
+      motivo = (e && e.message) || String(e);
+    }
+    if(motivo){
+      console.warn('Google Agenda — falha ao sincronizar:', motivo);
+      const precisaReconectar = /invalid_grant|token|expired|unauthori[sz]ed|401|revoked/i.test(motivo);
+      showToast(precisaReconectar
+        ? 'O atendimento foi salvo, mas não foi para a Google Agenda: a conexão expirou. Vá em Configurações, desconecte e conecte a Google Agenda de novo.'
+        : 'O atendimento foi salvo, mas não foi para a Google Agenda (' + String(motivo).slice(0, 140) + ').');
     }
   }
 

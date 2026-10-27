@@ -96,7 +96,7 @@
   /* ---------- Modo demonstração: agora só com login e senha ----------
      Crie no Supabase (Authentication › Users › Add user) um usuário com o e-mail abaixo e a senha que quiser.
      Quem entrar com ele vê o app com dados de exemplo e nada é salvo. A senha é conferida pelo Supabase. */
-  const EMAIL_DEMONSTRACAO = 'demonstracao@skinexpertpro.com';
+  const EMAIL_DEMONSTRACAO = 'skinexpertpro.app@gmail.com';
   function entrarModoDemonstracao(){
     modoDemonstracao = true;
     document.body.classList.add('modo-demo');
