@@ -36,12 +36,11 @@
     },
     {
       id: "business", name: "Business", tagline: "Escala sua clínica com equipe",
-      desc: "Para clínicas com múltiplos profissionais. Gestão de equipe, SMS e branding personalizado.",
+      desc: "Para clínicas com múltiplos profissionais. Gestão de equipe e branding personalizado.",
       price: { BRL: 797, EUR: 159, USD: 169 },
       cta: "Criar minha operação", featured: false,
       features: [
         { label: "Tudo do Profissional", on: true },
-        { label: "Notificações por SMS", on: true },
         { label: "Gestão de equipe multi-profissional", on: true },
         { label: "Follow-up automatizado de pacientes", on: true },
         { label: "Exportação de relatórios", on: true },
