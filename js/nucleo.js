@@ -15,11 +15,11 @@
   const CONSENTIMENTO_TEXTO = 'Autorizo a profissional responsável pelo meu atendimento a coletar e guardar os dados pessoais e de saúde que informei nesta ficha, exclusivamente para avaliar a minha pele, planejar e registrar os meus tratamentos e entrar em contato comigo sobre os meus atendimentos.\n\nSei que estes dados são confidenciais e não serão compartilhados com terceiros para outros fins. A qualquer momento posso pedir para consultar, corrigir, receber uma cópia ou apagar os meus dados, ou retirar este consentimento, falando diretamente com a profissional.';
   const DECLARACAO_ANAMNESE = 'Declaro que as informações desta ficha são verdadeiras e completas, que me responsabilizo por elas e que vou avisar a profissional se algo mudar (por exemplo: medicamentos, gestação, alergias ou problemas de saúde).';
   // Endereço que vai nos links enviados às pacientes: sempre o domínio oficial,
-  // mesmo que a profissional esteja usando o endereço antigo (skinexpertpro.vercel.app).
+  // mesmo que a profissional esteja usando o endereço antigo (skinexpertpro.vercel.app): o app.
   function enderecoPublico(){
     return /(^|\.)skinexpertpro\.com$/i.test(window.location.hostname)
       ? window.location.origin + window.location.pathname
-      : 'https://www.skinexpertpro.com/';
+      : 'https://app.skinexpertpro.com/';
   }
   function linkConfirmacaoAnamnese(token){ return enderecoPublico() + '?confirmar=' + token; }
   function camposConsentimento(){
@@ -179,10 +179,10 @@
   // Endereço de retorno do Google: uma página do próprio site (assim o Google mostra skinexpertpro.com, e não supabase.co).
   // Essa página só repassa a resposta para a Edge Function google-agenda-callback. Precisa estar cadastrado no Google Cloud Console.
   // Volta para o mesmo endereço em que a profissional está (www ou app). Fora do domínio oficial
-  // (ex.: skinexpertpro.vercel.app), usa o www, que é o endereço cadastrado no Google.
+  // (ex.: skinexpertpro.vercel.app), usa o app.skinexpertpro.com, cadastrado no Google.
   const GOOGLE_REDIRECT_URI = /^(www|app)\.skinexpertpro\.com$/i.test(window.location.hostname)
     ? window.location.origin + '/google-agenda.html'
-    : 'https://www.skinexpertpro.com/google-agenda.html';
+    : 'https://app.skinexpertpro.com/google-agenda.html';
 
   let googleAgendaConectado = false;
 

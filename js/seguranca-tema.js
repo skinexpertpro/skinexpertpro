@@ -103,7 +103,7 @@
       var tag = document.createElement('div'); tag.className = 'ceb-tag'; tag.textContent = 'Em breve';
       var h1 = document.createElement('h1'); h1.textContent = 'Versão para celular a caminho';
       var p = document.createElement('p'); p.textContent = 'Estamos preparando o Skin Expert Pro para o celular com todo o cuidado. Por enquanto, acesse pelo computador ou tablet:';
-      var site = document.createElement('span'); site.className = 'ceb-site'; site.textContent = 'www.skinexpertpro.com';
+      var site = document.createElement('span'); site.className = 'ceb-site'; site.textContent = 'app.skinexpertpro.com';
       var links = document.createElement('div'); links.className = 'ceb-links';
       var a1 = document.createElement('a'); a1.href = 'privacidade.html'; a1.textContent = 'Política de Privacidade';
       var a2 = document.createElement('a'); a2.href = 'termos.html'; a2.textContent = 'Termos de Uso';
