@@ -178,7 +178,11 @@
   const GOOGLE_CLIENT_ID = '26417237147-prh95l1dug846iarojmcq2mgahme58gc.apps.googleusercontent.com';
   // Endereço de retorno do Google: uma página do próprio site (assim o Google mostra skinexpertpro.com, e não supabase.co).
   // Essa página só repassa a resposta para a Edge Function google-agenda-callback. Precisa estar cadastrado no Google Cloud Console.
-  const GOOGLE_REDIRECT_URI = 'https://www.skinexpertpro.com/google-agenda.html';
+  // Volta para o mesmo endereço em que a profissional está (www ou app). Fora do domínio oficial
+  // (ex.: skinexpertpro.vercel.app), usa o www, que é o endereço cadastrado no Google.
+  const GOOGLE_REDIRECT_URI = /^(www|app)\.skinexpertpro\.com$/i.test(window.location.hostname)
+    ? window.location.origin + '/google-agenda.html'
+    : 'https://www.skinexpertpro.com/google-agenda.html';
 
   let googleAgendaConectado = false;
 

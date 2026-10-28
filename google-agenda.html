@@ -29,7 +29,9 @@
     var FUNCAO = 'https://fpnphcbczyhhllmhqusy.supabase.co/functions/v1/google-agenda-callback';
     var q = window.location.search;
     if(q && q.length > 1){
-      window.location.replace(FUNCAO + q + '&via=site');
+      // "via" diz à função qual endereço o Google usou (app.skinexpertpro.com ou www).
+      var via = /^app\./i.test(window.location.hostname) ? 'app' : 'site';
+      window.location.replace(FUNCAO + q + '&via=' + via);
     } else {
       document.getElementById('msg').innerHTML = 'Nada para conectar aqui. <a href="/">Voltar para o Skin Expert Pro</a>';
       document.querySelector('.giro').style.display = 'none';
