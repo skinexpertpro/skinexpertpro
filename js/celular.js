@@ -76,5 +76,9 @@
 
   /* ---------- Início: se já está logada, entra direto (precisa ser a última coisa a rodar) ---------- */
   supabaseClient.auth.getSession().then(({ data }) => {
-    if(data.session && !anamneseToken && !confirmarToken) enterApp();
+    if(data.session && !anamneseToken && !confirmarToken){
+      // Quem entrou com o login de demonstração volta para a demonstração ao recarregar a página
+      if(ehLoginDemonstracao(data.session.user && data.session.user.email)) entrarModoDemonstracao();
+      else enterApp();
+    }
   });

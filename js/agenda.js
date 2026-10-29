@@ -97,6 +97,35 @@
   // (se for real) e apaga o evento correspondente na Google Agenda, se houver.
   // "Cancelar" = a paciente cancelou: o atendimento sai da agenda mas fica registrado,
   // e a comanda fica Inativa. (Bloqueios não têm comanda: cancelar um bloqueio = remover.)
+  // Descobre o id do evento na Google Agenda. Atendimentos criados nesta mesma sessão ainda não têm
+  // o id na memória (ele é gravado no banco depois que o Google responde), então busca no banco.
+  async function idEventoGoogle(item){
+    if(item.googleEventId) return item.googleEventId;
+    if(!isAgendamentoReal(item)) return null;
+    try{
+      const { data } = await supabaseClient.from('agendamentos').select('google_event_id').eq('id', item.id).maybeSingle();
+      return (data && data.google_event_id) || null;
+    }catch(e){ return null; }
+  }
+  // Apaga o evento na Google Agenda e avisa se não conseguir.
+  async function apagarEventoGoogle(googleEventId){
+    if(!googleEventId) return;
+    let motivo = '';
+    try{
+      const { data, error } = await supabaseClient.functions.invoke('cancelar-google-agenda', { body: { googleEventId } });
+      if(error){
+        motivo = error.message || 'erro';
+        try{ if(error.context && error.context.text){ const t = await error.context.text(); if(t) motivo = t; } }catch(_){}
+      } else if(data && (data.error || data.erro)) motivo = String(data.error || data.erro);
+    }catch(e){ motivo = (e && e.message) || String(e); }
+    if(motivo){
+      console.warn('Google Agenda — falha ao apagar evento:', motivo);
+      showToast(/invalid_grant|expired|revoked|401/i.test(motivo)
+        ? 'Saiu da agenda, mas não foi apagado da Google Agenda: a conexão expirou. Conecte de novo em Configurações.'
+        : 'Saiu da agenda, mas não foi apagado da Google Agenda (' + String(motivo).slice(0, 140) + ').');
+    }
+  }
+
   async function cancelarAtendimento(key, item, rerenderFn){
     if(item.type === 'block') return excluirAtendimento(key, item, rerenderFn);
     if(!confirm(`Cancelar o atendimento de ${item.label} (${formatarDataBR(key)}, ${item.time})?\n\nEle sai da agenda e a comanda fica inativa.`)) return;
@@ -111,9 +140,7 @@
           : 'Erro ao cancelar: ' + error.message);
         return;
       }
-      if(item.googleEventId){
-        supabaseClient.functions.invoke('cancelar-google-agenda', { body: { googleEventId: item.googleEventId } }).catch(()=>{});
-      }
+      apagarEventoGoogle(await idEventoGoogle(item));
     }
     const lista = appointments[key] || [];
     const idx = lista.indexOf(item);
@@ -131,9 +158,11 @@
       ? `Remover este bloqueio (${item.label}, ${item.time})?`
       : `Excluir o atendimento de ${item.label} (${formatarDataBR(key)}, ${item.time})?\n\nEle será apagado da agenda e a comanda também.`);
     if(!confirmado) return;
+    let eventoGoogle = null;
     if(isAgendamentoReal(item)){
       const usuario = await usuarioParaSalvar();
       if(!usuario) return;
+      eventoGoogle = await idEventoGoogle(item); // antes de apagar a linha do banco
     }
 
     const lista = appointments[key] || [];
@@ -152,9 +181,7 @@
         rerenderFn();
         return;
       }
-      if(item.googleEventId){
-        supabaseClient.functions.invoke('cancelar-google-agenda', { body: { googleEventId: item.googleEventId } }).catch(()=>{});
-      }
+      apagarEventoGoogle(eventoGoogle);
     }
     showToast(isBlock ? 'Bloqueio removido.' : 'Atendimento excluído e comanda apagada.');
   }
@@ -1192,7 +1219,10 @@
         motivo = error.message || 'erro desconhecido';
         // Tenta ler a explicação que a função devolveu (ex.: "invalid_grant" = precisa reconectar)
         try{ if(error.context && error.context.text){ const t = await error.context.text(); if(t) motivo = t; } }catch(_){}
-      } else if(data && (data.error || data.erro)){
+      } else if(data && data.eventoId){
+        Object.values(appointments).forEach(l => (l || []).forEach(a => { if(a.id === agendamentoId) a.googleEventId = data.eventoId; }));
+      }
+      if(!error && data && (data.error || data.erro)){
         motivo = typeof (data.error || data.erro) === 'string' ? (data.error || data.erro) : JSON.stringify(data.error || data.erro);
       }
     } catch(e){

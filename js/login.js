@@ -105,8 +105,14 @@
     carregarPerfilProfissionalDemo();
     carregarIntegracaoWhatsappDemo();
     try{ carregarAcompanhamentos(); }catch(e){}
+    // Catálogo de Produtos e Dicionário de Ativos: sempre os de verdade (os mesmos das profissionais).
+    // A sessão do login de demonstração fica aberta só para ler esses dados compartilhados;
+    // nada é salvo, porque o app bloqueia gravações no modo demonstração.
+    try{ loadProdutosFromSupabase(); }catch(e){}
+    try{ loadAtivosFromSupabase(); }catch(e){}
     showToast('Modo demonstração — os dados aqui não são salvos.');
   }
+  function ehLoginDemonstracao(email){ return String(email || '').trim().toLowerCase() === EMAIL_DEMONSTRACAO; }
 
   authSubmitBtnEl.addEventListener('click', async () => {
     hideAuthError();
@@ -135,9 +141,8 @@
       } else {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
         if(error) throw error;
-        if(email.toLowerCase() === EMAIL_DEMONSTRACAO){
-          // Login de demonstração: a senha foi conferida; fecha a sessão real e abre com dados de exemplo.
-          await supabaseClient.auth.signOut();
+        if(ehLoginDemonstracao(email)){
+          // Login de demonstração: abre com pacientes, agenda e financeiro de exemplo + catálogo real.
           document.getElementById('authSenha').value = '';
           entrarModoDemonstracao();
         } else {
