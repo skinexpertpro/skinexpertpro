@@ -128,3 +128,89 @@
   .schedule-block.block{ background:#fbe9e4; border-left:3px solid var(--block-red); color:#9c3a20; }
   .schedule-block .sb-title{ font-weight:700; }
   .schedule-block .sb-time{ opacity:.8; }
+
+  /* ================= AGENDA DO ESTÚDIO (plano Studio) =================
+     Só aparece quando a profissional faz parte de um estúdio (js/agenda-estudio.js). */
+  .estudio-escopo{ display:flex; background: var(--gray-pill-bg); border-radius:9px; padding:3px; gap:2px; }
+  .estudio-escopo button{
+    border:none; background:transparent; padding:7px 14px; border-radius:7px; font-size:12.5px; font-weight:700;
+    color: var(--text-muted); cursor:pointer; font-family:inherit;
+  }
+  .estudio-escopo button.active{ background:#fff; color: var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  #view-agenda .schedule-toolbar > .view-mode-toggle + .estudio-escopo{ margin-right:auto; margin-left:10px; }
+
+  .estudio-pros-card{ padding:14px 16px; }
+  .estudio-pros-titulo{ font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--text-muted); margin-bottom:8px; }
+  .estudio-pros-titulo span{ display:block; text-transform:none; letter-spacing:0; font-size:12px; font-weight:600; color: var(--text-dark); margin-top:2px; }
+  .estudio-pro{ display:flex; align-items:center; gap:10px; padding:7px 4px; border-radius:9px; cursor:pointer; font-size:13.5px; }
+  .estudio-pro:hover{ background: var(--bg); }
+  .estudio-pro input{
+    appearance:none; -webkit-appearance:none; width:18px; height:18px; margin:0; border-radius:5px; flex-shrink:0;
+    border:1.5px solid var(--border); display:grid; place-content:center; cursor:pointer; background:#fff;
+  }
+  .estudio-pro input:checked{ background: var(--ec-c); border-color: var(--ec-c); }
+  .estudio-pro input:checked::after{
+    content:""; width:9px; height:5px; border:2px solid #fff; border-top:none; border-right:none; transform: rotate(-45deg) translate(1px,-1px);
+  }
+  .estudio-pro input:disabled{ cursor:not-allowed; opacity:.55; }
+  .estudio-pro input:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .estudio-pro-nome{ flex:1; min-width:0; font-weight:600; color: var(--text-dark); }
+  .estudio-pro-nome small{ display:block; font-size:11.5px; font-weight:500; color: var(--text-muted); }
+  .estudio-pro-qtd{ font-size:12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+  /* Diário com colunas */
+  .estudio-ativo #scheduleScrollDay{ overflow-x:auto; }
+  #view-agenda.estudio-ativo .agenda-grid > .schedule-card{ min-width:0; max-width:100%; }
+  .schedule-rows.estudio-cols{ position:relative; }
+  .ec-grid{ display:flex; min-width:max-content; width:100%; }
+  .ec-gutter{ width:64px; flex-shrink:0; position:sticky; left:0; z-index:4; background:#fff; }
+  .ec-gutter .time-row{ border-top:1px solid var(--border); }
+  .ec-gutter .time-row:nth-child(2){ border-top:none; }
+  .ec-col{ flex:1 0 170px; min-width:170px; border-left:1px solid var(--border); position:relative; }
+  .ec-head{
+    position:sticky; top:0; z-index:3; height:52px; background:#fff; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:9px; padding:0 10px; box-sizing:border-box;
+  }
+  .ec-gutter .ec-head{ z-index:5; padding:0; }
+  .ec-av{
+    width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; background: var(--ec-l); color: var(--ec-t);
+  }
+  .ec-head-t{ min-width:0; line-height:1.25; }
+  .ec-head-t b{ display:block; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ec-head-t span{ font-size:11.5px; color: var(--text-muted); }
+  .ec-rows{ position:relative; cursor:pointer; }
+  .ec-rows .time-row:first-child{ border-top:none; }
+  .ec-off{
+    position:absolute; left:0; right:0; pointer-events:none;
+    background: repeating-linear-gradient(135deg, rgba(138,119,104,.09) 0 6px, transparent 6px 12px);
+  }
+  .schedule-block.ec-block{ left:4px; right:4px; cursor:pointer; z-index:1; }
+  .ec-vazio{ padding:40px 16px; text-align:center; color: var(--text-muted); font-size:13.5px; }
+
+  /* Cores por profissional e horários das colegas */
+  .schedule-block.ec-cor, .week-block.ec-cor{ background: var(--ec-l); border-left-color: var(--ec-c); color: var(--ec-t); }
+  .schedule-block.ec-privado, .week-block.ec-privado{
+    background: repeating-linear-gradient(135deg, var(--ec-l) 0 6px, #fff 6px 11px); color: var(--text-muted);
+  }
+  .schedule-block.ec-privado .sb-title, .week-block.ec-privado .wb-title{ color: var(--text-dark); font-weight:600; }
+  .ec-outra{ cursor:pointer; }
+  .ec-outra:focus-visible{ outline:2px solid var(--gold); outline-offset:1px; }
+  .ec-lock{ display:inline-block; vertical-align:-1px; margin-right:3px; }
+
+  /* Janelas do estúdio */
+  .estudio-janela .modal-box{ width:400px; max-height:90vh; overflow-y:auto; }
+  .ec-chip{
+    display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px;
+    background: var(--ec-l); color: var(--ec-t);
+  }
+  .ec-chip i{ width:7px; height:7px; border-radius:50%; background: var(--ec-c); }
+  .ec-kv{ display:grid; grid-template-columns:90px 1fr; gap:6px 12px; margin:14px 0 0; font-size:13.5px; }
+  .ec-kv dt{ color: var(--text-muted); }
+  .ec-kv dd{ margin:0; font-weight:600; color: var(--text-dark); }
+  .ec-nota{ margin:14px 0 0; background: var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.5; color: var(--text-muted); }
+  .ec-nota b{ color: var(--text-dark); }
+  .ec-ajuda{ display:block; font-size:11.5px; color: var(--text-muted); margin-top:5px; }
+  .ec-duas{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .ec-erro{ background:#fbe9e4; color:#9c3a20; border-radius:9px; padding:9px 11px; font-size:12.5px; font-weight:600; }
+  @media (max-width:480px){ .ec-duas{ grid-template-columns:1fr; } .ec-col{ flex-basis:150px; min-width:150px; } }
