@@ -395,12 +395,13 @@
   const skcMapaObjetivoClasse = [
     { termos:['limpeza profunda','higienizar','higienizacao','sujeira','impureza','impurezas','poros sujos'], classes:['Higienizantes'] },
     { termos:['oleosidade','oleosa','oleoso','brilho excessivo','pele mista','pele oleosa'], classes:['Seborreguladores'] },
-    { termos:['acne','cravo','cravos','espinha','espinhas','cisto','comedao','comedoes','poros obstruidos','foliculite'], classes:['Antiacneicos'] },
-    { termos:['mancha','manchas','hiperpigmentacao','melasma','melanose','uniformizar o tom','tom desigual','manchas de sol','manchas solares'], classes:['Despigmentantes','Clareadores'] },
-    { termos:['ruga','rugas','linha fina','linhas finas','antienvelhecimento','anti-idade','sinais de idade','pele madura'], classes:['Retinoides','Regeneradores'] },
-    { termos:['flacidez','firmeza','sustentacao','lifting','perda de firmeza','flacida'], classes:['Firmadores','Tensores','Peptídeos'] },
-    { termos:['sensivel','sensibilidade','vermelhidao','rosacea','irritacao','irritada','alergia','reativa'], classes:['Calmantes','Anti-inflamatórios'] },
-    { termos:['ressecamento','seca','desidratada','desidratacao','falta de hidratacao','pele repuxando'], classes:['Umectantes','Emolientes'] },
+    { termos:['acne','acneica','cravo','cravos','espinha','espinhas','cisto','comedao','comedoes','poros obstruidos','foliculite'], classes:['Antiacneicos'] },
+    { termos:['mancha','manchas','manchada','hiperpigmentacao','melasma','melanose','uniformizar o tom','tom desigual','manchas de sol','manchas solares'], classes:['Despigmentantes','Clareadores'] },
+    { termos:['ruga','rugas','linha fina','linhas finas','linhas de expressao','marcas de expressao','pes de galinha','bigode chines','envelhecimento','envelhecida','envelhecer','antienvelhecimento','anti-idade','antiidade','antiaging','anti-aging','sinais de idade','sinais da idade','pele madura','rejuvenescimento','rejuvenescer','rejuvenescedor'], classes:['Retinoides','Regeneradores','Antioxidantes'] },
+    { termos:['flacidez','firmeza','sustentacao','lifting','perda de firmeza','flacida','elasticidade','perda de elasticidade','contorno facial'], classes:['Firmadores','Tensores','Peptídeos'] },
+    { termos:['colageno','estimulo do colageno','estimular colageno','producao de colageno','bioestimulo','bioestimulacao','elastina','densidade da pele','espessura da pele'], classes:['Firmadores','Peptídeos','Retinoides','Regeneradores','Antioxidantes'] },
+    { termos:['sensivel','sensiveis','sensibilizada','sensibilidade','vermelhidao','rosacea','irritacao','irritada','alergia','reativa'], classes:['Calmantes','Anti-inflamatórios'] },
+    { termos:['ressecamento','ressecada','seca','desidratada','desidratacao','falta de hidratacao','pele repuxando'], classes:['Umectantes','Emolientes'] },
     { termos:['hidratacao','hidratar','sede da pele','hidratada'], classes:['Umectantes'] },
     { termos:['aspereza','pele aspera','maciez','suavizar','textura aspera'], classes:['Emolientes'] },
     { termos:['perda de agua','tewl','protecao da barreira','pele rachada','descamacao severa'], classes:['Oclusivos'] },
@@ -420,11 +421,21 @@
     { termos:['pelicula protetora','filme protetor'], classes:['Filmógenos'] },
   ];
 
+  // Compara o objetivo com os termos de forma tolerante: ignora acentos, hífens,
+  // pontuação e singular/plural (ex.: "colágeno", "Colagenos", "anti-idade" → mesmo termo)
+  function prepararParaBusca(s){
+    return ' ' + normalizarTexto(s)
+      .replace(/[^a-z0-9]+/g, ' ')
+      .split(' ').filter(Boolean)
+      .map(p => (p.length > 3 && p.endsWith('s')) ? p.slice(0, -1) : p)
+      .join(' ') + ' ';
+  }
+
   function sugerirClassesPorObjetivo(texto){
-    const t = normalizarTexto(texto);
+    const t = prepararParaBusca(texto);
     const classes = new Set();
     skcMapaObjetivoClasse.forEach(regra => {
-      if(regra.termos.some(termo => t.includes(normalizarTexto(termo)))){
+      if(regra.termos.some(termo => t.includes(prepararParaBusca(termo)))){
         regra.classes.forEach(c => classes.add(c));
       }
     });
