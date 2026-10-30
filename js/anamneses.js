@@ -502,6 +502,22 @@
     pageSubtitle.style.display = 'none';
     switchRegistroTab('recomendacoes');
   });
+  // Ao salvar o PDF do plano, o arquivo já vem com o nome "Planejamento de SkinCare - Nome da Paciente"
+  // (o navegador usa o título da página como nome do arquivo). Vale para o botão e para o Ctrl + P.
+  let tituloAntesDoPdf = null;
+  function nomeArquivoPlano(){
+    const nome = (currentPatient && currentPatient.name ? currentPatient.name : '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+    return nome ? `Planejamento de SkinCare - ${nome}` : 'Planejamento de SkinCare';
+  }
+  window.addEventListener('beforeprint', () => {
+    const view = document.getElementById('view-plano-pdf');
+    if(!view || !view.classList.contains('active')) return;
+    tituloAntesDoPdf = document.title;
+    document.title = nomeArquivoPlano();
+  });
+  window.addEventListener('afterprint', () => {
+    if(tituloAntesDoPdf !== null){ document.title = tituloAntesDoPdf; tituloAntesDoPdf = null; }
+  });
   document.getElementById('btnBaixarPdfPlano').addEventListener('click', () => window.print());
 
   // Assinatura do conteúdo de uma anamnese: duas com a mesma assinatura (mesma paciente) são repetição.
