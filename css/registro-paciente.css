@@ -561,3 +561,14 @@
     @top-left{ content: "\00a0"; }
     @bottom-right{ content: counter(page) " / " counter(pages); font-family: Inter, Arial, sans-serif; font-size: 9px; color: #8a7768; }
   }
+
+  /* ---------- Busca guiada: resumo da paciente ("Buscando para") ---------- */
+  .skc-resumo-paciente{ margin:14px 0 4px; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background: var(--bg); }
+  .skc-resumo-paciente:empty{ display:none; }
+  .skc-resumo-titulo{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color: var(--text-muted); margin-bottom:8px; }
+  .skc-resumo-itens{ display:flex; flex-wrap:wrap; gap:6px; }
+  .skc-resumo-item{ font-size:12.5px; font-weight:600; padding:4px 10px; border-radius:999px; background:#fff; border:1px solid var(--border); color: var(--text-dark); }
+  .skc-resumo-item b{ font-weight:700; color: var(--text-muted); margin-right:3px; }
+  .skc-resumo-item.atencao{ background:#fff4e5; border-color:#f3c98b; color:#8a4b00; }
+  .skc-resumo-item.alergia{ background:#fdecec; border-color:#f1b4b4; color:#a12a2a; }
+  .skc-resumo-nota{ font-size:11.5px; color: var(--text-muted); margin-top:8px; }

@@ -117,6 +117,7 @@
     routineEntries.splice(0, routineEntries.length);
     skcAtivosDesejados.clear();
     document.querySelectorAll('#panel-planoskincare .chip.selected').forEach(el => el.classList.remove('selected'));
+    { const g = document.getElementById('skcAssistGestante'); if(g) g.checked = false; try{ skcGestanteAutoPara = null; }catch(e){} } // cada paciente começa sem o filtro; ele liga sozinho se ela for gestante/lactante
     try{ renderSkcAtivosDesejadosChips(); }catch(e){}
     try{ renderSkcProdutosEncontrados(); }catch(e){}
     renderJornada();

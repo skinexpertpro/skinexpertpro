@@ -27,6 +27,102 @@
     document.getElementById('skincareBaumannBadge').textContent = baumannVal || '—';
     const fitzSel = document.querySelector('#panel-avaliacao .scale-card.selected[data-group="fitzpatrick"]');
     document.getElementById('skincareFototipoBadge').textContent = fitzSel ? fitzSel.querySelector('.sc-title').textContent : '—';
+    try{ atualizarResumoBuscaPaciente(); }catch(e){ console.warn('Busca guiada (resumo):', e); }
+  }
+
+  /* ---------- Busca guiada: começa pela paciente ----------
+     Junta o que já se sabe (última anamnese, avaliação da pele e país de residência),
+     mostra um resumo "Buscando para" e já liga o filtro de gestante/lactante. */
+  let skcResumoSeq = 0;
+  let skcGestanteAutoPara = null; // paciente para quem o filtro de gestante já foi ligado automaticamente
+
+  function lerAvaliacaoDaTela(){
+    const sel = (grupo) => document.querySelector(`#panel-avaliacao .selected[data-group="${grupo}"]`);
+    const ligado = (alvoId) => { const i = document.querySelector(`#panel-avaliacao [data-toggle-target="${alvoId}"]`); return !!(i && i.checked); };
+    const titulo = el => el ? ((el.querySelector('.sc-title') || el).textContent || '').trim() : '';
+    const olei = sel('oleosidade'), sens = sel('sensibilidade');
+    const out = {};
+    const baumann = (document.getElementById('baumannResult') || {}).textContent || '';
+    if(baumann && baumann.trim() !== '—') out.baumann = baumann.trim();
+    const partes = [];
+    if(olei) partes.push(olei.dataset.value === 'O' ? 'Oleosa' : 'Seca');
+    if(sens) partes.push(sens.dataset.value === 'S' ? 'sensível' : 'resistente');
+    if(partes.length) out.tipoPele = partes.join(' e ');
+    const fitz = sel('fitzpatrick'); if(fitz) out.fototipo = titulo(fitz);
+    const glogau = sel('glogau'); if(glogau) out.glogau = titulo(glogau);
+    const hid = sel('hidratacao'); if(hid) out.hidratacao = titulo(hid);
+    const cond = [];
+    if(ligado('acneBody')){ const g = sel('grau-acne'); cond.push('Acne' + (g ? ' ' + titulo(g).replace(/^Grau/i, 'grau') : '')); }
+    if(ligado('rosaceaBody')) cond.push('Rosácea');
+    if(ligado('discromiasBody')) cond.push('Manchas');
+    if(ligado('olheirasBody')) cond.push('Olheiras');
+    if(cond.length) out.condicoes = cond;
+    return out;
+  }
+
+  async function lerAnamneseParaBusca(p){
+    try{
+      if(isPacienteReal(p)){
+        const { data, error } = await supabaseClient.from('anamneses').select('sistemica')
+          .eq('paciente_id', p.id).order('respondida_em', { ascending: false }).limit(1);
+        if(!error && data && data[0]) return data[0].sistemica || {};
+      } else {
+        const lista = demoAnamnesesPorPaciente[p.id] || [];
+        if(lista[0]) return lista[0].sistemica || {};
+      }
+    }catch(e){ console.warn('Busca guiada (anamnese):', e); }
+    return null;
+  }
+
+  async function atualizarResumoBuscaPaciente(){
+    const box = document.getElementById('skcResumoPaciente');
+    if(!box) return;
+    const p = currentPatient;
+    const seq = ++skcResumoSeq;
+    if(!p){ box.innerHTML = ''; return; }
+
+    const av = lerAvaliacaoDaTela();
+    const sist = await lerAnamneseParaBusca(p);
+    if(seq !== skcResumoSeq || currentPatient !== p) return; // trocou de paciente enquanto carregava
+
+    const itens = [];
+    if(av.tipoPele) itens.push({ txt: 'Pele ' + av.tipoPele.toLowerCase() });
+    if(av.baumann) itens.push({ rot: 'Baumann', txt: av.baumann });
+    if(av.fototipo) itens.push({ rot: 'Fototipo', txt: av.fototipo.replace(/^Tipo\s*/i, '') });
+    if(av.glogau) itens.push({ rot: 'Glogau', txt: av.glogau.replace(/^Grau\s*/i, '') });
+    if(av.hidratacao) itens.push({ txt: av.hidratacao });
+    (av.condicoes || []).forEach(c => itens.push({ txt: c }));
+
+    const gestante = sist && sist.gestante === 'Sim';
+    const lactante = sist && sist.lactante === 'Sim';
+    if(gestante) itens.push({ txt: 'Gestante', cls: 'atencao' });
+    if(lactante) itens.push({ txt: 'Lactante', cls: 'atencao' });
+    if(sist && sist.alergias === 'Sim') itens.push({ rot: 'Alergia', txt: sist.alergia_tipo || 'não especificada', cls: 'alergia' });
+
+    const pais = String(p.pais || '').trim();
+    if(pais) itens.push({ txt: 'Mora ' + (/brasil|brazil/i.test(pais) ? 'no Brasil' : 'em ' + pais) });
+
+    const faltando = [];
+    if(!sist) faltando.push('anamnese');
+    if(!av.tipoPele && !av.baumann && !av.fototipo) faltando.push('avaliação da pele');
+
+    box.innerHTML = `
+      <div class="skc-resumo-titulo">Buscando para ${escHTML(p.name || 'a paciente')}</div>
+      ${itens.length ? `<div class="skc-resumo-itens">${itens.map(i => `<span class="skc-resumo-item ${i.cls || ''}">${i.rot ? `<b>${escHTML(i.rot)}:</b>` : ''}${escHTML(i.txt)}</span>`).join('')}</div>` : ''}
+      ${(gestante || lactante) ? '<div class="skc-resumo-nota">Filtro de gestante/lactante ligado: só aparecem ativos liberados para ela.</div>' : ''}
+      ${faltando.length ? `<div class="skc-resumo-nota">Sem ${faltando.join(' nem ')} preenchida${faltando.length > 1 ? 's' : ''} ainda: o resumo fica mais completo quando ${faltando.length > 1 ? 'elas forem preenchidas' : 'ela for preenchida'}.</div>` : ''}
+    `;
+
+    // Liga o filtro de gestante/lactante automaticamente uma vez por paciente
+    // (se a profissional desligar depois, o app respeita a escolha dela).
+    const chk = document.getElementById('skcAssistGestante');
+    if(chk && (gestante || lactante) && skcGestanteAutoPara !== p.id){
+      skcGestanteAutoPara = p.id;
+      if(!chk.checked){
+        chk.checked = true;
+        try{ renderSkcAtivosDesejadosChips(); }catch(e){}
+      }
+    }
   }
 
   function toggleRoutineEntry(product, period, why){
