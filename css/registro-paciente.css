@@ -495,7 +495,9 @@
   .pdf-legenda-item{ display:inline-flex; align-items:center; gap:5px; }
   .pdf-legenda-periodo .pdf-periodo-sol, .pdf-legenda-periodo .pdf-periodo-lua{ width:24px; height:24px; font-size:14px; }
   .pdf-etapas{ display:flex; flex-direction:column; gap:22px; }
-  .pdf-etapa{ break-inside:avoid; page-break-inside:avoid; }
+  .pdf-etapa{ break-inside:auto; }
+  .pdf-etapa-head{ break-after:avoid; page-break-after:avoid; }
+  .pdf-etapa-opcoes .pdf-product{ break-inside:avoid; page-break-inside:avoid; }
   .pdf-etapa-head{ display:flex; align-items:center; gap:14px; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid var(--gold); }
   .pdf-etapa-nome{ font-family:'Playfair Display', serif; font-size:22px; font-weight:700; color: var(--sidebar-bg); }
   .pdf-etapa-dica{ font-size:13px; color: var(--text-muted); font-style:italic; }
@@ -515,7 +517,8 @@
   .pdf-signature{ margin-top:34px; padding-top:18px; border-top:1px solid var(--border); font-size:12.5px; color: var(--text-muted); text-align:center; }
 
   @media print{
-    .sidebar, .topbar, .breadcrumb, .pdf-toolbar-btn, .bell-btn{ display:none !important; }
+    .sidebar, .topbar, .breadcrumb, .pdf-toolbar-btn, .bell-btn, .mobile-nav{ display:none !important; }
+    .pdf-toolbar{ display:none !important; }
     body, .app, .main{ background:#fff !important; }
     .content-produto{ padding:0 !important; }
     .pdf-doc{ border:none; padding:0; }
@@ -530,3 +533,10 @@
   .exp-ciente{ display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color: var(--text-dark); margin:0 0 16px; cursor:pointer; line-height:1.45; }
   .exp-ciente input{ width:16px; height:16px; margin-top:2px; flex-shrink:0; accent-color: var(--sidebar-bg); cursor:pointer; }
   .exp-erro{ color:#b42318; font-size:13px; min-height:18px; margin:-4px 0 6px; }
+
+  /* Impressão: numeração própria no rodapé. Com isso o navegador deixa de imprimir
+     a data, o título e o endereço do site nas bordas da folha. */
+  @page{
+    margin: 12mm;
+    @bottom-right{ content: counter(page) " / " counter(pages); font-family: Inter, Arial, sans-serif; font-size: 9px; color: #8a7768; }
+  }

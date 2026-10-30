@@ -158,7 +158,7 @@
       if(!styleEl){
         styleEl = document.createElement('style');
         styleEl.id = 'landscapePrintStyle';
-        styleEl.textContent = '@page{ size: landscape; margin: 12mm; }';
+        styleEl.textContent = '@page{ size: landscape; margin: 12mm; @bottom-right{ content: counter(page) " / " counter(pages); font-family: Inter, Arial, sans-serif; font-size: 9px; color: #8a7768; } }';
         document.head.appendChild(styleEl);
       }
     } else if(styleEl){
