@@ -5,6 +5,16 @@
   const skincareCategories = ["Demaquilante","Limpador","Tônico","Esfoliante","Hidratante","Área dos Olhos","Tratamento","Protetor Solar"];
   const routineEntries = []; // { id, category, product, period, frequency, selectedDays:[], usage, link, expanded }
   const weekdayLabels = ["D","S","T","Q","Q","S","S"];
+  const MAX_OPCOES_POR_ETAPA = 3;
+  function etapaDoProduto(cat){
+    try{ return categoriaCanonica(cat); }catch(e){ return cat || 'Outros'; }
+  }
+  // "Opção 2 de 3" quando a etapa tem mais de um produto no mesmo período
+  function opcaoDaEtapa(entry){
+    const etapa = etapaDoProduto(entry.category);
+    const grupo = routineEntries.filter(e => e.period === entry.period && etapaDoProduto(e.category) === etapa);
+    return grupo.length > 1 ? { n: grupo.indexOf(entry) + 1, total: grupo.length } : null;
+  }
 
   function updateSkincareMeta(){
     const basicEl = document.getElementById('skincareMetaBasic');
@@ -24,6 +34,13 @@
     if(idx >= 0){
       routineEntries.splice(idx, 1);
     } else {
+      // Cada etapa (Limpador, Hidratante…) aceita até 3 opções por período, para a paciente escolher uma no PDF
+      const etapa = etapaDoProduto(product.category);
+      const jaNaEtapa = routineEntries.filter(e => e.period === period && etapaDoProduto(e.category) === etapa).length;
+      if(jaNaEtapa >= MAX_OPCOES_POR_ETAPA){
+        showToast(`Máximo de ${MAX_OPCOES_POR_ETAPA} opções de ${etapa} na rotina da ${period === 'manha' ? 'manhã' : 'noite'}.`);
+        return;
+      }
       routineEntries.push({
         id: 'r' + Date.now() + Math.random().toString(36).slice(2,6),
         category: product.category || 'Outros',
@@ -57,11 +74,15 @@
         <div class="weekday-chip ${entry.selectedDays.includes(i) ? 'selected' : ''}" data-day="${i}">${label}</div>
       `).join('');
 
+      const opcao = opcaoDaEtapa(entry);
+      const opcaoHTML = opcao ? `<span class="routine-opcao-pill">Opção ${opcao.n} de ${opcao.total}</span>` : '';
+
       card.innerHTML = `
         <div class="routine-entry-head">
           <div class="routine-entry-title">
             <span class="routine-period-pill ${entry.period}">${entry.period === 'manha' ? 'Manhã' : 'Noite'}</span>
             ${entry.product.name} <span style="color:var(--text-muted); font-weight:500;">— ${entry.category}</span>
+            ${opcaoHTML}
           </div>
           <button class="routine-remove-btn" title="Remover">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
@@ -296,6 +317,8 @@
       categoria: e.category || e.product.category || '', usage: e.usage || e.product.usage || '',
       func: e.product.func || '', why: e.why || [],
       link: (e.link || '').trim(),
+      price: e.product.price != null ? e.product.price : null,
+      apenasBrasil: !!e.product.apenasBrasil,
       frequencia: e.frequency || 'diario',
       dias: e.frequency === 'personalizar' ? (e.selectedDays || []).slice().sort((a, b) => a - b) : [],
     });

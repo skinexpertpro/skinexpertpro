@@ -181,14 +181,30 @@
     // Planos antigos guardaram o endereço da foto da época; se a foto mudou de lugar, usa a foto ATUAL
     // do catálogo (mesmo nome do produto). Se mesmo assim não carregar, mostra o desenho padrão.
     const normNome = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
-    function fotoAtualDoProduto(p){
+    function produtoAtualDoCatalogo(p){
       try{
         const lista = (typeof products !== 'undefined' && Array.isArray(products)) ? products : [];
         const n = normNome(p.name), b = normNome(p.brand);
-        const achado = lista.find(x => normNome(x.name) === n && normNome(x.brand) === b) || lista.find(x => normNome(x.name) === n);
-        if(achado && achado.image) return achado.image;
-      }catch(e){}
+        return lista.find(x => normNome(x.name) === n && normNome(x.brand) === b) || lista.find(x => normNome(x.name) === n) || null;
+      }catch(e){ return null; }
+    }
+    function fotoAtualDoProduto(p){
+      const achado = produtoAtualDoCatalogo(p);
+      if(achado && achado.image) return achado.image;
       return p.image || '';
+    }
+    // Preço aproximado (faixa) na moeda do país de residência da paciente — usa o preço ATUAL do catálogo
+    function precoAproximadoDoProduto(p){
+      try{
+        const achado = produtoAtualDoCatalogo(p);
+        const valor = achado && achado.price != null ? achado.price : p.price;
+        const soBrasil = achado ? !!achado.apenasBrasil : !!p.apenasBrasil;
+        if(valor == null || isNaN(valor)) return '';
+        const i = faixaIndex(valor);
+        if(soBrasil) return faixasPrecoBRL[i] + ' · venda somente no Brasil';
+        const todas = { BRL: faixasPrecoBRL[i], USD: faixasPrecoUSD[i], EUR: faixasPrecoEUR[i] };
+        return todas[moedaAnamnesePaciente()] || todas.BRL;
+      }catch(e){ return ''; }
     }
     // O filtro de segurança tira "onerror" e o desenho SVG do HTML, então o substituto é colocado por aqui.
     function protegerFotosPdf(el){
@@ -198,13 +214,15 @@
         else { img.addEventListener('error', usarPadrao); if(img.complete && img.naturalWidth === 0) usarPadrao(); }
       });
     }
-    function renderPdfProdutoCard(p){
+    function renderPdfProdutoCard(p, opcao){
       const whyHtml = (p.why && p.why.length)
         ? `<div class="pdf-product-why"><div class="pdf-product-why-title">Por que foi sugerido</div><div class="pdf-product-why-item"><b>Contém:</b> ${p.why.map(w => w.nome).join(', ')}</div>${p.func ? `<div class="pdf-product-why-item">${p.func}</div>` : ''}</div>`
         : (p.func
           ? `<div class="pdf-product-why"><div class="pdf-product-why-title">Por que foi indicado</div><div class="pdf-product-why-item">${p.func}</div></div>`
           : '');
-      const etapaHtml = p.categoria ? `<div class="pdf-product-etapa">${p.categoria}</div>` : '';
+      const opcaoHtml = opcao ? `<div class="pdf-product-opcao">Opção ${opcao}</div>` : '';
+      const preco = precoAproximadoDoProduto(p);
+      const precoHtml = preco ? `<div class="pdf-product-preco"><b>Preço aproximado:</b> ${preco}</div>` : '';
       const usageHtml = p.usage
         ? `<div class="pdf-product-usage-title">Modo de uso</div><div class="pdf-product-usage">${p.usage}</div>`
         : '';
@@ -224,7 +242,26 @@
           linkHtml = `<div class="pdf-product-link"><b>Onde comprar:</b> <a href="${escHTML(url)}" target="_blank" rel="noopener">${escHTML(site)} ↗</a></div>`;
         }
       }
-      return `<div class="pdf-product"><img class="pdf-product-thumb" src="${fotoAtualDoProduto(p)}" alt="${p.name}"><div class="pdf-product-info">${etapaHtml}<div class="pdf-product-name">${p.name}</div><div class="pdf-product-brand">${p.brand}</div>${usageHtml}${freqHtml}${linkHtml}${whyHtml}</div></div>`;
+      return `<div class="pdf-product"><img class="pdf-product-thumb" src="${fotoAtualDoProduto(p)}" alt="${p.name}"><div class="pdf-product-info">${opcaoHtml}<div class="pdf-product-name">${p.name}</div><div class="pdf-product-brand">${p.brand}</div>${precoHtml}${linkHtml}${usageHtml}${freqHtml}${whyHtml}</div></div>`;
+    }
+
+    // Junta os produtos da mesma etapa (ex.: 3 limpadores) numa linha só, com as opções lado a lado
+    function renderPdfEtapas(lista){
+      const grupos = [];
+      lista.forEach(p => {
+        const etapa = categoriaCanonica(p.categoria) || 'Outros';
+        let g = grupos.find(x => x.etapa === etapa);
+        if(!g){ g = { etapa, itens: [] }; grupos.push(g); }
+        g.itens.push(p);
+      });
+      return grupos.map(g => {
+        const varias = g.itens.length > 1;
+        const cards = g.itens.map((p, i) => renderPdfProdutoCard(p, varias ? i + 1 : null)).join('');
+        return `<div class="pdf-etapa">
+          <div class="pdf-etapa-head"><span class="pdf-product-etapa">${g.etapa}</span>${varias ? '<span class="pdf-etapa-dica">Escolha uma das opções</span>' : ''}</div>
+          <div class="pdf-etapa-opcoes">${cards}</div>
+        </div>`;
+      }).join('');
     }
 
     function ordenarPorEtapa(lista){
@@ -242,12 +279,12 @@
 
     const manhaEl = document.getElementById('pdfPlanoManha');
     manhaEl.innerHTML = manhaOrdenada.length
-      ? manhaOrdenada.map(renderPdfProdutoCard).join('')
+      ? renderPdfEtapas(manhaOrdenada)
       : '<p style="color:var(--text-muted);">Nenhum produto adicionado.</p>';
 
     const noiteEl = document.getElementById('pdfPlanoNoite');
     noiteEl.innerHTML = noiteOrdenada.length
-      ? noiteOrdenada.map(renderPdfProdutoCard).join('')
+      ? renderPdfEtapas(noiteOrdenada)
       : '<p style="color:var(--text-muted);">Nenhum produto adicionado.</p>';
     protegerFotosPdf(manhaEl);
     protegerFotosPdf(noiteEl);
