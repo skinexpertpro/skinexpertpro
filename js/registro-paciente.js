@@ -170,7 +170,7 @@
     marcarPorTexto('#panel-avaliacao input[name="poros"]', av.poros);
     const ole = av.oleosidade || {}, acne = av.acne || {}, ros = av.rosacea || {}, dis = av.discromias || {}, olh = av.olheiras || {};
     ligar('oleosidadeBody', ole.presente); marcarChips('areas-oleosas', ole.areas); marcar('intensidade-oleosidade', ole.intensidade);
-    ligar('acneBody', acne.presente); marcar('grau-acne', acne.grau); marcarChips('licoes-acne', acne.licoes);
+    ligar('acneBody', acne.presente); marcar('grau-acne', acne.grau);
     ligar('rosaceaBody', ros.presente); marcar('rosacea-subtipo', ros.subtipo);
     ligar('discromiasBody', dis.presente); marcarChips('discromias', dis.tipos);
     ligar('olheirasBody', olh.presente); marcar('olheiras-tipo', olh.tipo);
@@ -656,7 +656,6 @@
       acne: {
         presente: isToggleOn('acneBody'),
         grau: getGroupValue('grau-acne'),
-        licoes: getChipGroupValues('licoes-acne'),
       },
       rosacea: {
         presente: isToggleOn('rosaceaBody'),
@@ -736,7 +735,7 @@
           <div class="toggle-subtitle">Oleosidade</div>
           <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${ole.presente ? `Áreas: ${(ole.areas||[]).join(', ') || '—'} · Intensidade: ${ole.intensidade || '—'}` : 'Não relatada'}</div>
           <div class="toggle-subtitle">Acne</div>
-          <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${acne.presente ? `Grau: ${acne.grau || '—'} · Lesões: ${(acne.licoes||[]).join(', ') || '—'}` : 'Não relatada'}</div>
+          <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${acne.presente ? `Grau: ${acne.grau || '—'}` : 'Não relatada'}</div>
           <div class="toggle-subtitle">Rosácea</div>
           <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${rosacea.presente ? `Subtipo: ${rosacea.subtipo || '—'}` : 'Não relatada'}</div>
           <div class="toggle-subtitle">Discromias</div>
