@@ -214,12 +214,12 @@
         else { img.addEventListener('error', usarPadrao); if(img.complete && img.naturalWidth === 0) usarPadrao(); }
       });
     }
-    const ICONE_SOL = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
-    const ICONE_LUA = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>';
+    const ICONE_SOL = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+    const ICONE_LUA = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>';
     function iconePeriodoHtml(periodos){
       const manha = periodos.includes('manha'), noite = periodos.includes('noite');
       const titulo = manha && noite ? 'Usar de manhã e à noite' : (manha ? 'Usar de manhã' : 'Usar à noite');
-      const icones = (manha ? `<span class="pdf-periodo-sol">${ICONE_SOL}</span>` : '') + (manha && noite ? '<span class="pdf-periodo-barra">/</span>' : '') + (noite ? `<span class="pdf-periodo-lua">${ICONE_LUA}</span>` : '');
+      const icones = (manha ? `<span class="pdf-periodo-sol">${ICONE_SOL}</span>` : '') + '' + (noite ? `<span class="pdf-periodo-lua">${ICONE_LUA}</span>` : '');
       return `<div class="pdf-product-periodo" title="${titulo}">${icones}</div>`;
     }
     function renderPdfProdutoCard(p){

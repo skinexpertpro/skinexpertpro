@@ -491,19 +491,20 @@
   .pdf-product-freq{ font-size:11.5px; color: var(--gold-dark); font-weight:700; margin-top:4px; }
   /* Etapas do plano: cartões em pé lado a lado, com ícone de quando usar (manhã/noite) */
   .pdf-section-rotina{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
-  .pdf-legenda-periodo{ font-family:inherit; font-size:11.5px; font-weight:500; color: var(--text-muted); }
+  .pdf-legenda-periodo{ font-family:inherit; font-size:12.5px; font-weight:600; color: var(--text-dark); display:flex; gap:16px; align-items:center; }
+  .pdf-legenda-item{ display:inline-flex; align-items:center; gap:5px; }
+  .pdf-legenda-periodo .pdf-periodo-sol, .pdf-legenda-periodo .pdf-periodo-lua{ width:24px; height:24px; font-size:14px; }
   .pdf-etapas{ display:flex; flex-direction:column; gap:22px; }
   .pdf-etapa{ break-inside:avoid; page-break-inside:avoid; }
-  .pdf-etapa-head{ display:flex; align-items:baseline; gap:12px; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
-  .pdf-etapa-nome{ font-family:'Playfair Display', serif; font-size:15px; font-weight:700; color: var(--sidebar-bg); }
-  .pdf-etapa-dica{ font-size:11.5px; color: var(--text-muted); font-style:italic; }
+  .pdf-etapa-head{ display:flex; align-items:center; gap:14px; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid var(--gold); }
+  .pdf-etapa-nome{ font-family:'Playfair Display', serif; font-size:22px; font-weight:700; color: var(--sidebar-bg); }
+  .pdf-etapa-dica{ font-size:13px; color: var(--text-muted); font-style:italic; }
   .pdf-etapa-opcoes{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:14px; }
   .pdf-etapa-opcoes .pdf-product{ position:relative; flex-direction:column; align-items:stretch; border:1px solid var(--border); border-radius:14px; padding:14px; gap:10px; }
   .pdf-etapa-opcoes .pdf-product-thumb{ width:100%; height:130px; object-fit:contain; background:#fff; border:none; }
-  .pdf-product-periodo{ position:absolute; top:10px; right:10px; display:flex; align-items:center; gap:2px; background:#fff; border:1px solid var(--border); border-radius:999px; padding:4px 8px; font-size:12px; }
-  .pdf-periodo-sol{ color: var(--gold-dark); display:inline-flex; }
-  .pdf-periodo-lua{ color: var(--sidebar-bg); display:inline-flex; }
-  .pdf-periodo-barra{ color: var(--text-muted); margin:0 1px; }
+  .pdf-product-periodo{ position:absolute; top:10px; right:10px; display:flex; align-items:center; gap:6px; }
+  .pdf-periodo-sol{ display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:#fff3cd; color:#e08a00; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .pdf-periodo-lua{ display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:#e3e6f5; color:#3b4a9c; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   .pdf-product-preco{ font-size:11.5px; color: var(--text-dark); margin-top:4px; }
   .pdf-product-preco b{ color: var(--gold-dark); }
   .pdf-product-why{ margin-top:6px; padding:8px 10px; background: var(--gold-light); border-radius:8px; }
