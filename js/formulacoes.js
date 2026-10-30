@@ -506,10 +506,27 @@
       encontrados = products.filter(p => qtdAtivosDoProduto(p) > 0).sort(ordenar);
     }
 
+    // Paciente que mora fora do Brasil não vê produtos vendidos só no Brasil.
+    // Vale o país de residência (aba Dados); sem país preenchido, vale a moeda da paciente.
+    const paisPaciente = String((currentPatient && currentPatient.pais) || '').trim();
+    const pacienteNoBrasil = paisPaciente
+      ? /brasil|brazil/i.test(paisPaciente)
+      : moedaAnamnesePaciente() === 'BRL';
+    let ocultosSoBrasil = 0;
+    if(!pacienteNoBrasil){
+      const antes = encontrados.length;
+      encontrados = encontrados.filter(p => !p.apenasBrasil);
+      ocultosSoBrasil = antes - encontrados.length;
+    }
+    const avisoSoBrasil = ocultosSoBrasil
+      ? `<div class="skc-aviso-so-brasil" style="font-size:12.5px; color:var(--gold-dark); background:var(--gold-light); border-radius:10px; padding:8px 12px; margin:0 0 10px;">${ocultosSoBrasil === 1 ? '1 produto vendido só no Brasil não aparece' : ocultosSoBrasil + ' produtos vendidos só no Brasil não aparecem'} porque a paciente mora ${paisPaciente ? 'em ' + escHTML(paisPaciente) : 'fora do Brasil'}.</div>`
+      : '';
+
     if(encontrados.length === 0){
-      container.innerHTML = '<div class="registro-card empty-state">Nenhum produto do Catálogo corresponde a esses critérios ainda.</div>';
+      container.innerHTML = avisoSoBrasil + '<div class="registro-card empty-state">Nenhum produto do Catálogo corresponde a esses critérios ainda.</div>';
       return;
     }
+    if(avisoSoBrasil) container.insertAdjacentHTML('beforeend', avisoSoBrasil);
 
     if(funcoesAtivas.length > 0){
       const comAtivos = skcAtivosDesejados.size ? encontrados.filter(p => qtdAtivosDoProduto(p) > 0).length : 0;
