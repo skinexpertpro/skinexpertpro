@@ -358,7 +358,7 @@
     const st = espEstado[tipo] || {};
     const r = (st.registros || []).find(x => x.id === st.mostrandoId);
     const quando = r ? dataDoRegistro(r) : new Date().toLocaleDateString('pt-BR');
-    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escHTML(esp.titulo)} — ${escHTML(p.name)}</title>
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escHTML(esp.titulo)} - ${escHTML(String(p.name || '').replace(/[\\/:*?"<>|]+/g, ' ').trim())}</title>
       <style>body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#1f2a30;max-width:780px;margin:0 auto;padding:28px 18px;line-height:1.45}
       h1{font-size:20px;margin:0 0 4px} .meta{font-size:13px;color:#555;margin:0 0 18px;border-bottom:2px solid #c9a46a;padding-bottom:12px}
       table{width:100%;border-collapse:collapse;font-size:13px} th,td{text-align:left;vertical-align:top;padding:6px 8px;border-bottom:1px solid #eee} th{width:42%;color:#444;font-weight:600}

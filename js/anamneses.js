@@ -502,18 +502,21 @@
     pageSubtitle.style.display = 'none';
     switchRegistroTab('recomendacoes');
   });
-  // Ao salvar o PDF do plano, o arquivo já vem com o nome "Planejamento de SkinCare - Nome da Paciente"
+  // Ao salvar um PDF, o arquivo já vem com o nome do documento + o nome da paciente
   // (o navegador usa o título da página como nome do arquivo). Vale para o botão e para o Ctrl + P.
+  //   Plano:    "Planejamento de SkinCare - Nome da Paciente"
+  //   Anamnese: "Ficha de Anamnese - Nome da Paciente"
   let tituloAntesDoPdf = null;
-  function nomeArquivoPlano(){
+  function nomeArquivoPdf(documento){
     const nome = (currentPatient && currentPatient.name ? currentPatient.name : '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
-    return nome ? `Planejamento de SkinCare - ${nome}` : 'Planejamento de SkinCare';
+    return nome ? `${documento} - ${nome}` : documento;
   }
+  const PDFS_COM_NOME = { 'view-plano-pdf': 'Planejamento de SkinCare', 'view-skincare-pdf': 'Ficha de Anamnese' };
   window.addEventListener('beforeprint', () => {
-    const view = document.getElementById('view-plano-pdf');
-    if(!view || !view.classList.contains('active')) return;
+    const viewId = Object.keys(PDFS_COM_NOME).find(id => { const v = document.getElementById(id); return v && v.classList.contains('active'); });
+    if(!viewId) return;
     tituloAntesDoPdf = document.title;
-    document.title = nomeArquivoPlano();
+    document.title = nomeArquivoPdf(PDFS_COM_NOME[viewId]);
   });
   window.addEventListener('afterprint', () => {
     if(tituloAntesDoPdf !== null){ document.title = tituloAntesDoPdf; tituloAntesDoPdf = null; }
