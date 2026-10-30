@@ -274,7 +274,7 @@
     const EXPLICACAO_ETAPA = {
       'Demaquilante': 'Remove maquiagem, protetor solar e a oleosidade acumulada no dia. É o primeiro passo da limpeza, antes do limpador.',
       'Limpador': 'Limpa a pele e tira impurezas, suor e excesso de oleosidade, preparando-a para receber os próximos produtos.',
-      'Tônico': 'Equilibra o pH depois da limpeza, ajuda a hidratar e deixa a pele pronta para absorver melhor o tratamento.',
+      'Tônico': 'Equilibra o pH depois da limpeza e já é uma etapa de tratamento: pode entregar ativos calmantes, hidratantes ou clareadores.',
       'Esfoliante': 'Remove as células mortas da superfície, deixando a pele mais lisa, uniforme e com mais viço. Use só na frequência indicada.',
       'Hidratante': 'Repõe água e protege a barreira da pele, deixando-a macia, confortável e menos sensível.',
       'Área dos Olhos': 'Cuida da pele fina ao redor dos olhos, ajudando com olheiras, inchaço e linhas finas.',
