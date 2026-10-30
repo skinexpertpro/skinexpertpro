@@ -500,6 +500,7 @@
   .pdf-etapa-opcoes .pdf-product{ break-inside:avoid; page-break-inside:avoid; }
   .pdf-etapa-head{ display:flex; align-items:center; gap:14px; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid var(--gold); }
   .pdf-etapa-nome{ font-family:'Playfair Display', serif; font-size:22px; font-weight:700; color: var(--sidebar-bg); }
+  .pdf-etapa-explicacao{ font-size:13px; line-height:1.45; color: var(--text-dark); margin:-4px 0 12px; max-width:900px; break-after:avoid; page-break-after:avoid; }
   .pdf-etapa-dica{ font-size:13px; color: var(--text-muted); font-style:italic; }
   .pdf-etapa-opcoes{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:14px; }
   .pdf-etapa-opcoes .pdf-product{ position:relative; flex-direction:column; align-items:stretch; border:1px solid var(--border); border-radius:14px; padding:14px; gap:10px; }
@@ -519,6 +520,17 @@
   @media print{
     .sidebar, .topbar, .breadcrumb, .pdf-toolbar-btn, .bell-btn, .mobile-nav{ display:none !important; }
     .pdf-toolbar{ display:none !important; }
+    /* Mais compacto no papel, para a primeira etapa já começar na página 1 */
+    .pdf-doc-header{ padding-bottom:10px; margin-bottom:12px; }
+    .pdf-doc h2{ margin:0 0 6px 0; }
+    .pdf-doc p{ line-height:1.5; margin:0 0 6px 0; }
+    .pdf-section-title{ margin:12px 0 10px 0; }
+    .pdf-etapas{ gap:14px; }
+    .pdf-etapa-head{ margin-bottom:8px; }
+    .pdf-etapa-opcoes .pdf-product{ padding:10px; gap:6px; }
+    .pdf-etapa-opcoes .pdf-product-thumb{ height:88px; }
+    .pdf-product-usage{ line-height:1.4; }
+    .pdf-product-why{ padding:6px 8px; }
     body, .app, .main{ background:#fff !important; }
     .content-produto{ padding:0 !important; }
     .pdf-doc{ border:none; padding:0; }
@@ -538,5 +550,6 @@
      a data, o título e o endereço do site nas bordas da folha. */
   @page{
     margin: 12mm;
+    @top-left{ content: "\00a0"; }
     @bottom-right{ content: counter(page) " / " counter(pages); font-family: Inter, Arial, sans-serif; font-size: 9px; color: #8a7768; }
   }

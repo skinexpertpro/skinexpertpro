@@ -158,7 +158,7 @@
       if(!styleEl){
         styleEl = document.createElement('style');
         styleEl.id = 'landscapePrintStyle';
-        styleEl.textContent = '@page{ size: landscape; margin: 12mm; @bottom-right{ content: counter(page) " / " counter(pages); font-family: Inter, Arial, sans-serif; font-size: 9px; color: #8a7768; } }';
+        styleEl.textContent = '@page{ size: landscape; margin: 12mm; @top-left{ content: "\\00a0"; } @bottom-right{ content: counter(page) " / " counter(pages); font-family: Inter, Arial, sans-serif; font-size: 9px; color: #8a7768; } }';
         document.head.appendChild(styleEl);
       }
     } else if(styleEl){
@@ -270,6 +270,17 @@
       });
       return itens;
     }
+    // Explicação curta de cada etapa para a paciente (no máximo 2 linhas)
+    const EXPLICACAO_ETAPA = {
+      'Demaquilante': 'Remove maquiagem, protetor solar e a oleosidade acumulada no dia. É o primeiro passo da limpeza, antes do limpador.',
+      'Limpador': 'Limpa a pele e tira impurezas, suor e excesso de oleosidade, preparando-a para receber os próximos produtos.',
+      'Tônico': 'Equilibra o pH depois da limpeza, ajuda a hidratar e deixa a pele pronta para absorver melhor o tratamento.',
+      'Esfoliante': 'Remove as células mortas da superfície, deixando a pele mais lisa, uniforme e com mais viço. Use só na frequência indicada.',
+      'Hidratante': 'Repõe água e protege a barreira da pele, deixando-a macia, confortável e menos sensível.',
+      'Área dos Olhos': 'Cuida da pele fina ao redor dos olhos, ajudando com olheiras, inchaço e linhas finas.',
+      'Tratamento': 'Traz os ativos que tratam a sua necessidade principal, como oleosidade, manchas, acne ou envelhecimento.',
+      'Protetor Solar': 'Protege a pele do sol, que causa manchas e envelhecimento. Indispensável todos os dias, mesmo nublado ou dentro de casa.',
+    };
     function renderPdfEtapas(lista){
       const grupos = [];
       lista.forEach(p => {
@@ -285,6 +296,7 @@
         const temOpcoes = ['manha', 'noite'].some(per => g.itens.filter(p => p.periodos.includes(per)).length > 1);
         return `<div class="pdf-etapa">
           <div class="pdf-etapa-head"><span class="pdf-etapa-nome">${g.etapa}</span>${temOpcoes ? '<span class="pdf-etapa-dica">Escolha uma das opções</span>' : ''}</div>
+          ${EXPLICACAO_ETAPA[g.etapa] ? `<div class="pdf-etapa-explicacao">${EXPLICACAO_ETAPA[g.etapa]}</div>` : ''}
           <div class="pdf-etapa-opcoes">${g.itens.map(renderPdfProdutoCard).join('')}</div>
         </div>`;
       }).join('');
