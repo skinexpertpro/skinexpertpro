@@ -208,7 +208,7 @@
   .anamnese-card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
   .anamnese-title{ font-family:'Playfair Display', serif; display:flex; align-items:center; gap:10px; font-size:17.5px; font-weight:700; }
   .anamnese-title svg{ flex-shrink:0; }
-  .anamnese-title .anamnese-icon{ color:var(--pink); }
+  .anamnese-title .anamnese-icon-img{ width:44px; height:44px; flex-shrink:0; border-radius:10px; background:#f5ebe4; object-fit:cover; }
 
   .btn-link-outline{
     display:flex; align-items:center; gap:7px; background:#fff; border:1px solid var(--gold-light); color: var(--gold);
