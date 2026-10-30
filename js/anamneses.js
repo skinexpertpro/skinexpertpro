@@ -214,13 +214,20 @@
         else { img.addEventListener('error', usarPadrao); if(img.complete && img.naturalWidth === 0) usarPadrao(); }
       });
     }
-    function renderPdfProdutoCard(p, opcao){
+    const ICONE_SOL = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+    const ICONE_LUA = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>';
+    function iconePeriodoHtml(periodos){
+      const manha = periodos.includes('manha'), noite = periodos.includes('noite');
+      const titulo = manha && noite ? 'Usar de manhã e à noite' : (manha ? 'Usar de manhã' : 'Usar à noite');
+      const icones = (manha ? `<span class="pdf-periodo-sol">${ICONE_SOL}</span>` : '') + (manha && noite ? '<span class="pdf-periodo-barra">/</span>' : '') + (noite ? `<span class="pdf-periodo-lua">${ICONE_LUA}</span>` : '');
+      return `<div class="pdf-product-periodo" title="${titulo}">${icones}</div>`;
+    }
+    function renderPdfProdutoCard(p){
       const whyHtml = (p.why && p.why.length)
         ? `<div class="pdf-product-why"><div class="pdf-product-why-title">Por que foi sugerido</div><div class="pdf-product-why-item"><b>Contém:</b> ${p.why.map(w => w.nome).join(', ')}</div>${p.func ? `<div class="pdf-product-why-item">${p.func}</div>` : ''}</div>`
         : (p.func
           ? `<div class="pdf-product-why"><div class="pdf-product-why-title">Por que foi indicado</div><div class="pdf-product-why-item">${p.func}</div></div>`
           : '');
-      const opcaoHtml = opcao ? `<div class="pdf-product-opcao">Opção ${opcao}</div>` : '';
       const preco = precoAproximadoDoProduto(p);
       const precoHtml = preco ? `<div class="pdf-product-preco"><b>Preço aproximado:</b> ${preco}</div>` : '';
       const usageHtml = p.usage
@@ -242,10 +249,27 @@
           linkHtml = `<div class="pdf-product-link"><b>Onde comprar:</b> <a href="${escHTML(url)}" target="_blank" rel="noopener">${escHTML(site)} ↗</a></div>`;
         }
       }
-      return `<div class="pdf-product"><img class="pdf-product-thumb" src="${fotoAtualDoProduto(p)}" alt="${p.name}"><div class="pdf-product-info">${opcaoHtml}<div class="pdf-product-name">${p.name}</div><div class="pdf-product-brand">${p.brand}</div>${precoHtml}${linkHtml}${usageHtml}${freqHtml}${whyHtml}</div></div>`;
+      return `<div class="pdf-product">${iconePeriodoHtml(p.periodos || [])}<img class="pdf-product-thumb" src="${fotoAtualDoProduto(p)}" alt="${p.name}"><div class="pdf-product-info"><div class="pdf-product-name">${p.name}</div><div class="pdf-product-brand">${p.brand}</div>${precoHtml}${linkHtml}${usageHtml}${freqHtml}${whyHtml}</div></div>`;
     }
 
-    // Junta os produtos da mesma etapa (ex.: 3 limpadores) numa linha só, com as opções lado a lado
+    // O PDF é organizado por etapa (Limpador, Hidratante, Protetor Solar…). Cada cartão mostra quando usar:
+    // ☀ manhã, ☾ noite ou ☀/☾ manhã e noite. O mesmo produto na manhã e na noite vira um cartão só.
+    function juntarPeriodos(manha, noite){
+      const itens = [];
+      const chave = p => normNome(p.name) + '|' + normNome(p.brand) + '|' + categoriaCanonica(p.categoria);
+      [['manha', manha], ['noite', noite]].forEach(([periodo, lista]) => {
+        (lista || []).forEach(p => {
+          const ja = itens.find(x => x._chave === chave(p));
+          if(ja){
+            if(!ja.periodos.includes(periodo)) ja.periodos.push(periodo);
+            ['usage', 'link', 'func'].forEach(k => { if(!ja[k] && p[k]) ja[k] = p[k]; });
+          } else {
+            itens.push({ ...p, periodos: [periodo], _chave: chave(p) });
+          }
+        });
+      });
+      return itens;
+    }
     function renderPdfEtapas(lista){
       const grupos = [];
       lista.forEach(p => {
@@ -254,40 +278,24 @@
         if(!g){ g = { etapa, itens: [] }; grupos.push(g); }
         g.itens.push(p);
       });
+      const ordem = e => { const i = skincareCategories.indexOf(e); return i === -1 ? skincareCategories.length : i; };
+      grupos.sort((a, b) => ordem(a.etapa) - ordem(b.etapa));
       return grupos.map(g => {
-        const varias = g.itens.length > 1;
-        const cards = g.itens.map((p, i) => renderPdfProdutoCard(p, varias ? i + 1 : null)).join('');
+        // "Escolha uma das opções" só quando há mais de um produto da etapa no mesmo período
+        const temOpcoes = ['manha', 'noite'].some(per => g.itens.filter(p => p.periodos.includes(per)).length > 1);
         return `<div class="pdf-etapa">
-          <div class="pdf-etapa-head"><span class="pdf-product-etapa">${g.etapa}</span>${varias ? '<span class="pdf-etapa-dica">Escolha uma das opções</span>' : ''}</div>
-          <div class="pdf-etapa-opcoes">${cards}</div>
+          <div class="pdf-etapa-head"><span class="pdf-etapa-nome">${g.etapa}</span>${temOpcoes ? '<span class="pdf-etapa-dica">Escolha uma das opções</span>' : ''}</div>
+          <div class="pdf-etapa-opcoes">${g.itens.map(renderPdfProdutoCard).join('')}</div>
         </div>`;
       }).join('');
     }
 
-    function ordenarPorEtapa(lista){
-      return [...lista].sort((a, b) => {
-        let ia = skincareCategories.indexOf(categoriaCanonica(a.categoria));
-        let ib = skincareCategories.indexOf(categoriaCanonica(b.categoria));
-        if(ia === -1) ia = skincareCategories.length;
-        if(ib === -1) ib = skincareCategories.length;
-        return ia - ib;
-      });
-    }
-
-    const manhaOrdenada = ordenarPorEtapa(plano.manha);
-    const noiteOrdenada = ordenarPorEtapa(plano.noite);
-
-    const manhaEl = document.getElementById('pdfPlanoManha');
-    manhaEl.innerHTML = manhaOrdenada.length
-      ? renderPdfEtapas(manhaOrdenada)
+    const todosOsProdutos = juntarPeriodos(plano.manha, plano.noite);
+    const etapasEl = document.getElementById('pdfPlanoEtapas');
+    etapasEl.innerHTML = todosOsProdutos.length
+      ? renderPdfEtapas(todosOsProdutos)
       : '<p style="color:var(--text-muted);">Nenhum produto adicionado.</p>';
-
-    const noiteEl = document.getElementById('pdfPlanoNoite');
-    noiteEl.innerHTML = noiteOrdenada.length
-      ? renderPdfEtapas(noiteOrdenada)
-      : '<p style="color:var(--text-muted);">Nenhum produto adicionado.</p>';
-    protegerFotosPdf(manhaEl);
-    protegerFotosPdf(noiteEl);
+    protegerFotosPdf(etapasEl);
 
     navItems.forEach(i => i.classList.remove('active'));
     const pacientesNavForPdf = document.querySelector('.nav-item[data-view="pacientes"]');
