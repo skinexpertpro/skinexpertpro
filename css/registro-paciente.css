@@ -121,6 +121,8 @@
   .yn-btn{ flex:1; padding:9px 0; border:1px solid var(--border); border-radius:8px; background:#fff; font-weight:700; font-size:13px; cursor:pointer; color: var(--text-dark); font-family:inherit; }
   .yn-btn:hover{ background: var(--bg); }
   .yn-btn.on{ background: var(--gold); border-color: var(--gold); color:#fff; }
+  .skincare-colunas{ align-items:start; margin-bottom:18px; }
+  .skincare-colunas .btn-dashed{ width:100%; justify-content:center; }
   .form-grid.single{ grid-template-columns: 1fr; }
   .form-field label{ display:block; font-size:13px; font-weight:700; color: var(--text-dark); margin-bottom:8px; }
   .form-field label .required{ color: var(--pink); }
@@ -284,7 +286,7 @@
   }
   .anamnese-textarea{
     width:100%; min-height:100px; padding:12px 14px; border:1px solid var(--border); border-radius:10px; font-size:14px;
-    font-family:inherit; color: var(--text-dark); outline:none; resize:vertical;
+    font-family:inherit; color: var(--text-dark); outline:none; resize:none;
   }
 
   .anamnese-footer{ display:flex; justify-content:flex-end; margin-top:6px; }
