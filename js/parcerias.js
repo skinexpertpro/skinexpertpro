@@ -87,14 +87,6 @@
   const IC_CASA = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg>';
   const IC_LIGA = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="12" r="3.5"/><circle cx="17" cy="12" r="3.5"/><path d="M10.5 12h3"/></svg>';
 
-  // Uma frase sobre a diferença, com link para o tutorial completo.
-  function comparativo(){
-    return `<div class="parc-intro">
-      <p><b>Estúdio</b> é para quem atende no mesmo espaço. <b>Conexão</b> é para parceiras que atendem em lugares diferentes. Em qualquer um, suas clientes e seu financeiro continuam só seus.</p>
-      <button type="button" class="parc-link" id="parcVerTutorial">Qual serve para mim?
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
-    </div>`;
-  }
   const painel = () => document.getElementById('eqpanel-parcerias');
 
   async function abrirPainel(){
@@ -121,7 +113,6 @@
     if(!P.estudios.length && !podeCriar) estudioHtml += `<p class="parc-dica">Quer <b>criar</b> o seu próprio estúdio e convidar outras profissionais? Isso faz parte do <b>plano Studio</b>. Para <b>entrar</b> no estúdio de outra pessoa, basta o código de convite que ela te mandar.</p>`;
 
     el.innerHTML = `
-      ${comparativo()}
       <div class="parc-grid">
         <section class="parc-col" aria-label="Estúdio">
           <div class="parc-col-head"><span class="parc-ic">${IC_CASA}</span><div><h2>Estúdio</h2><span>Para quem atende no mesmo espaço</span></div></div>
@@ -132,9 +123,6 @@
           ${cartaoConexoes()}
         </section>
       </div>`;
-    el.querySelector('#parcVerTutorial')?.addEventListener('click', () => {
-      if(typeof window.abrirTutorial === 'function') window.abrirTutorial('estudio-ou-conexao');
-    });
     ligar(el);
   }
 
