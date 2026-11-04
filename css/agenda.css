@@ -214,3 +214,21 @@
   .ec-duas{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .ec-erro{ background:#fbe9e4; color:#9c3a20; border-radius:9px; padding:9px 11px; font-size:12.5px; font-weight:600; }
   @media (max-width:480px){ .ec-duas{ grid-template-columns:1fr; } .ec-col{ flex-basis:150px; min-width:150px; } }
+
+  /* ---- Agenda compartilhada, fase 2: seletor de estúdio, salas, conexões ---- */
+  .estudio-seletor{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color: var(--text-muted); margin-left:10px; }
+  .estudio-seletor select{ border:1px solid var(--border); border-radius:9px; padding:7px 10px; font-size:13px; font-weight:600; background:#fff; color: var(--text-dark); font-family:inherit; }
+  #view-agenda .schedule-toolbar > .estudio-escopo + .estudio-seletor{ margin-right:auto; }
+  #view-agenda .schedule-toolbar > .view-mode-toggle + .estudio-escopo:has(+ .estudio-seletor:not([hidden])){ margin-right:0; }
+  .estudio-pros-titulo.ec-sub{ margin-top:12px; padding-top:10px; border-top:1px solid var(--border); }
+  .ec-av.ec-sala{ border-radius:8px; background: var(--gray-pill-bg); color: var(--text-dark); }
+  .ec-busy{
+    position:absolute; left:4px; right:4px; pointer-events:none; overflow:hidden; border-radius:6px;
+    border:1px dashed var(--border);
+    background: repeating-linear-gradient(135deg, rgba(138,119,104,.10) 0 5px, transparent 5px 10px);
+  }
+  .ec-busy span{ display:block; padding:3px 7px; font-size:10.5px; font-weight:700; color: var(--text-muted); white-space:nowrap; }
+  .ec-local[hidden], #ecSalaWrap[hidden]{ display:none !important; }
+  .ec-local select option:disabled{ color:#b3a79c; }
+  @media (max-width:700px){ .estudio-seletor{ margin-left:0; } .estudio-seletor span{ display:none; } }
+  .estudio-seletor[hidden], .estudio-escopo[hidden]{ display:none !important; }

@@ -58,6 +58,9 @@
   function mensagemErroAgenda(error, prefixo){
     const msg = (error && error.message) || '';
     if(/HORARIO_OCUPADO/i.test(msg)) return 'Horário ocupado: já existe outro agendamento nesse horário. Escolha outro horário.';
+    // Estúdio (plano Studio): sala ocupada ou local que não vale mais. A mensagem já vem pronta do banco.
+    const doEstudio = msg.match(/(?:SALA_OCUPADA|LOCAL_INVALIDO):\s*(.*)$/i);
+    if(doEstudio) return doEstudio[1];
     return (prefixo || 'Erro: ') + msg;
   }
 
@@ -1348,6 +1351,12 @@
         servico_nome: servicoNome,
       };
       if(observacoes) registro.observacoes = observacoes;
+      // Plano Studio: estúdio e sala do atendimento (js/agenda-estudio.js). false = algo impede de salvar.
+      if(typeof camposDoEstudio === 'function'){
+        const extra = camposDoEstudio('appt', key, hora, duracao);
+        if(extra === false) return;
+        Object.assign(registro, extra || {});
+      }
       let { data: inserted, error } = await supabaseClient.from('agendamentos').insert(registro).select().single();
       let obsNaoSalva = false;
       // Se a coluna "observacoes" ainda não existir no banco, salva o atendimento mesmo assim.
@@ -1363,6 +1372,7 @@
         id: inserted.id, time: hora, duration: duracao,
         label: pacienteSelecionado.name, servico: servicoNome, type: 'appt',
         pacienteId: pacienteSelecionado.id, observacoes: observacoes || '',
+        estudioId: inserted.estudio_id || null, salaId: inserted.sala_id || null,
       });
       if(obsNaoSalva) console.warn('Coluna "observacoes" não existe na tabela agendamentos — observação mantida só nesta sessão.');
       closeModal();
@@ -1388,6 +1398,11 @@
         tipo: 'block',
         motivo: motivo,
       };
+      if(typeof camposDoEstudio === 'function'){
+        const extra = camposDoEstudio('block', key, hora, duracao);
+        if(extra === false) return;
+        Object.assign(registroBloqueio, extra || {});
+      }
       let { data: inserted, error } = await supabaseClient.from('agendamentos').insert(registroBloqueio).select().single();
       // Banco sem a coluna "motivo": guarda o motivo em "observacoes" (e, se nem essa existir, salva sem o texto)
       if(error && /motivo/i.test(error.message || '')){
@@ -1402,7 +1417,7 @@
 
       if(error){ showToast(mensagemErroAgenda(error, 'Erro ao bloquear horário: ')); return; }
 
-      appointments[key].push({ id: inserted.id, time: hora, duration: duracao, label: motivo, type: 'block' });
+      appointments[key].push({ id: inserted.id, time: hora, duration: duracao, label: motivo, type: 'block', estudioId: inserted.estudio_id || null });
       closeModal();
       renderCalendar();
       renderCurrentView();
@@ -1459,6 +1474,7 @@
   // completo é recusado inteiro; antes isso fazia a agenda aparecer vazia ao recarregar.
   async function buscarAgendamentosUmaVez(){
     const consultas = [
+      'id, data, hora, duracao_min, duracao_minutos, tipo, motivo, servico_nome, paciente_id, google_event_id, observacoes, status, estudio_id, sala_id, pacientes ( nome )',
       'id, data, hora, duracao_min, duracao_minutos, tipo, motivo, servico_nome, paciente_id, google_event_id, observacoes, status, pacientes ( nome )',
       '*, pacientes ( nome )',
       '*',
@@ -1534,6 +1550,8 @@
           pacienteId: row.paciente_id || null,
           observacoes: (row.tipo === 'block' && !row.motivo) ? '' : (row.observacoes || ''), // em bloqueio sem "motivo", observacoes guarda o motivo
           googleEventId: row.google_event_id || null,
+          estudioId: row.estudio_id || null,
+          salaId: row.sala_id || null,
         });
       });
       renderCalendar();
