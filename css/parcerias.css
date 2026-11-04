@@ -68,3 +68,15 @@
   @media (max-width:980px){ .parc-grid{ grid-template-columns:minmax(0,1fr); } }
   @media (max-width:560px){ .parc-opcoes, .parc-salas{ grid-template-columns:1fr; } .parc-card{ padding:16px; } .parc-codigo-num{ font-size:22px; } }
   .parc-janela .parc-texto{ margin:6px 0 14px; }
+
+  /* Frase de abertura com link para o tutorial */
+  .parc-intro{ display:flex; align-items:center; justify-content:space-between; gap:12px 20px; flex-wrap:wrap; background:#fff; border:1px solid var(--border); border-radius:14px; padding:14px 18px; margin-bottom:20px; }
+  .parc-intro p{ margin:0; font-size:13.5px; line-height:1.55; color: var(--text-muted); flex:1 1 420px; }
+  .parc-intro p b{ color: var(--text-dark); }
+  .parc-link{ display:inline-flex; align-items:center; gap:4px; background:none; border:none; padding:6px 0; color: var(--pink); font-weight:700; font-size:13.5px; cursor:pointer; font-family:inherit; white-space:nowrap; }
+  .parc-link:hover{ text-decoration:underline; }
+  .parc-col-head{ display:flex; align-items:center; gap:10px; }
+  .parc-ic{ display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:9px; flex-shrink:0; background: var(--pink-light); color: var(--pink); }
+  .parc-col:nth-child(2) .parc-ic{ background: var(--gold-light); color: var(--gold-dark); }
+  .parc-codigo.conexao{ border-style:solid; border-color: var(--border); background: var(--bg); }
+  .parc-codigo.conexao .parc-codigo-meta{ max-width:340px; margin:4px auto 0; line-height:1.45; }

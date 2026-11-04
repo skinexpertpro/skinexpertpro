@@ -84,6 +84,17 @@
   }
 
   /* ---------- Tela Meu Negócio › Parcerias ---------- */
+  const IC_CASA = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg>';
+  const IC_LIGA = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="12" r="3.5"/><circle cx="17" cy="12" r="3.5"/><path d="M10.5 12h3"/></svg>';
+
+  // Uma frase sobre a diferença, com link para o tutorial completo.
+  function comparativo(){
+    return `<div class="parc-intro">
+      <p><b>Estúdio</b> é para quem atende no mesmo espaço. <b>Conexão</b> é para parceiras que atendem em lugares diferentes. Em qualquer um, suas clientes e seu financeiro continuam só seus.</p>
+      <button type="button" class="parc-link" id="parcVerTutorial">Qual serve para mim?
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+    </div>`;
+  }
   const painel = () => document.getElementById('eqpanel-parcerias');
 
   async function abrirPainel(){
@@ -107,19 +118,23 @@
     let estudioHtml = P.estudios.map(cartaoEstudio).join('');
     if(podeCriar) estudioHtml += cartaoCriar(!P.estudios.length);
     if(podeEntrar) estudioHtml += cartaoEntrar();
-    if(!P.estudios.length && !podeCriar) estudioHtml += `<p class="parc-dica">Quer dividir agenda e salas com até 3 profissionais? Isso é o <b>plano Studio</b>: a titular assina e convida as outras pelo código.</p>`;
+    if(!P.estudios.length && !podeCriar) estudioHtml += `<p class="parc-dica">Quer <b>criar</b> o seu próprio estúdio e convidar outras profissionais? Isso faz parte do <b>plano Studio</b>. Para <b>entrar</b> no estúdio de outra pessoa, basta o código de convite que ela te mandar.</p>`;
 
     el.innerHTML = `
+      ${comparativo()}
       <div class="parc-grid">
         <section class="parc-col" aria-label="Estúdio">
-          <div class="parc-col-head"><h2>Estúdio</h2><span>Plano Studio · agenda e salas divididas, até 3 profissionais</span></div>
+          <div class="parc-col-head"><span class="parc-ic">${IC_CASA}</span><div><h2>Estúdio</h2><span>Para quem atende no mesmo espaço</span></div></div>
           ${estudioHtml}
         </section>
         <section class="parc-col" aria-label="Conexões">
-          <div class="parc-col-head"><h2>Conexões</h2><span>Parceiras de confiança · veem só quando você está ocupada</span></div>
+          <div class="parc-col-head"><span class="parc-ic">${IC_LIGA}</span><div><h2>Conexões</h2><span>Para parceiras que atendem em lugares diferentes</span></div></div>
           ${cartaoConexoes()}
         </section>
       </div>`;
+    el.querySelector('#parcVerTutorial')?.addEventListener('click', () => {
+      if(typeof window.abrirTutorial === 'function') window.abrirTutorial('estudio-ou-conexao');
+    });
     ligar(el);
   }
 
@@ -157,7 +172,7 @@
       <div class="parc-card-head"><div><h3>${esc(s.nome)}</h3><span class="parc-sub">Você é a titular · ${equipe.length} de ${s.max_profissionais || 3} profissionais</span></div>
         <button type="button" class="modal-btn-cancel" data-editar="${esc(s.estudio_id)}">Editar estúdio</button></div>
       <div class="parc-codigo ${vencido || !vagas ? 'off' : ''}">
-        <div class="parc-rot">Código de convite</div>
+        <div class="parc-rot">Código de convite do estúdio</div>
         <div class="parc-codigo-num" id="parcCodigo-${esc(s.estudio_id)}">${esc(s.codigo_convite || '—')}</div>
         <div class="parc-codigo-meta">${!vagas ? 'Estúdio completo: remova alguém para liberar uma vaga' : vencido ? 'Código vencido: gere um novo' : venc ? `Vale até ${dataCurta(s.codigo_validade)} · ${vagas} vaga${vagas > 1 ? 's' : ''}` : ''}</div>
         <div class="parc-acoes centro">
@@ -200,7 +215,7 @@
   function cartaoCriar(primeiro){
     return `<form class="parc-card" id="parcCriar" novalidate>
       <h3>${primeiro ? 'Criar meu estúdio' : 'Criar o meu próprio estúdio'}</h3>
-      <p class="parc-texto">O seu plano Studio permite um estúdio com até 3 profissionais, contando com você. Depois de criar, o app gera o código de convite.</p>
+      <p class="parc-texto">Você divide um espaço com outras profissionais? Crie o estúdio para organizar a agenda e as salas juntas. São até 3 profissionais, contando com você. Depois de criar, o app gera o código de convite para você mandar a elas.</p>
       <div class="modal-field"><label for="parcCriarNome">Nome do estúdio</label><input id="parcCriarNome" maxlength="40" placeholder="Ex.: Estúdio Glow"></div>
       ${formularioEspaco('pc', 'separadas', [])}
       <div id="parcCriarErro"></div>
@@ -211,8 +226,8 @@
     const ja = P.estudios.length;
     return `<form class="parc-card" id="parcEntrar" novalidate>
       <h3>Entrar num estúdio</h3>
-      <p class="parc-texto">${ja ? `Você já participa do <b>${esc(P.estudios[0].nome)}</b>. Dá para estar em até 2 estúdios: ao marcar um atendimento, você escolhe o local.` : 'Recebeu um código de convite? Digite aqui. Sua conta, suas clientes e seu financeiro continuam só seus.'}</p>
-      <div class="modal-field"><label for="parcCodigoEntrar">Código de convite</label><input id="parcCodigoEntrar" class="parc-code-input" maxlength="9" placeholder="XXXX-XXXX" autocomplete="off"></div>
+      <p class="parc-texto">${ja ? `Você já participa do <b>${esc(P.estudios[0].nome)}</b>. Dá para estar em até 2 estúdios: ao marcar um atendimento, você escolhe o local.` : 'Vai atender no espaço de outra profissional? Peça para a titular do estúdio o <b>código de convite</b> e digite aqui. Sua conta, suas clientes e seu financeiro continuam só seus.'}</p>
+      <div class="modal-field"><label for="parcCodigoEntrar">Código de convite do estúdio</label><input id="parcCodigoEntrar" class="parc-code-input" maxlength="9" placeholder="XXXX-XXXX" autocomplete="off"></div>
       <div id="parcEntrarErro"></div>
       <div class="parc-acoes"><button type="submit" class="modal-btn-confirm">Entrar no estúdio</button></div>
     </form>`;
@@ -227,7 +242,7 @@
       <span class="parc-av">${esc(iniciais(c.nome))}</span><span class="parc-membro-nome">${esc(c.nome)}${c.email ? `<small>${esc(c.email)}</small>` : ''}</span>${acoes}</div>`;
     return `<div class="parc-card">
       <div class="parc-card-head"><div><h3>Suas conexões · ${aceitas.length} de 2</h3><span class="parc-sub">Cada uma com o próprio plano, clientes e financeiro</span></div></div>
-      <p class="parc-texto">Com uma conexão, a parceira aparece na sua Agenda só como <b>Ocupada</b> nos horários dela, e vocês podem <b>indicar clientes</b> uma para a outra pela aba Dados.</p>
+      <p class="parc-texto">Uma conexão liga você a uma parceira de confiança que <b>não atende no mesmo espaço</b>. Ela aparece na sua Agenda só como <b>Ocupada</b> nos horários dela (sem serviço nem cliente), e vocês podem <b>indicar clientes</b> uma para a outra pela aba Dados.</p>
       ${recebidos.length ? `<div class="parc-bloco"><div class="parc-rot">Pedidos de conexão</div>${recebidos.map((c, i) => linha(c, i, `<button type="button" class="modal-btn-cancel" data-recusar="${esc(c.id)}">Recusar</button><button type="button" class="modal-btn-confirm" data-aceitar="${esc(c.id)}" ${cheio ? 'disabled' : ''}>Aceitar</button>`)).join('')}</div>` : ''}
       <div class="parc-bloco"><div class="parc-rot">Conectadas</div>
         ${aceitas.map((c, i) => linha(c, i, `<span class="parc-pill">Conectada</span><button type="button" class="parc-link-perigo" data-desfazer="${esc(c.id)}" data-nome="${esc(c.nome)}">Desfazer</button>`)).join('')}
@@ -237,11 +252,11 @@
     </div>
     <div class="parc-card">
       <div class="parc-rot">Seu código de conexão</div>
-      <div class="parc-codigo"><div class="parc-codigo-num small">${esc(P.codigo || '—')}</div><div class="parc-codigo-meta">Mande para a parceira digitar na conta dela</div>
+      <div class="parc-codigo conexao"><div class="parc-codigo-num small">${esc(P.codigo || '—')}</div><div class="parc-codigo-meta">É o seu código pessoal, só para conexões. Mande para a parceira digitar na conta dela, em Conexões.</div>
         <div class="parc-acoes centro"><button type="button" class="modal-btn-cancel" id="parcCopiarCod" ${P.codigo ? '' : 'disabled'}>Copiar código</button></div></div>
       <form id="parcConectar" novalidate>
-        <div class="modal-field"><label for="parcCodigoConexao">Conectar com uma parceira</label><input id="parcCodigoConexao" class="parc-code-input" maxlength="9" placeholder="XXXX-XXXX" autocomplete="off" ${cheio ? 'disabled' : ''}>
-          <small class="parc-ajuda">${cheio ? 'Você já tem 2 conexões. Desfaça uma para conectar outra pessoa.' : 'Digite o código da parceira. A conexão vale quando ela aceitar.'}</small></div>
+        <div class="modal-field"><label for="parcCodigoConexao">Código de conexão da parceira</label><input id="parcCodigoConexao" class="parc-code-input" maxlength="9" placeholder="XXXX-XXXX" autocomplete="off" ${cheio ? 'disabled' : ''}>
+          <small class="parc-ajuda">${cheio ? 'Você já tem 2 conexões. Desfaça uma para conectar outra pessoa.' : 'Digite o código de conexão dela (não é o código de um estúdio). A conexão vale quando ela aceitar.'}</small></div>
         <div id="parcConectarErro"></div>
         <div class="parc-acoes"><button type="submit" class="modal-btn-confirm" ${cheio ? 'disabled' : ''}>Enviar pedido</button></div>
       </form>
