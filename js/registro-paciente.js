@@ -799,66 +799,87 @@
 
   const fotosEvolucaoDemo = []; // fallback local para pacientes de demonstração
 
+  // Mostra quantas fotos foram escolhidas
+  document.getElementById('fotoEvolucaoInput').addEventListener('change', (e) => {
+    const n = e.target.files.length;
+    const info = document.getElementById('fotoEvolucaoQtd');
+    if(info) info.textContent = n > 1 ? n + ' fotos selecionadas — todas vão com a mesma data, etiqueta e observação.' : '';
+  });
+
   document.getElementById('btnAdicionarFotoEvolucao').addEventListener('click', async () => {
     if(!currentPatient){ showToast('Nenhuma paciente selecionada.'); return; }
     const fileInput = document.getElementById('fotoEvolucaoInput');
-    const file = fileInput.files[0];
-    if(!file){ showToast('Selecione uma foto primeiro.'); return; }
+    const arquivos = Array.from(fileInput.files || []);
+    if(!arquivos.length){ showToast('Selecione pelo menos uma foto.'); return; }
 
     const dataFoto = document.getElementById('fotoEvolucaoData').value || new Date().toISOString().slice(0,10);
     const etiqueta = document.getElementById('fotoEvolucaoEtiqueta').value.trim();
     const observacoes = document.getElementById('fotoEvolucaoObs').value.trim();
+    const botao = document.getElementById('btnAdicionarFotoEvolucao');
+    const textoBotao = botao.textContent;
 
+    let userId = null;
     if(isPacienteReal(currentPatient)){
       const { data: userData } = await supabaseClient.auth.getUser();
       if(!userData || !userData.user){ showToast('Sessão expirada, faça login novamente.'); return; }
-
-      // Paciente real: a foto vai pro Supabase Storage (bucket fotos-evolucao),
-      // não fica mais salva em base64 dentro da tabela.
-      let blob;
-      try {
-        blob = await resizeImageFileToBlob(file, 900);
-      } catch(e) {
-        showToast('Não foi possível processar a imagem.');
-        return;
-      }
-
-      const fotoPath = `${userData.user.id}/${currentPatient.id}/${Date.now()}.jpg`;
-      const { error: uploadError } = await supabaseClient.storage
-        .from('fotos-evolucao')
-        .upload(fotoPath, blob, { contentType: 'image/jpeg' });
-      if(uploadError){ showToast('Erro ao enviar a foto: ' + uploadError.message); return; }
-
-      const { error } = await supabaseClient.from('fotos_evolucao').insert({
-        paciente_id: currentPatient.id,
-        profissional_id: userData.user.id,
-        data_foto: dataFoto,
-        etiqueta: etiqueta || null,
-        observacoes: observacoes || null,
-        foto_path: fotoPath,
-      });
-      if(error){
-        // se salvar a linha falhar, remove o arquivo órfão do Storage
-        await supabaseClient.storage.from('fotos-evolucao').remove([fotoPath]);
-        showToast('Erro ao salvar: ' + error.message);
-        return;
-      }
-    } else {
-      // Paciente de demonstração: continua só em memória, sem ir pro banco/Storage
-      let fotoDataUrl;
-      try {
-        fotoDataUrl = await resizeImageFile(file, 900);
-      } catch(e) {
-        showToast('Não foi possível processar a imagem.');
-        return;
-      }
-      fotosEvolucaoDemo.push({ id: 'demo-' + Date.now(), data_foto: dataFoto, etiqueta, observacoes, foto_url: fotoDataUrl });
+      userId = userData.user.id;
     }
 
-    fileInput.value = '';
-    document.getElementById('fotoEvolucaoEtiqueta').value = '';
-    document.getElementById('fotoEvolucaoObs').value = '';
-    showToast('Foto de evolução adicionada!');
+    botao.disabled = true;
+    let enviadas = 0;
+    const falhas = [];
+    for(let i = 0; i < arquivos.length; i++){
+      const file = arquivos[i];
+      if(arquivos.length > 1) botao.textContent = 'Enviando ' + (i + 1) + ' de ' + arquivos.length + '...';
+      if(isPacienteReal(currentPatient)){
+        // Paciente real: a foto vai pro Supabase Storage (bucket fotos-evolucao)
+        let blob;
+        try { blob = await resizeImageFileToBlob(file, 900); }
+        catch(e){ falhas.push(file.name + ' (não foi possível processar)'); continue; }
+
+        const fotoPath = `${userId}/${currentPatient.id}/${Date.now()}-${i}.jpg`;
+        const { error: uploadError } = await supabaseClient.storage
+          .from('fotos-evolucao')
+          .upload(fotoPath, blob, { contentType: 'image/jpeg' });
+        if(uploadError){ falhas.push(file.name + ' (' + uploadError.message + ')'); continue; }
+
+        const { error } = await supabaseClient.from('fotos_evolucao').insert({
+          paciente_id: currentPatient.id,
+          profissional_id: userId,
+          data_foto: dataFoto,
+          etiqueta: etiqueta || null,
+          observacoes: observacoes || null,
+          foto_path: fotoPath,
+        });
+        if(error){
+          // se salvar a linha falhar, remove o arquivo órfão do Storage
+          await supabaseClient.storage.from('fotos-evolucao').remove([fotoPath]);
+          falhas.push(file.name + ' (' + error.message + ')');
+          continue;
+        }
+      } else {
+        // Paciente de demonstração: só em memória
+        let fotoDataUrl;
+        try { fotoDataUrl = await resizeImageFile(file, 900); }
+        catch(e){ falhas.push(file.name + ' (não foi possível processar)'); continue; }
+        fotosEvolucaoDemo.push({ id: 'demo-' + Date.now() + '-' + i, data_foto: dataFoto, etiqueta, observacoes, foto_url: fotoDataUrl });
+      }
+      enviadas++;
+    }
+    botao.disabled = false;
+    botao.textContent = textoBotao;
+
+    if(enviadas){
+      fileInput.value = '';
+      document.getElementById('fotoEvolucaoEtiqueta').value = '';
+      document.getElementById('fotoEvolucaoObs').value = '';
+      const info = document.getElementById('fotoEvolucaoQtd'); if(info) info.textContent = '';
+    }
+    if(falhas.length){
+      showToast((enviadas ? enviadas + ' foto(s) adicionada(s). ' : '') + 'Não foi possível enviar: ' + falhas.join(', '));
+    } else {
+      showToast(enviadas > 1 ? enviadas + ' fotos de evolução adicionadas!' : 'Foto de evolução adicionada!');
+    }
     renderFotosEvolucao();
   });
 
