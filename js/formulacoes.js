@@ -470,6 +470,16 @@
   function renderSkcProdutosEncontrados(){
     const container = document.getElementById('skcProdutosEncontrados');
     container.innerHTML = '';
+    // Resumo ("27 produto(s) de Hidratante") fica acima da faixa de produtos, não dentro dela.
+    let resumo = document.getElementById('skcProdutosResumo');
+    if(!resumo){
+      resumo = document.createElement('div');
+      resumo.id = 'skcProdutosResumo';
+      resumo.style.cssText = 'font-size:12.5px; color:var(--text-muted); margin:0 0 10px 2px;';
+      container.parentNode.insertBefore(resumo, container);
+    }
+    resumo.textContent = '';
+    resumo.hidden = true;
 
     const funcoesAtivas = Array.from(skcFuncaoContainer.querySelectorAll('.chip.selected')).map(c => c.dataset.funcao);
 
@@ -512,29 +522,18 @@
     const pacienteNoBrasil = paisPaciente
       ? /brasil|brazil/i.test(paisPaciente)
       : moedaAnamnesePaciente() === 'BRL';
-    let ocultosSoBrasil = 0;
-    if(!pacienteNoBrasil){
-      const antes = encontrados.length;
-      encontrados = encontrados.filter(p => !p.apenasBrasil);
-      ocultosSoBrasil = antes - encontrados.length;
-    }
-    const avisoSoBrasil = ocultosSoBrasil
-      ? `<div class="skc-aviso-so-brasil" style="font-size:12.5px; color:var(--gold-dark); background:var(--gold-light); border-radius:10px; padding:8px 12px; margin:0 0 10px;">${ocultosSoBrasil === 1 ? '1 produto vendido só no Brasil não aparece' : ocultosSoBrasil + ' produtos vendidos só no Brasil não aparecem'} porque a paciente mora ${paisPaciente ? 'em ' + escHTML(paisPaciente) : 'fora do Brasil'}.</div>`
-      : '';
+    if(!pacienteNoBrasil) encontrados = encontrados.filter(p => !p.apenasBrasil);
 
     if(encontrados.length === 0){
-      container.innerHTML = avisoSoBrasil + '<div class="registro-card empty-state">Nenhum produto do Catálogo corresponde a esses critérios ainda.</div>';
+      container.innerHTML = '<div class="registro-card empty-state">Nenhum produto do Catálogo corresponde a esses critérios ainda.</div>';
       return;
     }
-    if(avisoSoBrasil) container.insertAdjacentHTML('beforeend', avisoSoBrasil);
 
     if(funcoesAtivas.length > 0){
       const comAtivos = skcAtivosDesejados.size ? encontrados.filter(p => qtdAtivosDoProduto(p) > 0).length : 0;
-      const resumo = document.createElement('div');
-      resumo.style.cssText = 'font-size:12.5px; color:var(--text-muted); margin:0 0 10px 2px;';
       resumo.textContent = `${encontrados.length} produto(s) de ${funcoesAtivas.join(', ')}` +
         (skcAtivosDesejados.size ? ` · ${comAtivos} com os ativos escolhidos (aparecem primeiro)` : '');
-      container.appendChild(resumo);
+      resumo.hidden = false;
     }
 
     encontrados.forEach(prod => {
