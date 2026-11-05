@@ -82,3 +82,11 @@
     .auth-intro{ order:2; max-width:420px; }
     .auth-intro h1{ font-size:26px; }
   }
+
+  /* ---------- Modo celular: só o quadro de entrada, sem a apresentação ---------- */
+  @media (max-width: 760px){
+    html.celular-ativo .auth-intro{ display:none; }
+    html.celular-ativo .auth-screen{ justify-content:center; padding:24px 16px; }
+    /* Letra de 16px nos campos: abaixo disso o iPhone dá zoom ao tocar e a tela "corta". */
+    html.celular-ativo .auth-field input{ font-size:16px; }
+  }
