@@ -116,13 +116,14 @@
       .eq('profissional_id', userData.user.id)
       .order('created_at', { ascending: true });
     if(error) return;
+    servicosInativos = new Set();
     try{
       const inativos = await lerConfig('servicos_inativos');
       if(Array.isArray(inativos)) servicosInativos = new Set(inativos.map(String));
     }catch(e){}
-    if(data && data.length > 0){
-      servicosData = data.map(s => ({ id: s.id, nome: s.nome, categoria: s.categoria, moeda: s.moeda, preco: parseFloat(s.preco), duracao: s.duracao }));
-    }
+    // Conta real: mostra só os serviços dela (lista vazia se ainda não cadastrou nenhum).
+    // Os serviços de exemplo ficam só para o modo demonstração.
+    servicosData = (data || []).map(s => ({ id: s.id, nome: s.nome, categoria: s.categoria, moeda: s.moeda, preco: parseFloat(s.preco), duracao: s.duracao }));
     renderServicos();
   }
 

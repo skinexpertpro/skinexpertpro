@@ -69,7 +69,23 @@
     }
   });
 
+  /* ---------- Troca de conta no mesmo navegador ----------
+     O app guarda os dados na memória da página. Ao sair (ou ao entrar outra conta), a página
+     recomeça do zero: assim nada da conta anterior (serviços, pacotes, lembretes...) aparece na próxima. */
+  let contaCarregada = null;
+  function recomecarDoZero(){ window.location.replace(window.location.pathname); }
+  supabaseClient.auth.onAuthStateChange((evento, sessao) => {
+    if(!contaCarregada) return;
+    if(evento === 'SIGNED_OUT') recomecarDoZero();
+    else if(evento === 'SIGNED_IN' && sessao && sessao.user && contaCarregada !== 'demo' && sessao.user.id !== contaCarregada) recomecarDoZero();
+  });
+
   async function enterApp(){
+    try{
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if(contaCarregada && user && user.id !== contaCarregada){ recomecarDoZero(); return; }
+      if(user) contaCarregada = user.id;
+    }catch(e){}
     modoDemonstracao = false;
     document.body.classList.remove('modo-demo');
     authScreenEl.style.display = 'none';
@@ -98,6 +114,8 @@
      Quem entrar com ele vê o app com dados de exemplo e nada é salvo. A senha é conferida pelo Supabase. */
   const EMAIL_DEMONSTRACAO = 'skinexpertpro.app@gmail.com';
   function entrarModoDemonstracao(){
+    if(contaCarregada && contaCarregada !== 'demo'){ recomecarDoZero(); return; }
+    contaCarregada = 'demo';
     modoDemonstracao = true;
     document.body.classList.add('modo-demo');
     authScreenEl.style.display = 'none';
