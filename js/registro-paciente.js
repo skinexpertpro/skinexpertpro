@@ -771,11 +771,28 @@
     }
     return carregandoHeic2any;
   }
+  // Segundo conversor (mais novo), para fotos HEIC de iPhones recentes que o heic2any não abre
+  async function converterComHeicTo(file){
+    const mod = await import('https://cdn.jsdelivr.net/npm/heic-to@1/+esm');
+    const fn = mod.heicTo || (mod.default && mod.default.heicTo) || mod.default;
+    if(typeof fn !== 'function') throw new Error('conversor indisponível');
+    return fn({ blob: file, type: 'image/jpeg', quality: 0.9 });
+  }
   async function prepararImagem(file){
     if(!ehHeic(file)) return file;
-    const conv = await carregarHeic2any();
-    let out = await conv({ blob: file, toType: 'image/jpeg', quality: 0.9 });
-    if(Array.isArray(out)) out = out[0];
+    let out = null, erro1 = null;
+    try {
+      const conv = await carregarHeic2any();
+      out = await conv({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+      if(Array.isArray(out)) out = out[0];
+    } catch(e){ erro1 = e; out = null; }
+    if(!out){
+      try { out = await converterComHeicTo(file); }
+      catch(e2){
+        console.warn('HEIC: falha nos dois conversores', erro1, e2);
+        throw new Error('formato HEIC não suportado');
+      }
+    }
     return new File([out], (file.name || 'foto').replace(/\.hei[cf]$/i, '') + '.jpg', { type: 'image/jpeg' });
   }
 
@@ -864,7 +881,7 @@
         // Paciente real: a foto vai pro Supabase Storage (bucket fotos-evolucao)
         let blob;
         try { blob = await resizeImageFileToBlob(await prepararImagem(file), 900); }
-        catch(e){ falhas.push(file.name + ' (não foi possível processar)'); continue; }
+        catch(e){ falhas.push(file.name + (ehHeic(file) ? ' (foto HEIC do iPhone que não conseguimos converter)' : ' (não foi possível processar)')); continue; }
 
         const fotoPath = `${userId}/${currentPatient.id}/${Date.now()}-${i}.jpg`;
         const { error: uploadError } = await supabaseClient.storage
@@ -890,7 +907,7 @@
         // Paciente de demonstração: só em memória
         let fotoDataUrl;
         try { fotoDataUrl = await resizeImageFile(await prepararImagem(file), 900); }
-        catch(e){ falhas.push(file.name + ' (não foi possível processar)'); continue; }
+        catch(e){ falhas.push(file.name + (ehHeic(file) ? ' (foto HEIC do iPhone que não conseguimos converter)' : ' (não foi possível processar)')); continue; }
         fotosEvolucaoDemo.push({ id: 'demo-' + Date.now() + '-' + i, data_foto: dataFoto, etiqueta, observacoes, foto_url: fotoDataUrl });
       }
       enviadas++;
@@ -905,7 +922,8 @@
       const info = document.getElementById('fotoEvolucaoQtd'); if(info) info.textContent = '';
     }
     if(falhas.length){
-      showToast((enviadas ? enviadas + ' foto(s) adicionada(s). ' : '') + 'Não foi possível enviar: ' + falhas.join(', '));
+      const dicaHeic = falhas.some(f => /HEIC/.test(f)) ? ' Dica: envie a foto em JPG ou, no iPhone, use Ajustes › Câmera › Formatos › Mais compatível.' : '';
+      showToast((enviadas ? enviadas + ' foto(s) adicionada(s). ' : '') + 'Não foi possível enviar: ' + falhas.join(', ') + '.' + dicaHeic);
     } else {
       showToast(enviadas > 1 ? enviadas + ' fotos de evolução adicionadas!' : 'Foto de evolução adicionada!');
     }
