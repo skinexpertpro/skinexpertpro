@@ -30,8 +30,10 @@
   });
 
   document.getElementById('patientPhotoInput').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
     if(!file || !currentPatient) return;
+    try { file = await prepararImagem(file); }
+    catch(err){ showToast('Não foi possível abrir essa foto. Tente uma foto em JPG ou PNG.'); return; }
 
     const reader = new FileReader();
     reader.onload = async (ev) => {
@@ -750,6 +752,33 @@
   }
 
   /* ================= FOTOS DE EVOLUÇÃO MODULE ================= */
+  // Fotos HEIC/HEIF (padrão do iPhone): o Chrome e o Edge no Windows não conseguem abrir.
+  // Convertemos para JPEG no próprio navegador antes de redimensionar.
+  let carregandoHeic2any = null;
+  function ehHeic(file){
+    return /image\/hei[cf]/i.test(file.type || '') || /\.hei[cf]$/i.test(file.name || '');
+  }
+  function carregarHeic2any(){
+    if(window.heic2any) return Promise.resolve(window.heic2any);
+    if(!carregandoHeic2any){
+      carregandoHeic2any = new Promise((resolve, reject) => {
+        const sc = document.createElement('script');
+        sc.src = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+        sc.onload = () => window.heic2any ? resolve(window.heic2any) : reject(new Error('conversor indisponível'));
+        sc.onerror = () => { carregandoHeic2any = null; reject(new Error('conversor indisponível')); };
+        document.head.appendChild(sc);
+      });
+    }
+    return carregandoHeic2any;
+  }
+  async function prepararImagem(file){
+    if(!ehHeic(file)) return file;
+    const conv = await carregarHeic2any();
+    let out = await conv({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+    if(Array.isArray(out)) out = out[0];
+    return new File([out], (file.name || 'foto').replace(/\.hei[cf]$/i, '') + '.jpg', { type: 'image/jpeg' });
+  }
+
   function resizeImageFile(file, maxSize){
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -834,7 +863,7 @@
       if(isPacienteReal(currentPatient)){
         // Paciente real: a foto vai pro Supabase Storage (bucket fotos-evolucao)
         let blob;
-        try { blob = await resizeImageFileToBlob(file, 900); }
+        try { blob = await resizeImageFileToBlob(await prepararImagem(file), 900); }
         catch(e){ falhas.push(file.name + ' (não foi possível processar)'); continue; }
 
         const fotoPath = `${userId}/${currentPatient.id}/${Date.now()}-${i}.jpg`;
@@ -860,7 +889,7 @@
       } else {
         // Paciente de demonstração: só em memória
         let fotoDataUrl;
-        try { fotoDataUrl = await resizeImageFile(file, 900); }
+        try { fotoDataUrl = await resizeImageFile(await prepararImagem(file), 900); }
         catch(e){ falhas.push(file.name + ' (não foi possível processar)'); continue; }
         fotosEvolucaoDemo.push({ id: 'demo-' + Date.now() + '-' + i, data_foto: dataFoto, etiqueta, observacoes, foto_url: fotoDataUrl });
       }
