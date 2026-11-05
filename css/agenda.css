@@ -232,3 +232,18 @@
   .ec-local select option:disabled{ color:#b3a79c; }
   @media (max-width:700px){ .estudio-seletor{ margin-left:0; } .estudio-seletor span{ display:none; } }
   .estudio-seletor[hidden], .estudio-escopo[hidden]{ display:none !important; }
+
+  /* ---- Celular: Diário/Semanal e Todas/Só a minha lado a lado, navegação embaixo ---- */
+  @media (max-width:600px){
+    #view-agenda .schedule-toolbar{ gap:8px; }
+    #view-agenda .schedule-toolbar > .view-mode-toggle,
+    #view-agenda .schedule-toolbar > .estudio-escopo{ flex:1 1 0; min-width:0; margin:0 !important; }
+    #view-agenda .schedule-toolbar > .view-mode-toggle button,
+    #view-agenda .schedule-toolbar > .estudio-escopo button{ flex:1 1 auto; min-width:0; padding:7px 6px; font-size:12px; white-space:nowrap; }
+    #view-agenda .schedule-toolbar > .estudio-escopo{ flex-grow:1.4; }
+    #view-agenda .schedule-toolbar > .estudio-seletor{ order:3; flex:1 1 100%; margin:0 !important; }
+    #view-agenda .schedule-toolbar > .estudio-seletor select{ flex:1; }
+    #view-agenda .schedule-toolbar > .schedule-nav{ order:4; flex:1 1 100%; justify-content:flex-start; }
+    /* O quadro da agenda ocupa a largura toda (antes ficava estreito sem estúdio). */
+    html.celular-ativo #view-agenda .agenda-grid > .schedule-card{ align-self:stretch; width:100%; min-width:0; box-sizing:border-box; }
+  }
