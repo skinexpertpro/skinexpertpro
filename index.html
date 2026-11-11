@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="css/dashboard.css?v=20261007a">
 <link rel="stylesheet" href="css/pacientes.css?v=20261006a">
 <link rel="stylesheet" href="css/agenda.css?v=20261105a">
-<link rel="stylesheet" href="css/registro-paciente.css?v=20261111b">
+<link rel="stylesheet" href="css/registro-paciente.css?v=20261111c">
 <link rel="stylesheet" href="css/catalogo.css?v=20261006a">
 <link rel="stylesheet" href="css/planos.css?v=20261006a">
 <link rel="stylesheet" href="css/financeiro.css?v=20261015a">
@@ -1675,25 +1675,10 @@
       <div class="content-produto">
         <div class="pdf-toolbar">
           <div class="breadcrumb"><a id="backFromPlanoPdf">← Voltar</a></div>
-          <div class="pdf-toolbar-acoes">
-          <label class="pdf-guia-escolha">Guia no PDF:
-            <select id="pdfGuiaSelect">
-              <option value="auto">Automático</option>
-              <option value="oleosa">Pele Oleosa</option>
-              <option value="seca">Pele Seca</option>
-              <option value="mista">Pele Mista</option>
-              <option value="sensivel">Pele Sensível</option>
-              <option value="acneica">Pele Acneica</option>
-              <option value="manchas">Pele com Manchas</option>
-              <option value="madura">Pele Madura</option>
-              <option value="nenhum">Não incluir</option>
-            </select>
-          </label>
           <button class="btn-pill-outline pdf-toolbar-btn" id="btnBaixarPdfPlano">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Baixar PDF
           </button>
-          </div>
         </div>
 
         <div class="pdf-doc pdf-doc-landscape">
@@ -1720,8 +1705,6 @@
             <span class="pdf-legenda-periodo"><span class="pdf-legenda-item"><span class="pdf-periodo-sol">☀</span> Manhã</span><span class="pdf-legenda-item"><span class="pdf-periodo-lua">☾</span> Noite</span><span class="pdf-legenda-item"><span class="pdf-periodo-sol">☀</span><span class="pdf-periodo-lua">☾</span> Manhã e noite</span></span>
           </div>
           <div id="pdfPlanoEtapas" class="pdf-etapas"></div>
-
-          <div id="pdfPlanoGuia" class="pdf-guia"></div>
 
           <div class="pdf-signature">Documento gerado pelo Skin Expert Pro</div>
         </div>
@@ -3108,8 +3091,7 @@
 <script src="js/parcerias.js?v=20261104d"></script>
 <script src="js/tutoriais.js?v=20261104a"></script>
 <script src="js/formulacoes.js?v=20261105a"></script>
-<script src="js/anamneses.js?v=20261111b"></script>
-<script src="js/guias-pele.js?v=20261111a"></script>
+<script src="js/anamneses.js?v=20261111c"></script>
 <script src="js/login.js?v=20261105a"></script>
 <script src="js/lgpd.js?v=20261007b"></script>
 <script src="js/anamneses-especificas.js?v=20261030b"></script>
