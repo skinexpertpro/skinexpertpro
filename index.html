@@ -18,10 +18,10 @@
 <link rel="stylesheet" href="css/dashboard.css?v=20261007a">
 <link rel="stylesheet" href="css/pacientes.css?v=20261006a">
 <link rel="stylesheet" href="css/agenda.css?v=20261105a">
-<link rel="stylesheet" href="css/registro-paciente.css?v=20261111c">
+<link rel="stylesheet" href="css/registro-paciente.css?v=20261111d">
 <link rel="stylesheet" href="css/catalogo.css?v=20261006a">
 <link rel="stylesheet" href="css/planos.css?v=20261006a">
-<link rel="stylesheet" href="css/financeiro.css?v=20261015a">
+<link rel="stylesheet" href="css/financeiro.css?v=20261111a">
 <link rel="stylesheet" href="css/mensagens.css?v=20261008a">
 <link rel="stylesheet" href="css/login.css?v=20261105a">
 <link rel="stylesheet" href="css/meu-negocio.css?v=20261007a">
@@ -740,6 +740,10 @@
           <div class="registro-tab" data-tab="recomendacoes">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Recomendações
+          </div>
+          <div class="registro-tab" data-tab="pacotes">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+            Pacotes
           </div>
           <div class="registro-tab" data-tab="historico">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1586,6 +1590,15 @@
         </div>
 
         <!-- ---------- HISTÓRICO CLÍNICO PANEL ---------- -->
+        <!-- ---------- PACOTES PANEL (saldo de sessões) ---------- -->
+        <div class="registro-panel" id="panel-pacotes">
+          <div class="pacotes-paciente-acoes">
+            <p class="pacotes-paciente-intro">Sessões contratadas, realizadas e restantes de cada pacote desta paciente.</p>
+            <button type="button" class="btn-primary" id="btnVenderPacotePaciente">Vender pacote</button>
+          </div>
+          <div id="pacotesPacienteLista"></div>
+        </div>
+
         <div class="registro-panel" id="panel-historico">
           <div class="historico-head-card">
             <div>
@@ -2426,6 +2439,7 @@
       </div>
       <!-- lista interna dos serviços marcados (mantém a lógica de duração e de salvar) -->
       <div id="apptServicosContainer" style="display:none;"></div>
+      <div id="apptPacoteAviso" class="comanda-aviso aviso-pacote" style="display:none; margin:8px 0 0;"></div>
     </div>
     <div class="modal-field">
       <label for="apptDate">Data</label>
@@ -2807,6 +2821,11 @@
       <div class="saldo"><span>Saldo</span><strong id="comandaSaldo">—</strong></div>
     </div>
 
+    <div class="comanda-baixa" id="comandaBaixaPacote" style="display:none;">
+      <span id="comandaBaixaTexto"></span>
+      <button type="button" class="btn-outline" id="btnComandaBaixa">Dar baixa no atendimento</button>
+    </div>
+
     <div id="comandaPagamentosWrap">
       <div class="comanda-secao">Pagamentos</div>
       <div id="comandaPagamentos" class="comanda-pagamentos"></div>
@@ -2966,6 +2985,16 @@
       <input id="pacoteDescontoValor" type="text" inputmode="decimal" placeholder="0" aria-label="Valor do desconto" disabled>
     </div>
     <div class="desconto-resumo" id="pacoteResumo"></div>
+    <div class="desconto-row">
+      <label for="pacoteValidadeTipo">Validade</label>
+      <select id="pacoteValidadeTipo">
+        <option value="">Sem validade</option>
+        <option value="dias">Em dias</option>
+        <option value="meses">Em meses</option>
+      </select>
+      <input id="pacoteValidadeQtd" type="number" min="1" step="1" inputmode="numeric" placeholder="Ex: 6" aria-label="Prazo de validade" disabled>
+    </div>
+    <div class="desconto-resumo" id="pacoteValidadeResumo">Opcional. Conta a partir do dia da venda.</div>
     <div class="pacote-total-row">
       <span class="pacote-total-label">Preço do Pacote</span>
       <span class="pacote-total-value" id="pacoteTotalValue">R$ 0,00</span>
@@ -3085,9 +3114,10 @@
 <script src="js/agenda-estudio.js?v=20261104a"></script>
 <script src="js/lembretes-mensagens.js?v=20261008b"></script>
 <script src="js/dashboard.js?v=20261015a"></script>
-<script src="js/financeiro.js?v=20261007c"></script>
+<script src="js/financeiro.js?v=20261111a"></script>
 <script src="js/relatorios.js?v=20261015a"></script>
-<script src="js/meu-negocio.js?v=20261105a"></script>
+<script src="js/meu-negocio.js?v=20261111a"></script>
+<script src="js/pacotes-paciente.js?v=20261111a"></script>
 <script src="js/parcerias.js?v=20261104d"></script>
 <script src="js/tutoriais.js?v=20261104a"></script>
 <script src="js/formulacoes.js?v=20261105a"></script>

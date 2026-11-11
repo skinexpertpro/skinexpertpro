@@ -414,7 +414,8 @@
   renderServicos();
 
   /* ---------- Pacotes ---------- */
-  // { nome, servicos:[{nome, qtd}], subtotal, desconto:{tipo:'percent'|'valor', valor}|null, valor (preço final) }
+  // { nome, servicos:[{nome, qtd}], subtotal, desconto:{tipo:'percent'|'valor', valor}|null, valor (preço final),
+  //   validade:{qtd, unidade:'dias'|'meses'}|null — opcional, conta a partir do dia da venda }
   const pacotesData = [];
 
   function precoServicoPorNome(nome){
@@ -450,7 +451,7 @@
       const servs = (p.servicos || []).map(sv => `${(parseInt(sv.qtd, 10) || 1) > 1 ? sv.qtd + '× ' : ''}${escHTML(sv.nome)}`).join(', ');
       tr.innerHTML = `
         <td style="font-weight:700; color:var(--text-dark);">${escHTML(p.nome)}</td>
-        <td>${servs || '—'}</td>
+        <td>${servs || '—'}${p.validade ? `<div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Validade: ${escHTML(textoValidadePacote(p.validade))}</div>` : ''}</td>
         <td style="white-space:nowrap;">${p.descontoAplicado > 0 ? `<span class="valor-riscado">${formatPrice(p.subtotal)}</span>` : ''}<strong>${formatPrice(p.valor)}</strong>${p.descontoAplicado > 0 ? `<span class="desconto-tag">–${textoDesconto(p.desconto)}</span>` : ''}</td>
         <td><div class="fin-acoes">
           <button class="icon-btn" type="button" title="Editar" aria-label="Editar pacote ${escHTML(p.nome)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg></button>
@@ -509,6 +510,22 @@
     recalcRow();
   }
 
+  function textoValidadePacote(v){
+    if(!v || !(parseInt(v.qtd, 10) > 0)) return 'sem validade';
+    const n = parseInt(v.qtd, 10);
+    return v.unidade === 'dias' ? `${n} dia${n > 1 ? 's' : ''}` : `${n} ${n > 1 ? 'meses' : 'mês'}`;
+  }
+  function validadeDoFormularioPacote(){
+    const unidade = document.getElementById('pacoteValidadeTipo').value;
+    const qtd = parseInt(document.getElementById('pacoteValidadeQtd').value, 10);
+    return unidade && qtd > 0 ? { qtd, unidade } : null;
+  }
+  document.getElementById('pacoteValidadeTipo').addEventListener('change', (e) => {
+    const inp = document.getElementById('pacoteValidadeQtd');
+    inp.disabled = !e.target.value;
+    if(!e.target.value) inp.value = ''; else inp.focus();
+  });
+
   function descontoDoFormularioPacote(){
     const tipo = document.getElementById('pacoteDescontoTipo').value;
     const valor = lerValor(document.getElementById('pacoteDescontoValor').value);
@@ -552,6 +569,10 @@
     document.getElementById('pacoteDescontoTipo').value = d ? d.tipo : '';
     document.getElementById('pacoteDescontoValor').value = d ? String(d.valor).replace('.', ',') : '';
     document.getElementById('pacoteDescontoValor').disabled = !d;
+    const v = p && p.validade && p.validade.qtd > 0 ? p.validade : null;
+    document.getElementById('pacoteValidadeTipo').value = v ? v.unidade : '';
+    document.getElementById('pacoteValidadeQtd').value = v ? v.qtd : '';
+    document.getElementById('pacoteValidadeQtd').disabled = !v;
     recalcPacoteTotal();
     modalPacoteOverlay.classList.add('open');
   }
@@ -579,7 +600,8 @@
     const subtotal = subtotalDoFormularioPacote();
     if(desconto && desconto.tipo === 'percent' && desconto.valor > 100){ showToast('O desconto em porcentagem vai até 100%.'); return; }
     if(desconto && desconto.tipo === 'valor' && desconto.valor > subtotal){ showToast(`O desconto passa do valor dos serviços (${formatPrice(subtotal)}).`); return; }
-    const pacote = recalcularPacote({ nome, servicos: servicosEscolhidos, subtotal, desconto });
+    if(document.getElementById('pacoteValidadeTipo').value && !validadeDoFormularioPacote()){ showToast('Informe o prazo de validade (ou escolha "Sem validade").'); document.getElementById('pacoteValidadeQtd').focus(); return; }
+    const pacote = recalcularPacote({ nome, servicos: servicosEscolhidos, subtotal, desconto, validade: validadeDoFormularioPacote() });
     const editando = editingPacoteIndex >= 0;
     if(editando) pacotesData[editingPacoteIndex] = pacote; else pacotesData.push(pacote);
     salvarConfig('pacotes', pacotesData);

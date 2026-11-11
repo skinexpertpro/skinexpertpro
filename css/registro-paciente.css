@@ -593,3 +593,25 @@
   .pdf-resumo-ou{ font-weight:400; font-style:italic; }
   .pdf-resumo-quando{ margin-top:auto; font-size:11px; font-weight:600; color: var(--sidebar-bg); background:#f4ede8; border-radius:999px; padding:5px 10px;
     -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  /* Aba Pacotes (saldo de sessões da paciente) */
+  .pacotes-paciente-acoes{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .pacotes-paciente-intro{ margin:0; color: var(--text-muted); font-size:13.5px; }
+  #pacotesPacienteLista{ display:grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap:16px; }
+  @media (max-width: 760px){ #pacotesPacienteLista{ grid-template-columns: 1fr; } }
+  .pacote-paciente-card{ margin:0; }
+  .pacote-paciente-topo{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px; }
+  .pacote-paciente-topo strong{ color: var(--text-dark); font-size:15px; margin-right:6px; }
+  .pacote-paciente-meta{ color: var(--text-muted); font-size:12.5px; margin-top:4px; }
+  .pacote-paciente-saldo{ text-align:right; font-size:12px; color: var(--text-muted); white-space:nowrap; }
+  .pacote-paciente-saldo span{ display:block; font-size:24px; font-weight:800; color: var(--sidebar-active); line-height:1.1; }
+  .pacote-paciente-tabela{ width:100%; font-size:13px; }
+  .pacote-paciente-tabela .num{ text-align:center; }
+  .pacote-paciente-pag{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; font-size:13px; color: var(--text-dark); }
+  .pacote-paciente-pag .falta{ color: var(--block-red); }
+  .pacote-paciente-pag .btn-sm{ padding:4px 10px; font-size:12px; margin-left:auto; }
+  .pacote-paciente-hist{ margin-top:10px; font-size:12.5px; color: var(--text-muted); }
+  .pacote-paciente-hist summary{ cursor:pointer; font-weight:600; color: var(--text-dark); }
+  .pacote-paciente-hist ul{ margin:6px 0 0 18px; padding:0; }
+  /* No computador as abas quebram linha em vez de esconder as últimas (Pacotes, Histórico) */
+  @media (min-width: 761px){ .registro-tabs{ flex-wrap:wrap; overflow-x:visible; } }

@@ -204,7 +204,10 @@
     c.saldo = Math.max(0, arred(c.valor - pago));
     c.servicos = c.itens.map(i => i.nome).join(', ');
     c.pagamento = [...new Set(c.pagamentos.map(p => p.forma).filter(Boolean))].join(' + ') || '—';
-    if(c.status !== 'Inativa') c.status = (c.valor > 0 && c.saldo <= 0) ? 'Fechada' : 'Em Aberto';
+    // Sessão de pacote só fecha a comanda depois da baixa (atendimento confirmado)
+    const sessoesPacote = c.itens.filter(i => i.origem === 'pacote' && !i.liberada);
+    const faltaBaixa = sessoesPacote.some(i => !i.baixa);
+    if(c.status !== 'Inativa') c.status = (!faltaBaixa && c.saldo <= 0 && (c.valor > 0 || sessoesPacote.length > 0)) ? 'Fechada' : 'Em Aberto';
     c.data = isoParaBR(c.dataISO);
     return c;
   }
@@ -219,7 +222,14 @@
     };
   }
   function comandaDoBanco(r){
-    let itens = Array.isArray(r.itens) ? r.itens.map(i => ({ nome: i.nome, preco: Number(i.preco) || 0, origem: i.origem || 'servico' })) : null;
+    let itens = Array.isArray(r.itens) ? r.itens.map(i => {
+      const it = { nome: i.nome, preco: Number(i.preco) || 0, origem: i.origem || 'servico' };
+      // pacote: venda (pacotePacienteId) ou sessão usada do pacote (sessaoId, baixa, liberada)
+      ['pacotePacienteId', 'sessaoId'].forEach(k => { if(i[k] != null) it[k] = i[k]; });
+      if(i.baixa) it.baixa = true;
+      if(i.liberada) it.liberada = true;
+      return it;
+    }) : null;
     if(!itens){ // comandas antigas (sem itens): um item com o valor total
       itens = (r.servicos || Number(r.valor)) ? [{ nome: r.servicos || 'Atendimento', preco: Number(r.valor) || 0, origem: 'servico' }] : [];
     }
@@ -311,9 +321,18 @@
 
   // Apaga a comanda e os lançamentos dos pagamentos dela.
   async function apagarComanda(c, semPerguntar){
+    const usados = typeof pacotesVendidosComUso === 'function' ? pacotesVendidosComUso(c) : [];
+    if(usados.length){
+      showToast(`A comanda ${c.codigo} vendeu o pacote "${usados[0].nome}", que já tem sessões reservadas ou realizadas. Ela não pode ser apagada.`);
+      return false;
+    }
     if(!semPerguntar){
       const extra = c.pagamentos.length ? `\n\nOs ${c.pagamentos.length} pagamento(s) dela também saem do Controle Financeiro.` : '';
       if(!confirm(`Apagar a comanda ${c.codigo} (${c.cliente})?${extra}\n\nIsso não pode ser desfeito.`)) return false;
+    }
+    if(typeof devolverSessoesDaComanda === 'function'){
+      await devolverSessoesDaComanda(c);           // sessões usadas voltam para o saldo
+      if(!await desfazerVendasDaComanda(c)) return false; // pacote vendido nela deixa de existir
     }
     for(const p of c.pagamentos){ if(p.movimentoId) await finApagar('movimentos_financeiros', p.movimentoId); }
     if(!await finApagar('comandas', c.id)) return false;
@@ -388,7 +407,26 @@
     c.itens.forEach((it, i) => {
       const row = document.createElement('div');
       row.className = 'comanda-linha';
-      row.innerHTML = `<div class="nome">${escHTML(it.nome)}${it.origem === 'servico' && c.agendamentoId ? '<small>agenda</small>' : ''}</div>
+      if(it.origem === 'pacote'){
+        // Sessão do pacote da paciente: valor zero, não se edita o preço
+        const pp = typeof pacotePorId === 'function' ? pacotePorId(it.pacotePacienteId) : null;
+        const num = pp && it.sessaoId ? numeroDaSessao(pp, it.sessaoId) : '';
+        const estado = it.liberada ? 'devolvida ao pacote' : it.baixa ? 'realizada' : (it.sessaoId ? 'reservada' : 'será reservada');
+        const podeTirar = !inativa && !it.baixa && !it.liberada;
+        row.innerHTML = `<div class="nome">${escHTML(it.nome)}<small class="tag-pacote">pacote${pp ? ' ' + escHTML(pp.nome) : ''}${num ? ' · sessão ' + num : ''} · ${estado}</small></div>
+          <div class="val">${fmtMoeda(0)}</div>
+          ${podeTirar ? `<button type="button" title="Tirar e devolver a sessão ao pacote" aria-label="Remover ${escHTML(it.nome)}">&times;</button>` : ''}`;
+        if(podeTirar) row.querySelector('button').addEventListener('click', async () => {
+          if(it.sessaoId && !confirm(`Tirar "${it.nome}" da comanda? A sessão volta para o saldo do pacote.`)) return;
+          if(it.sessaoId && !await liberarSessao(it.sessaoId)) return;
+          c.itens.splice(i, 1);
+          await salvarComandaAtual();
+        });
+        box.appendChild(row);
+        return;
+      }
+      const vendaPacote = !!it.pacotePacienteId;
+      row.innerHTML = `<div class="nome">${escHTML(it.nome)}${it.origem === 'servico' && c.agendamentoId ? '<small>agenda</small>' : ''}${vendaPacote ? '<small class="tag-pacote">sessões liberadas</small>' : ''}</div>
         <div class="val">${inativa ? fmtMoeda(it.preco) : `<input type="text" inputmode="decimal" value="${valorParaCampo(it.preco)}" aria-label="Valor de ${escHTML(it.nome)}">`}</div>
         ${inativa ? '' : `<button type="button" title="Remover item" aria-label="Remover ${escHTML(it.nome)}">&times;</button>`}`;
       if(!inativa){
@@ -397,6 +435,11 @@
           await salvarComandaAtual();
         });
         row.querySelector('button').addEventListener('click', async () => {
+          if(vendaPacote){
+            const pp = pacotePorId(it.pacotePacienteId);
+            if(pp && !confirm(`Tirar o pacote "${pp.nome}" da comanda? As sessões dele deixam de existir no saldo da paciente.`)) return;
+            if(pp && !await desfazerVendaPacote(pp)) return;
+          }
           c.itens.splice(i, 1);
           await salvarComandaAtual();
         });
@@ -430,6 +473,20 @@
       row.querySelector('button').addEventListener('click', () => desfazerPagamento(p));
       pags.appendChild(row);
     });
+    // Baixa das sessões de pacote (confirma que o atendimento aconteceu)
+    const pendentes = typeof sessoesPendentesDaComanda === 'function' ? sessoesPendentesDaComanda(c) : [];
+    const comBaixa = typeof sessoesComBaixaDaComanda === 'function' ? sessoesComBaixaDaComanda(c) : [];
+    const boxBaixa = document.getElementById('comandaBaixaPacote');
+    if(boxBaixa){
+      const mostrar = !comandaNova && !inativa && (pendentes.length || comBaixa.length);
+      boxBaixa.style.display = mostrar ? 'flex' : 'none';
+      if(mostrar){
+        document.getElementById('comandaBaixaTexto').textContent = pendentes.length
+          ? `${pendentes.length === 1 ? 'Uma sessão do pacote está reservada' : pendentes.length + ' sessões do pacote estão reservadas'}. Dê baixa quando o atendimento acontecer.`
+          : 'Baixa dada: a sessão foi descontada do pacote.';
+        document.getElementById('btnComandaBaixa').textContent = pendentes.length ? 'Dar baixa no atendimento' : 'Desfazer baixa';
+      }
+    }
     const podePagar = !comandaNova && !inativa && c.saldo > 0;
     document.getElementById('comandaPagar').style.display = podePagar ? 'flex' : 'none';
     if(podePagar){
@@ -502,7 +559,43 @@
     const nome = nomeEl.value.trim();
     if(!nome){ nomeEl.focus(); return; }
     const preco = valEl.value.trim() ? lerValor(valEl.value) : (precoDoServico(nome) || 0);
-    const ehServico = !pacoteDoNomeItem(nome) && precoDoServico(nome) != null; // pacote entra como item extra
+    const modeloPacote = pacoteDoNomeItem(nome);
+    const ehServico = !modeloPacote && precoDoServico(nome) != null; // pacote entra como item extra
+    const c = comandaAtual;
+    if(!c.pacienteId){ // cliente digitada: tenta achar a cadastro
+      const p = (patients || []).find(x => semAcento(x.name) === semAcento(document.getElementById('comandaCliente').value.trim() || c.cliente));
+      if(p){ c.pacienteId = p.id; c.cliente = p.name; }
+    }
+    if(modeloPacote){
+      // Venda de pacote: as sessões ficam no saldo da paciente, por isso ela precisa estar cadastrada
+      if(!c.pacienteId){ showToast('Para vender um pacote, escolha uma cliente cadastrada em Pacientes (o saldo de sessões fica na ficha dela).'); document.getElementById('comandaCliente').focus(); return; }
+      const item = { nome: 'Pacote: ' + modeloPacote.nome, preco, origem: 'extra' };
+      if(!comandaNova){
+        const pp = await venderPacote({ modelo: modeloPacote, comanda: c });
+        if(!pp) return;
+        item.pacotePacienteId = pp.id;
+      } else item.modeloPacote = modeloPacote.nome; // a venda é registrada ao criar a comanda
+      c.itens.push(item);
+      nomeEl.value = ''; valEl.value = '';
+      if(await salvarComandaAtual() && !comandaNova) showToast(`Pacote vendido: ${totalSessoesPacote(pacotePorId(item.pacotePacienteId))} sessões liberadas para ${c.cliente}.`);
+      nomeEl.focus();
+      return;
+    }
+    if(ehServico && c.pacienteId && typeof pacoteComSaldo === 'function'){
+      const pp = pacoteComSaldo(c.pacienteId, nome, c.dataISO);
+      if(pp && confirm(`${c.cliente} tem o pacote "${pp.nome}" com ${restantesDoServico(pp, nome)} sessão(ões) de ${nome}.\n\nDescontar esta sessão do pacote? (Cancelar = cobrar avulso)`)){
+        if(comandaNova){ c.itens.push({ nome, preco: 0, origem: 'pacote', pacotePacienteId: pp.id, baixa: false }); }
+        else {
+          const sessao = await reservarSessao(pp, nome, { agendamentoId: c.agendamentoId, data: c.dataISO });
+          if(!sessao) return;
+          c.itens.push(itemSessaoPacote(pp, sessao));
+        }
+        nomeEl.value = ''; valEl.value = '';
+        await salvarComandaAtual();
+        nomeEl.focus();
+        return;
+      }
+    }
     comandaAtual.itens.push({ nome, preco, origem: ehServico ? 'servico' : 'extra' });
     nomeEl.value = ''; valEl.value = '';
     await salvarComandaAtual();
@@ -531,11 +624,28 @@
     btn.disabled = false;
     if(!salvo) return;
     c.id = salvo.id;
+    // Pacotes vendidos e sessões de pacote usadas nesta comanda nova
+    let vendidos = 0, pendentesPacote = false;
+    for(const it of c.itens){
+      if(it.modeloPacote){
+        const modelo = pacoteDoNomeItem('Pacote: ' + it.modeloPacote);
+        const pp = modelo ? await venderPacote({ modelo, comanda: c }) : null;
+        if(pp){ it.pacotePacienteId = pp.id; vendidos++; } else pendentesPacote = true;
+        delete it.modeloPacote;
+      } else if(it.origem === 'pacote' && !it.sessaoId){
+        const pp = pacotePorId(it.pacotePacienteId);
+        const sessao = pp ? await reservarSessao(pp, it.nome, { data: c.dataISO }) : null;
+        if(sessao) it.sessaoId = sessao.id;
+        else { it.origem = 'servico'; it.preco = precoDoServico(it.nome) || 0; delete it.pacotePacienteId; pendentesPacote = true; }
+      }
+    }
+    if(c.itens.some(it => it.pacotePacienteId)){ recalcularComanda(c); await finAtualizar('comandas', c.id, comandaParaBanco(c)); }
+    if(pendentesPacote) showToast('Atenção: não foi possível registrar o pacote nesta comanda. Confira os itens.');
     comandasData.unshift(c);
     comandaNova = false;
     montarJanelaComanda();
     renderComandas();
-    showToast(`Comanda ${c.codigo} criada. Registre o pagamento quando receber.`);
+    showToast(vendidos ? `Comanda ${c.codigo} criada e sessões do pacote liberadas para ${c.cliente}.` : `Comanda ${c.codigo} criada. Registre o pagamento quando receber.`);
   });
 
   // Registrar pagamento: vira uma receita no Controle Financeiro.
@@ -569,7 +679,10 @@
       document.getElementById('comandaPagData').value = '';
       renderItensComanda();
       renderFinanceiro();
-      showToast(c.status === 'Fechada' ? `Pagamento registrado — comanda ${c.codigo} fechada!` : `Pagamento registrado. Falta ${fmtMoeda(c.saldo)}.`);
+      const faltaBaixa = typeof sessoesPendentesDaComanda === 'function' && sessoesPendentesDaComanda(c).length > 0;
+      showToast(c.status === 'Fechada' ? `Pagamento registrado — comanda ${c.codigo} fechada!`
+        : c.saldo > 0 ? `Pagamento registrado. Falta ${fmtMoeda(c.saldo)}.`
+        : faltaBaixa ? 'Pagamento registrado. Falta dar baixa na sessão do pacote.' : 'Pagamento registrado.');
     } finally { btn.disabled = false; }
   });
 
@@ -586,6 +699,29 @@
     renderFinanceiro();
     showToast('Pagamento desfeito.');
   }
+
+  // Dar baixa: confirma que o atendimento aconteceu → sessões reservadas do pacote passam a realizadas
+  document.getElementById('btnComandaBaixa').addEventListener('click', async () => {
+    const c = comandaAtual;
+    if(!c || comandaNova) return;
+    const pendentes = sessoesPendentesDaComanda(c);
+    const btn = document.getElementById('btnComandaBaixa');
+    btn.disabled = true;
+    try{
+      if(pendentes.length){
+        for(const it of pendentes){ if(await marcarSessao(it.sessaoId, 'usada', c)) it.baixa = true; }
+        await salvarComandaAtual();
+        renderFinanceiro();
+        showToast(c.status === 'Fechada' ? `Baixa dada — comanda ${c.codigo} fechada!` : `Baixa dada. A comanda ainda tem ${fmtMoeda(c.saldo)} a receber.`);
+      } else {
+        if(!confirm('Desfazer a baixa? A sessão volta a ficar só reservada para este atendimento.')) return;
+        for(const it of sessoesComBaixaDaComanda(c)){ if(await marcarSessao(it.sessaoId, 'reservada', c)) it.baixa = false; }
+        await salvarComandaAtual();
+        renderFinanceiro();
+        showToast('Baixa desfeita.');
+      }
+    } finally { btn.disabled = false; }
+  });
 
   document.getElementById('btnComandaExcluir').addEventListener('click', async () => {
     if(!comandaAtual || comandaNova) return;
@@ -615,22 +751,25 @@
   }
 
   async function criarComandaDoAgendamento({ agendamentoId, key, pacienteId, cliente, servicoNome }){
+    // Serviço que a paciente tem no pacote: a sessão fica reservada e entra com valor zero
+    const { itens, usados } = await itensDoAtendimento({ servicoNome, pacienteId, dataISO: key, agendamentoId });
     const nova = recalcularComanda({
       id: null, codigo: proximoCodigoComanda(), dataISO: key, cliente: cliente || 'Paciente sem nome',
-      itens: itensDaComanda(servicoNome), pagamentos: [], status: 'Em Aberto',
+      itens, pagamentos: [], status: 'Em Aberto',
       agendamentoId, pacienteId, moeda: moedaPreferidaAtual(),
     });
     if(!modoDemonstracao && isAgendamentoReal({ id: agendamentoId })){
       const user = await getUsuarioLogado().catch(() => null);
       if(!user) return null;
       const { data, error } = await supabaseClient.from('comandas').insert({ ...comandaParaBanco(nova), profissional_id: user.id }).select().single();
-      if(error){ avisarComandaNaoSalva(error); return null; }
+      if(error){ await devolverSessoesDaComanda(nova); avisarComandaNaoSalva(error); return null; }
       nova.id = data.id;
     } else {
       nova.id = idLocal();
     }
     comandasData.unshift(nova);
     renderComandas();
+    avisoSessoesReservadas(usados);
     return nova;
   }
 
@@ -650,13 +789,18 @@
       if(!faltando.length) return 0;
       faltando.sort((x, y) => (x.key + x.a.time).localeCompare(y.key + y.a.time));
       let proximo = parseInt(proximoCodigoComanda().replace(/\D/g, ''), 10);
-      const novas = faltando.map(({ key, a }) => recalcularComanda({
-        id: null, codigo: '#' + String(proximo++).padStart(4, '0'), dataISO: key, cliente: a.label || 'Paciente sem nome',
-        itens: itensDaComanda(a.servico), pagamentos: [], status: 'Em Aberto', agendamentoId: a.id,
-        pacienteId: a.pacienteId, moeda: moedaPreferidaAtual(),
-      }));
+      const novas = [];
+      for(const { key, a } of faltando){ // inclui os marcados pelo link de agendamento: também usam o pacote
+        const { itens } = await itensDoAtendimento({ servicoNome: a.servico, pacienteId: a.pacienteId, dataISO: key, agendamentoId: a.id });
+        novas.push(recalcularComanda({
+          id: null, codigo: '#' + String(proximo++).padStart(4, '0'), dataISO: key, cliente: a.label || 'Paciente sem nome',
+          itens, pagamentos: [], status: 'Em Aberto', agendamentoId: a.id,
+          pacienteId: a.pacienteId, moeda: moedaPreferidaAtual(),
+        }));
+      }
       const { data, error } = await supabaseClient.from('comandas').insert(novas.map(c => ({ ...comandaParaBanco(c), profissional_id: user.id }))).select();
       if(error){
+        for(const c of novas) await devolverSessoesDaComanda(c);
         console.warn('Comandas da agenda não criadas:', error.message);
         if(/duplicate|unique/i.test(error.message || '')) await loadComandasFromSupabase(); // outra aba já criou
         else avisarComandaNaoSalva(error);
@@ -679,8 +823,10 @@
       // comanda já paga: só acompanha data e cliente
       Object.assign(c, { dataISO: key, cliente, pacienteId });
     } else {
-      const extras = c.itens.filter(i => i.origem === 'extra');
-      Object.assign(c, { dataISO: key, cliente, pacienteId, itens: itensDaComanda(servicoNome).concat(extras) });
+      const extras = c.itens.filter(i => i.origem === 'extra' || (i.origem === 'pacote' && i.baixa));
+      const { itens, usados } = await itensDoAtendimento({ servicoNome, pacienteId, dataISO: key, agendamentoId, atuais: c.itens });
+      Object.assign(c, { dataISO: key, cliente, pacienteId, itens: itens.concat(extras) });
+      avisoSessoesReservadas(usados);
     }
     recalcularComanda(c);
     if(!modoDemonstracao && ehIdDoBanco(c.id)){
@@ -692,11 +838,15 @@
 
   async function inativarComandaDoAgendamento(agendamentoId){
     const c = comandaDoAgendamento(agendamentoId);
+    const devolvidas = c ? await devolverSessoesDaComanda(c) : 0; // atendimento cancelado: sessão volta ao pacote
     if(!modoDemonstracao && isAgendamentoReal({ id: agendamentoId })){
-      const { error } = await supabaseClient.from('comandas').update({ status: 'Inativa' }).eq('agendamento_id', agendamentoId);
+      const campos = { status: 'Inativa' };
+      if(devolvidas) campos.itens = c.itens;
+      const { error } = await supabaseClient.from('comandas').update(campos).eq('agendamento_id', agendamentoId);
       if(error) console.warn('Comanda não inativada:', error.message);
     }
-    if(c){ c.status = 'Inativa'; renderComandas(); }
+    if(c){ c.status = 'Inativa'; recalcularComanda(c); renderComandas(); }
+    if(devolvidas) showToast(`${devolvidas === 1 ? 'A sessão voltou' : devolvidas + ' sessões voltaram'} para o pacote da paciente.`);
   }
 
   async function apagarComandaDoAgendamento(agendamentoId){
@@ -870,6 +1020,8 @@
       // Conta real: nunca mostrar as comandas de exemplo ("Paciente Teste"), mesmo sem nenhuma comanda ainda.
       if(error){ console.warn('Comandas:', error.message); comandasData = []; renderComandas(); return; }
       comandasData = (data || []).map(comandaDoBanco);
+      // saldos de pacote antes de liberar a criação automática de comandas da agenda
+      try{ await carregarPacotesPaciente(); }catch(e){ console.warn('Pacotes da paciente:', e); }
       comandasCarregadasOk = true;
       renderComandas();
     } catch(e){ console.warn('Comandas:', e); }
