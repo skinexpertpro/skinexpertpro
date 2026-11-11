@@ -371,6 +371,12 @@
       ? renderPdfEtapas(todosOsProdutos)
       : '<p style="color:var(--text-muted);">Nenhum produto adicionado.</p>';
     protegerFotosPdf(etapasEl);
+    // Guia do tipo de pele no fim do PDF (escolhido pela avaliação; dá para trocar no seletor)
+    try{
+      const selGuia = document.getElementById('pdfGuiaSelect');
+      if(selGuia) selGuia.value = 'auto';
+      if(typeof preencherGuiaPdf === 'function') preencherGuiaPdf();
+    }catch(e){ console.warn('Guia do PDF:', e); }
 
     navItems.forEach(i => i.classList.remove('active'));
     const pacientesNavForPdf = document.querySelector('.nav-item[data-view="pacientes"]');
