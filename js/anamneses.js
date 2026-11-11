@@ -302,7 +302,70 @@
       }).join('');
     }
 
+    // ---------- Resumo visual da rotina (etapas numeradas, como um infográfico) ----------
+    const RESUMO_ETAPA = {
+      'Demaquilante': 'Remove maquiagem, protetor e a oleosidade do dia.',
+      'Limpador': 'Limpa impurezas, suor e excesso de oleosidade.',
+      'Tônico': 'Equilibra o pH e prepara a pele para os ativos.',
+      'Esfoliante': 'Renova a superfície e deixa a pele mais uniforme.',
+      'Hidratante': 'Hidrata e fortalece a barreira da pele.',
+      'Área dos Olhos': 'Cuida da pele fina ao redor dos olhos.',
+      'Tratamento': 'Ativos que tratam a sua necessidade principal.',
+      'Protetor Solar': 'Protege do sol e previne manchas. Todos os dias.',
+    };
+    const ICONE_ETAPA = {
+      'Demaquilante': '<svg viewBox="0 0 24 24"><path d="M7 9h10v10a3 3 0 01-3 3h-4a3 3 0 01-3-3z"/><path d="M9 9V6h6v3"/><path d="M10 4h4"/><circle cx="18.5" cy="5" r="1.2"/><circle cx="20.5" cy="8" r="0.9"/></svg>',
+      'Limpador': '<svg viewBox="0 0 24 24"><path d="M8 10h8v9a3 3 0 01-3 3h-2a3 3 0 01-3-3z"/><path d="M10 10V7h4v3"/><path d="M12 7V4h4"/><circle cx="17.5" cy="14" r="1.6"/><circle cx="19.5" cy="17.5" r="1.1"/></svg>',
+      'Tônico': '<svg viewBox="0 0 24 24"><path d="M9 3h6v3l1.5 2v12a2 2 0 01-2 2h-5a2 2 0 01-2-2V8L9 6z"/><path d="M7.5 12h9"/></svg>',
+      'Esfoliante': '<svg viewBox="0 0 24 24"><path d="M5 11h14v7a4 4 0 01-4 4H9a4 4 0 01-4-4z"/><path d="M4 11h16"/><circle cx="9" cy="16" r="0.8"/><circle cx="12.5" cy="17.5" r="0.8"/><circle cx="15" cy="15" r="0.8"/><path d="M12 3l1 2.5L15.5 6 13 7l-1 2.5L11 7 8.5 6 11 5.5z"/></svg>',
+      'Hidratante': '<svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="3"/><path d="M5 11V9a2 2 0 012-2h10a2 2 0 012 2v2"/><path d="M8 15.5h8"/></svg>',
+      'Área dos Olhos': '<svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></svg>',
+      'Tratamento': '<svg viewBox="0 0 24 24"><path d="M10 2h4v3h-4z"/><path d="M9 5h6l1 3v11a3 3 0 01-3 3h-2a3 3 0 01-3-3V8z"/><path d="M12 11.5c1.2 1.6 1.8 2.6 1.8 3.5a1.8 1.8 0 01-3.6 0c0-.9.6-1.9 1.8-3.5z"/></svg>',
+      'Protetor Solar': '<svg viewBox="0 0 24 24"><path d="M7 4h10l-1 16a2 2 0 01-2 2h-4a2 2 0 01-2-2z"/><circle cx="12" cy="11" r="2.2"/><path d="M12 6.8v1M12 14.2v1M8.6 11h1M14.4 11h1"/></svg>',
+    };
+    function quandoUsarEtapa(itens){
+      const temManha = itens.some(p => (p.periodos || []).includes('manha'));
+      const temNoite = itens.some(p => (p.periodos || []).includes('noite'));
+      const todosSemanais = itens.length && itens.every(p => p.frequencia === 'personalizar' && p.dias && p.dias.length);
+      if(todosSemanais){
+        const n = Math.max(...itens.map(p => p.dias.length));
+        return n + (n === 1 ? 'x por semana' : 'x por semana');
+      }
+      if(temManha && temNoite) return 'Manhã e noite';
+      if(temManha) return 'Manhã';
+      if(temNoite) return 'Noite';
+      return '';
+    }
+    function renderResumoRotina(lista){
+      const grupos = [];
+      lista.forEach(p => {
+        const etapa = categoriaCanonica(p.categoria) || 'Outros';
+        let g = grupos.find(x => x.etapa === etapa);
+        if(!g){ g = { etapa, itens: [] }; grupos.push(g); }
+        g.itens.push(p);
+      });
+      const ordem = e => { const i = skincareCategories.indexOf(e); return i === -1 ? skincareCategories.length : i; };
+      grupos.sort((a, b) => ordem(a.etapa) - ordem(b.etapa));
+      if(!grupos.length) return '';
+      const cards = grupos.map((g, i) => {
+        const nomes = g.itens.map(p => escHTML(p.name)).join(' <span class="pdf-resumo-ou">ou</span> ');
+        const quando = quandoUsarEtapa(g.itens);
+        return `<div class="pdf-resumo-etapa">
+          <div class="pdf-resumo-num">${String(i + 1).padStart(2, '0')}</div>
+          <div class="pdf-resumo-icone">${ICONE_ETAPA[g.etapa] || ICONE_ETAPA['Tratamento']}</div>
+          <div class="pdf-resumo-nome">${escHTML(g.etapa)}</div>
+          <div class="pdf-resumo-texto">${RESUMO_ETAPA[g.etapa] || ''}</div>
+          <div class="pdf-resumo-produtos">${nomes}</div>
+          ${quando ? `<div class="pdf-resumo-quando">${quando}</div>` : ''}
+        </div>`;
+      }).join('');
+      return `<div class="pdf-resumo-titulo">Sua rotina em ${grupos.length} ${grupos.length === 1 ? 'etapa' : 'etapas'}</div>
+        <div class="pdf-resumo-linha" style="--n:${grupos.length}">${cards}</div>`;
+    }
+
     const todosOsProdutos = juntarPeriodos(plano.manha, plano.noite);
+    const resumoEl = document.getElementById('pdfPlanoResumo');
+    if(resumoEl) resumoEl.innerHTML = renderResumoRotina(todosOsProdutos);
     const etapasEl = document.getElementById('pdfPlanoEtapas');
     etapasEl.innerHTML = todosOsProdutos.length
       ? renderPdfEtapas(todosOsProdutos)

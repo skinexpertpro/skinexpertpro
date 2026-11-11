@@ -572,3 +572,24 @@
   .skc-resumo-item.atencao{ background:#fff4e5; border-color:#f3c98b; color:#8a4b00; }
   .skc-resumo-item.alergia{ background:#fdecec; border-color:#f1b4b4; color:#a12a2a; }
   .skc-resumo-nota{ font-size:11.5px; color: var(--text-muted); margin-top:8px; }
+
+
+  /* ---------- PDF do Plano: resumo visual da rotina (etapas numeradas) ---------- */
+  .pdf-resumo{ margin:22px 0 26px; break-inside:avoid; page-break-inside:avoid; }
+  .pdf-resumo:empty{ display:none; }
+  .pdf-resumo-titulo{ font-family:'Playfair Display', serif; font-size:20px; font-weight:700; color: var(--sidebar-bg); margin-bottom:14px; }
+  .pdf-resumo-linha{ display:grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap:18px; }
+  .pdf-resumo-etapa{ position:relative; display:flex; flex-direction:column; align-items:center; text-align:center;
+    background:#fffaf7; border:1px solid var(--border); border-radius:16px; padding:16px 10px 14px; }
+  .pdf-resumo-etapa + .pdf-resumo-etapa::before{ content:'›'; position:absolute; left:-15px; top:58px; font-size:22px; line-height:1; color: var(--sidebar-bg); font-weight:700; }
+  .pdf-resumo-num{ width:30px; height:30px; border-radius:50%; background: var(--sidebar-bg); color:#fff; font-size:12.5px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; margin-top:-30px; margin-bottom:8px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .pdf-resumo-icone{ width:58px; height:58px; border-radius:50%; background: var(--pink-light, #f2e2e6); display:flex; align-items:center; justify-content:center; margin-bottom:10px;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .pdf-resumo-icone svg{ width:28px; height:28px; fill:none; stroke: var(--sidebar-bg); stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .pdf-resumo-nome{ font-family:'Playfair Display', serif; font-size:12.5px; font-weight:700; letter-spacing:.02em; max-width:100%; overflow-wrap:anywhere; hyphens:auto; text-transform:uppercase; color: var(--sidebar-bg); margin-bottom:6px; }
+  .pdf-resumo-texto{ font-size:11.5px; line-height:1.4; color: var(--text-dark); margin-bottom:8px; }
+  .pdf-resumo-produtos{ font-size:11px; line-height:1.35; color: var(--text-muted); font-weight:600; margin-bottom:10px; }
+  .pdf-resumo-ou{ font-weight:400; font-style:italic; }
+  .pdf-resumo-quando{ margin-top:auto; font-size:11px; font-weight:600; color: var(--sidebar-bg); background:#f4ede8; border-radius:999px; padding:5px 10px;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact; }
