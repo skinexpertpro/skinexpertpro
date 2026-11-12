@@ -615,3 +615,33 @@
   .pacote-paciente-hist ul{ margin:6px 0 0 18px; padding:0; }
   /* No computador as abas quebram linha em vez de esconder as últimas (Pacotes, Histórico) */
   @media (min-width: 761px){ .registro-tabs{ flex-wrap:wrap; overflow-x:visible; } }
+
+  /* ---------- Termos de consentimento ---------- */
+  .termos-sugeridos{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; background: var(--gold-light); color: var(--text-dark); border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:14px; }
+  .termos-sugeridos span{ flex:1 1 260px; }
+  #termosPacienteLista{ display:flex; flex-direction:column; gap:10px; }
+  .termo-item{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; background: var(--card-bg, #fff); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+  .termo-item.termo-cancelado{ opacity:.6; }
+  .termo-item-info strong{ color: var(--text-dark); font-size:14.5px; }
+  .termo-item-meta{ font-size:12.5px; color: var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .termo-item-acoes{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .termo-item-acoes .btn-sm, .termos-sugeridos .btn-sm{ padding:6px 12px; font-size:12.5px; }
+  .termo-pill-pendente{ background: var(--gold-light); color: var(--gold-dark); }
+  .termo-servicos{ display:flex; flex-wrap:wrap; gap:8px; }
+  .termo-servico-chip{ display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; color: var(--text-dark); font-weight:600; }
+  .termo-servico-chip:has(input:checked){ background: var(--tag-bg); border-color: var(--sidebar-active); }
+  .termo-textarea{ width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:10px; padding:12px 14px; font:inherit; font-size:13.5px; line-height:1.55; resize:vertical; min-height:180px; color: var(--text-dark); background:#fff; }
+  .termo-textarea:focus{ outline:none; border-color: var(--pink); }
+  .termo-dica{ font-size:12px; color: var(--text-muted); margin-top:6px; line-height:1.5; }
+  .termo-dica code{ background: var(--gray-pill-bg); border-radius:4px; padding:1px 5px; font-size:11.5px; }
+  .termo-envio-acoes{ flex-wrap:wrap; }
+  .termo-texto{ font-size:14px; line-height:1.65; color: var(--text-dark); }
+  .termo-texto h4{ font-size:12.5px; letter-spacing:.05em; margin:18px 0 6px; color: var(--sidebar-active); }
+  .termo-texto h4:first-child{ margin-top:0; }
+  .termo-texto p{ margin:0 0 10px; }
+  .termo-texto-modal{ max-height:38vh; overflow-y:auto; background: var(--gray-pill-bg); border-radius:10px; padding:14px 16px; }
+  .termo-quadro-topo{ display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:13px; font-weight:700; color: var(--text-dark); margin:6px 0 8px; }
+  .termo-limpar{ background:none; border:none; color: var(--sidebar-active); font-weight:700; font-size:13px; cursor:pointer; padding:4px 6px; }
+  .termo-quadro{ display:block; width:100%; height:170px; background:#fff; border:1.5px dashed var(--border); border-radius:12px; touch-action:none; cursor:crosshair; }
+  .aviso-termo{ background: var(--gold-light); }
+  @media (max-width: 760px){ .termo-item{ align-items:flex-start; } .termo-quadro{ height:190px; } }

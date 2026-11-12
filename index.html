@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="css/dashboard.css?v=20261007a">
 <link rel="stylesheet" href="css/pacientes.css?v=20261006a">
 <link rel="stylesheet" href="css/agenda.css?v=20261105a">
-<link rel="stylesheet" href="css/registro-paciente.css?v=20261111d">
+<link rel="stylesheet" href="css/registro-paciente.css?v=20261112a">
 <link rel="stylesheet" href="css/catalogo.css?v=20261006a">
 <link rel="stylesheet" href="css/planos.css?v=20261006a">
 <link rel="stylesheet" href="css/financeiro.css?v=20261111a">
@@ -128,6 +128,43 @@
       <p id="confFeitoTexto">Obrigada. A sua confirmação foi registrada.</p>
     </div>
     <div id="confInvalido" class="public-invalid" style="display:none;">Este link não é válido. Peça um novo link à sua profissional.</div>
+  </div>
+</div>
+
+<div class="public-screen" id="publicTermoScreen" style="display:none;">
+  <div class="public-container">
+    <div class="public-header">
+      <div class="brand-logo"></div>
+      <h1 id="pubTermoTituloDoc">Termo de Consentimento</h1>
+      <p id="pubTermoSaudacao">Leia o termo com calma e assine no fim da página.</p>
+    </div>
+    <div id="pubTermoCarregando" class="public-invalid">Carregando o termo…</div>
+    <div id="pubTermoConteudo" style="display:none;">
+      <div class="anamnese-card termo-texto" id="pubTermoTexto"></div>
+      <div class="anamnese-card consentimento-card" id="pubTermoAssinaturaCard">
+        <div class="anamnese-title" style="margin-bottom:12px;">Assinatura</div>
+        <div class="form-field">
+          <label for="pubTermoNome">Nome completo <span class="required">*</span></label>
+          <input type="text" id="pubTermoNome" autocomplete="name">
+        </div>
+        <div class="termo-quadro-topo"><span>Assine com o dedo (ou com o mouse) no quadro abaixo <span class="required">*</span></span><button type="button" class="termo-limpar" id="pubTermoLimpar">Limpar</button></div>
+        <canvas class="termo-quadro" id="pubTermoCanvas" aria-label="Quadro para assinar"></canvas>
+        <label class="consentimento-check" style="margin-top:14px;">
+          <input type="checkbox" id="pubTermoAceite">
+          <span>Li e concordo com este termo. <span class="required">*</span></span>
+        </label>
+      </div>
+      <div class="anamnese-footer" style="display:flex; justify-content:flex-end;">
+        <button class="btn-save" id="pubTermoAssinar">Assinar</button>
+      </div>
+      <p class="conf-nota">Ficou com alguma dúvida? Não assine — fale antes com a sua profissional.</p>
+    </div>
+    <div id="pubTermoFeito" class="public-submitted" style="display:none;">
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h2>Termo assinado!</h2>
+      <p id="pubTermoFeitoTexto">Obrigada. A sua assinatura foi registrada.</p>
+    </div>
+    <div id="pubTermoInvalido" class="public-invalid" style="display:none;">Este link não é válido. Peça um novo link à sua profissional.</div>
   </div>
 </div>
 
@@ -740,6 +777,10 @@
           <div class="registro-tab" data-tab="recomendacoes">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Recomendações
+          </div>
+          <div class="registro-tab" data-tab="termos">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 17c1.5-1.5 2.5-1.5 3.5 0s2 1.5 3.5 0"/></svg>
+            Termos
           </div>
           <div class="registro-tab" data-tab="pacotes">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
@@ -1590,6 +1631,16 @@
         </div>
 
         <!-- ---------- HISTÓRICO CLÍNICO PANEL ---------- -->
+        <!-- ---------- TERMOS PANEL (termos de consentimento) ---------- -->
+        <div class="registro-panel" id="panel-termos">
+          <div class="pacotes-paciente-acoes">
+            <p class="pacotes-paciente-intro">Termos de consentimento enviados e assinados por esta paciente.</p>
+            <button type="button" class="btn-primary" id="btnNovoTermoPaciente">Novo termo</button>
+          </div>
+          <div class="termos-sugeridos" id="termosSugeridos" style="display:none;"></div>
+          <div id="termosPacienteLista"></div>
+        </div>
+
         <!-- ---------- PACOTES PANEL (saldo de sessões) ---------- -->
         <div class="registro-panel" id="panel-pacotes">
           <div class="pacotes-paciente-acoes">
@@ -2264,6 +2315,7 @@
           <!-- "Profissionais" fica escondida (público: profissional autônoma). O painel continua no código para um futuro plano com equipe. -->
           <div class="fin-tab active" data-eqtab="servicos">Serviços</div>
           <div class="fin-tab" data-eqtab="pacotes">Pacotes</div>
+          <div class="fin-tab" data-eqtab="termos">Termos</div>
           <div class="fin-tab" data-eqtab="categorias">Categorias</div>
           <div class="fin-tab" data-eqtab="expedientes">Horários de Atendimento</div>
           <div class="fin-tab" data-eqtab="parcerias">Parcerias</div>
@@ -2377,6 +2429,30 @@
           </div>
         </div>
 
+        <!-- ---------- TERMOS (modelos de termo de consentimento) ---------- -->
+        <div class="fin-panel" id="eqpanel-termos">
+          <div class="fin-filter-bar">
+            <div class="search-input" style="min-width:220px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="termosBusca" placeholder="Procurar por nome do termo ou serviço...">
+            </div>
+            <div class="spacer-flex"></div>
+            <button class="btn-primary" id="btnNovoTermo">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo Termo
+            </button>
+          </div>
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Termos de Consentimento</div></div>
+            <table>
+              <thead>
+                <tr><th>Termo</th><th>Serviços que pedem este termo</th><th></th></tr>
+              </thead>
+              <tbody id="termosModelosBody"></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- ---------- EXPEDIENTES ---------- -->
         <div class="fin-panel" id="eqpanel-expedientes">
           <div class="fin-filter-bar">
@@ -2440,6 +2516,7 @@
       <!-- lista interna dos serviços marcados (mantém a lógica de duração e de salvar) -->
       <div id="apptServicosContainer" style="display:none;"></div>
       <div id="apptPacoteAviso" class="comanda-aviso aviso-pacote" style="display:none; margin:8px 0 0;"></div>
+      <div id="apptTermoAviso" class="comanda-aviso aviso-termo" style="display:none; margin:8px 0 0;"></div>
     </div>
     <div class="modal-field">
       <label for="apptDate">Data</label>
@@ -2962,6 +3039,74 @@
 </div>
 
 <!-- MODAL: novo pacote -->
+<!-- MODAL: modelo de termo (Meu Negócio → Termos) -->
+<div class="modal-overlay" id="modalTermoModeloOverlay">
+  <div class="modal-box wide">
+    <h3 id="modalTermoModeloTitle">Novo Termo</h3>
+    <div class="modal-field">
+      <label for="termoModeloTitulo">Nome do termo</label>
+      <input id="termoModeloTitulo" type="text" placeholder="Ex: Termo de Consentimento — Peeling Químico">
+    </div>
+    <div class="modal-field">
+      <label>Serviços que pedem este termo <span style="font-weight:500;">(a agenda avisa quando a paciente ainda não assinou)</span></label>
+      <div class="termo-servicos" id="termoModeloServicos"></div>
+    </div>
+    <div class="modal-field">
+      <label for="termoModeloTexto">Texto</label>
+      <textarea id="termoModeloTexto" class="termo-textarea" rows="14"></textarea>
+      <div class="termo-dica">Use <code>{paciente}</code>, <code>{profissional}</code> e <code>{data}</code>: o app troca pelo nome da paciente, pelo seu nome e pela data do envio. Títulos em LETRAS MAIÚSCULAS viram subtítulos.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalTermoModeloCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalTermoModeloConfirm">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: enviar termo para a paciente -->
+<div class="modal-overlay" id="modalTermoEnvioOverlay">
+  <div class="modal-box wide">
+    <h3>Novo termo para a paciente</h3>
+    <div class="modal-field">
+      <label for="termoEnvioModelo">Termo</label>
+      <select id="termoEnvioModelo"></select>
+    </div>
+    <div class="modal-field">
+      <label for="termoEnvioTexto">Texto que a paciente vai assinar <span style="font-weight:500;">(pode ajustar só para ela)</span></label>
+      <textarea id="termoEnvioTexto" class="termo-textarea" rows="12"></textarea>
+    </div>
+    <div class="modal-actions termo-envio-acoes">
+      <button class="modal-btn-cancel" id="modalTermoEnvioCancel">Cancelar</button>
+      <span class="spacer-flex"></span>
+      <button class="modal-btn-cancel" id="termoEnvio-copiar">Copiar link</button>
+      <button class="modal-btn-cancel" id="termoEnvio-aqui">Assinar aqui</button>
+      <button class="modal-btn-confirm" id="termoEnvio-whats">Enviar por WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: assinar no aparelho da profissional (no atendimento) -->
+<div class="modal-overlay" id="modalTermoAquiOverlay">
+  <div class="modal-box wide">
+    <h3 id="termoAquiTitulo">Termo</h3>
+    <div class="termo-texto termo-texto-modal" id="termoAquiTexto"></div>
+    <div class="modal-field" style="margin-top:14px;">
+      <label for="termoAquiNome">Nome completo de quem assina</label>
+      <input id="termoAquiNome" type="text">
+    </div>
+    <div class="termo-quadro-topo"><span>Assinatura (com o dedo ou com o mouse)</span><button type="button" class="termo-limpar" id="termoAquiLimpar">Limpar</button></div>
+    <canvas class="termo-quadro" id="termoAquiCanvas" aria-label="Quadro para assinar"></canvas>
+    <label class="consentimento-check" style="margin-top:12px;">
+      <input type="checkbox" id="termoAquiAceite">
+      <span>Li e concordo com este termo.</span>
+    </label>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalTermoAquiCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalTermoAquiConfirm">Assinar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalPacoteOverlay">
   <div class="modal-box wide">
     <h3 id="modalPacoteTitle">Criar Novo Pacote</h3>
@@ -3122,11 +3267,12 @@
 <script src="js/tutoriais.js?v=20261104a"></script>
 <script src="js/formulacoes.js?v=20261105a"></script>
 <script src="js/anamneses.js?v=20261111c"></script>
-<script src="js/login.js?v=20261105a"></script>
-<script src="js/lgpd.js?v=20261007b"></script>
+<script src="js/login.js?v=20261112a"></script>
+<script src="js/lgpd.js?v=20261112a"></script>
 <script src="js/anamneses-especificas.js?v=20261030b"></script>
-<script src="js/paginacao.js?v=20261015a"></script>
-<script src="js/celular.js?v=20261029a"></script>
+<script src="js/termos.js?v=20261112a"></script>
+<script src="js/paginacao.js?v=20261112a"></script>
+<script src="js/celular.js?v=20261112a"></script>
 
 <!-- Vercel Speed Insights: mede a velocidade das telas (sem cookies). Tira tudo depois do "?" do endereço antes de enviar, para não levar links de pacientes. -->
 <script>

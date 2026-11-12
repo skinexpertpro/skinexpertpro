@@ -105,6 +105,7 @@
       semTravar(carregarAcompanhamentos),
       semTravar(async () => { comandasCriadas = await garantirComandasDaAgenda(); }),
       semTravar(carregarConfiguracoesSalvas),
+      semTravar(() => typeof carregarTermos === 'function' && carregarTermos()),
     ]);
     setTimeout(avisarHorariosDuplicados, comandasCriadas ? 5000 : 0); // não cobre o aviso das comandas
   }
@@ -123,6 +124,7 @@
     carregarPerfilProfissionalDemo();
     carregarIntegracaoWhatsappDemo();
     try{ carregarAcompanhamentos(); }catch(e){}
+    try{ carregarTermos(); }catch(e){}
     // Catálogo de Produtos e Dicionário de Ativos: sempre os de verdade (os mesmos das profissionais).
     // A sessão do login de demonstração fica aberta só para ler esses dados compartilhados;
     // nada é salvo, porque o app bloqueia gravações no modo demonstração.
