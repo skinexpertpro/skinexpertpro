@@ -1,0 +1,197 @@
+/* Catálogo de Produtos e Dicionário de Ativos */
+
+  /* ================= CATÁLOGO DE PRODUTOS VIEW ================= */
+  .content-catalogo{ padding: 24px 36px 48px 36px; }
+
+  .catalogo-count{ font-size:13.5px; color: var(--text-muted); margin: -8px 0 16px 4px; }
+  .catalogo-count b{ color: var(--text-dark); }
+
+  .product-name-cell{ font-family:'Playfair Display', serif; font-weight:700; color: var(--text-dark); cursor:pointer; }
+  .product-name-cell:hover{ color: var(--pink); }
+  .product-func-cell{ max-width:340px; color: var(--text-muted); font-size:13.5px; line-height:1.4; }
+  .category-chip{
+    display:inline-block; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:700;
+    background: var(--tag-bg); color: var(--tag-text); white-space:nowrap;
+  }
+  .price-cell{ font-weight:700; color: var(--text-dark); white-space:nowrap; }
+
+  .pagination-bar{ display:flex; gap:8px; padding:18px 24px; flex-wrap:wrap; }
+  .pagination-btn{
+    min-width:36px; height:36px; padding:0 10px; border-radius:9px; border:none; background: var(--gold-light);
+    color: var(--text-dark); font-size:13.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .pagination-btn:hover{ background: var(--border); }
+  .pagination-btn.active{ background: var(--sidebar-bg); color: var(--gold); }
+  .pagination-btn:disabled{ opacity:.4; cursor:default; }
+  .pagination-btn:disabled:hover{ background: var(--gold-light); }
+  .faixa-preco-compacta{ display:flex; flex-direction:column; gap:2px; }
+  .faixa-preco-principal{ font-size:13.5px; font-weight:700; color: var(--text-dark); }
+  .faixa-preco-secundaria{ font-size:11px; font-weight:600; color: var(--text-muted); }
+
+  /* ---------- VISUALIZAR PRODUTO VIEW ---------- */
+  .content-produto{ padding: 24px 36px 60px 36px; }
+
+  .produto-header{ display:flex; gap:24px; margin: 20px 0 26px 0; flex-wrap:wrap; }
+  .produto-thumb-lg{
+    width:120px; height:150px; border-radius:14px; background: linear-gradient(160deg, #dfe7ec, #c7d3da);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#7c8992;
+  }
+  .produto-header-info{ display:flex; flex-direction:column; justify-content:center; gap:6px; }
+  .produto-title{ font-family:'Playfair Display', serif; font-size:24px; font-weight:700; color: var(--text-dark); }
+  .produto-brand{ font-size:15px; color: var(--text-muted); }
+  .produto-meta-row{ display:flex; align-items:center; gap:10px; margin-top:6px; flex-wrap:wrap; }
+  .produto-price{ font-size:13.5px; font-weight:700; color: var(--pink); line-height:1.6; }
+
+  .produto-section{ margin-bottom:22px; }
+  .produto-section-title{ font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--text-muted); margin-bottom:10px; }
+  .produto-section-text{ font-size:14.5px; line-height:1.7; color: var(--text-dark); }
+
+  /* ================= FORMULAÇÕES COSMÉTICAS VIEW ================= */
+  .content-formulacoes{ padding: 24px 36px 48px 36px; }
+
+  .ativo-name-cell{ font-family:'Playfair Display', serif; font-weight:700; color: var(--text-dark); }
+  .ativo-mecanismo-cell{ max-width:420px; color: var(--text-muted); font-size:13.5px; line-height:1.4; }
+  .ativo-view-btn{
+    background: var(--gold-light); color: var(--gold-dark); border:none; border-radius:8px; width:32px; height:32px;
+    display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .ativo-view-btn:hover{ background: var(--gold); color:#fff; }
+
+  .ativo-detail-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:14px 24px; margin:18px 0; }
+  .ativo-detail-item{ font-size:13px; }
+  .ativo-detail-label{ font-weight:700; color: var(--text-muted); text-transform:uppercase; font-size:11px; letter-spacing:.04em; margin-bottom:3px; }
+  .ativo-detail-value{ color: var(--text-dark); }
+  .ativo-badge-sim{ color: var(--green-text); font-weight:700; }
+  .ativo-badge-nao{ color: var(--block-red); font-weight:700; }
+  .ativo-badge-neutro{ color: #9a6a1c; font-weight:700; }
+  .ativo-inci{ margin:-6px 0 14px 0; font-size:13px; }
+  .ativo-inci-valor{ font-weight:700; color: var(--text-dark); font-style:italic; }
+  .ativo-inci-nota{ font-size:12px; color: var(--text-muted); margin-top:2px; }
+  .ativo-compostos{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  .ativo-composto{ font-size:12px; padding:4px 10px; border-radius:14px; background: var(--gold-light); color: var(--tag-text); font-weight:600; }
+  .ativo-composto small{ font-weight:500; opacity:.8; }
+  .inci-grupos{ margin:14px 0 6px 0; border:1px solid var(--border); border-radius:10px; background:#fff; }
+  .inci-grupos > summary{
+    cursor:pointer; list-style:none; padding:10px 14px; font-size:11px; font-weight:700; letter-spacing:.04em;
+    text-transform:uppercase; color: var(--text-muted); display:flex; align-items:center; gap:8px;
+  }
+  .inci-grupos > summary::-webkit-details-marker{ display:none; }
+  .inci-grupos > summary::after{ content:'▾'; margin-left:auto; font-size:13px; transition:transform .15s ease; }
+  .inci-grupos[open] > summary::after{ transform:rotate(180deg); }
+  .inci-grupos-corpo{ padding:0 14px 12px 14px; }
+  .inci-grupo-titulo{ font-size:12.5px; font-weight:700; color: var(--text-dark); margin:10px 0 2px 0; }
+  .inci-grupo-titulo.alerta{ color:#9a5a17; }
+  .inci-grupo-titulo.alerta::before{ content:'⚠ '; }
+  .inci-grupo-desc{ font-size:11.5px; color: var(--text-muted); margin-bottom:6px; }
+  .inci-tabela{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  .inci-tabela td{ padding:5px 0; border-top:1px solid var(--border); vertical-align:top; }
+  .inci-tabela td:first-child{ font-weight:600; font-style:italic; color: var(--text-dark); width:52%; padding-right:10px; }
+  .inci-tabela td:last-child{ color: var(--text-muted); }
+  .pca-card-origem{ font-size:10px; font-weight:700; color: var(--tag-text); background: var(--gold-light); border-radius:8px; padding:2px 6px; align-self:flex-start; margin-top:-2px; }
+  .ativo-nota{
+    font-size:12px; color: var(--text-muted); line-height:1.5; background: var(--bg); border-radius:9px;
+    padding:10px 12px; margin:12px 0 4px 0; border-left:3px solid var(--gold); white-space:pre-line;
+  }
+  .ativo-classe-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+
+  .ativo-links-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .ativo-link-chip{
+    display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:999px; font-size:12.5px; font-weight:700;
+    background: var(--gold-light); color: var(--gold-dark); cursor:pointer; border:1px solid transparent;
+  }
+  .ativo-link-chip:hover{ border-color: var(--gold); }
+
+  .produtos-com-ativo-item{
+    display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1px solid var(--border);
+    border-radius:9px; margin-bottom:8px; cursor:pointer; font-size:13px;
+  }
+  .produtos-com-ativo-item:hover{ background:#fafbfc; border-color: var(--gold); }
+  .produtos-com-ativo-item .pca-name{ font-weight:700; color: var(--text-dark); }
+  .produtos-com-ativo-item .pca-brand{ color: var(--text-muted); font-size:12px; }
+
+  /* Produtos que contêm o ativo: faixa horizontal de cartões (foto, nome, marca) */
+  .pca-carrossel-wrap{ position:relative; }
+  .pca-carrossel{
+    display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    padding:4px 2px 10px 2px; scrollbar-width:thin;
+  }
+  .pca-card{
+    flex:0 0 150px; scroll-snap-align:start; background:#fff; border:1px solid var(--border); border-radius:12px;
+    padding:10px; cursor:pointer; text-align:left; font-family:inherit; display:flex; flex-direction:column; gap:8px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .pca-card:hover, .pca-card:focus-visible{ border-color: var(--gold); box-shadow:0 4px 14px rgba(0,0,0,.08); outline:none; }
+  .pca-card-foto{
+    width:100%; aspect-ratio:1/1; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center;
+    overflow:hidden; color: var(--gold-dark);
+  }
+  .pca-card-foto img{ width:100%; height:100%; object-fit:contain; }
+  .pca-card-nome{
+    font-size:12.5px; font-weight:700; color: var(--text-dark); line-height:1.3;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.6em;
+  }
+  .pca-card-marca{ font-size:11.5px; color: var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:-4px; }
+  .pca-seta{
+    position:absolute; top:calc(50% - 22px); width:34px; height:34px; border-radius:50%; border:1px solid var(--border);
+    background:#fff; color: var(--text-dark); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.12); z-index:2;
+  }
+  .pca-seta:hover{ border-color: var(--gold); }
+  .pca-seta[hidden]{ display:none; }
+  .pca-seta.esq{ left:-12px; } .pca-seta.dir{ right:-12px; }
+  @media (hover:none){ .pca-seta{ display:none; } }
+
+  .fav-star-btn{ background:none; border:none; cursor:pointer; padding:4px; color:#d8ccb8; display:flex; }
+  .fav-star-btn.active{ color: var(--gold); }
+  .fav-star-btn svg{ transition: fill .1s; }
+
+  .select-ativo-btn{
+    display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; border:1.5px solid var(--border);
+    background:#fff; font-size:12px; font-weight:700; color: var(--text-dark); cursor:pointer; white-space:nowrap;
+  }
+  .select-ativo-btn.active{ background: var(--sidebar-bg); border-color: var(--sidebar-bg); color:#fff; }
+
+  #selecionadosCount{
+    display:inline-block; background: var(--gold); color:#fff; font-size:10.5px; font-weight:800; border-radius:999px;
+    padding:1px 7px; margin-left:4px;
+  }
+  .fin-tab #selecionadosCount{ background: rgba(255,255,255,.25); }
+  .fin-tab.active #selecionadosCount{ background: var(--gold); }
+
+  /* ---------- A-Z ativos browser (estilo Tulipia) ---------- */
+  .az-nav{ display:flex; flex-wrap:nowrap; gap:6px; margin-bottom:22px; width:100%; }
+  .az-nav-letter{
+    flex:1 1 0; min-width:0; height:44px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; color: var(--text-muted); background:#fff; border:1px solid var(--border);
+    cursor:pointer; text-decoration:none; padding:0 2px;
+  }
+  .az-nav-letter:hover{ border-color: var(--gold); color: var(--text-dark); }
+  .az-nav-letter.disabled{ opacity:.35; cursor:default; pointer-events:none; }
+  .az-nav-letter{ font-family:inherit; }
+  .az-nav-letter.active{ background: var(--sidebar-bg); border-color: var(--sidebar-bg); color:#fff; }
+  .az-nav-letter.todas{ flex:0 0 auto; width:auto; padding:0 10px; }
+  @media (max-width: 760px){ .az-nav{ flex-wrap:wrap; } .az-nav-letter{ flex:0 0 34px; height:36px; } }
+  .ativo-busca-info{ font-size:12.5px; color: var(--text-muted); margin:-10px 0 14px 2px; }
+
+  .ativo-letter-group{ margin-bottom:30px; }
+  .ativo-letter-heading{
+    font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--text-muted);
+    margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+  .ativo-card-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; }
+  @media (max-width: 1100px){ .ativo-card-grid{ grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 700px){ .ativo-card-grid{ grid-template-columns: 1fr; } }
+
+  .ativo-card{
+    background:#fff; border:1px solid var(--border); border-radius: var(--radius); padding:18px 20px;
+    display:flex; flex-direction:column; min-width:0;
+  }
+  .ativo-card-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px; }
+  .ativo-card-name{ font-family:'Playfair Display', serif; font-weight:700; font-size:15px; color: var(--text-dark); }
+  .ativo-card-desc{
+    font-size:12.5px; color: var(--text-muted); line-height:1.5; margin-bottom:10px;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .ativo-card-footer{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; }
+  .ativo-card-ler-mais{ font-size:12.5px; font-weight:700; color: var(--gold); background:none; border:none; cursor:pointer; padding:0; }
+  .ativo-card-ler-mais:hover{ text-decoration:underline; }

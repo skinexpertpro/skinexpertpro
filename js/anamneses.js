@@ -1,0 +1,664 @@
+/* Skin Expert Pro — Anamneses respondidas pela paciente e pré-fichas do Dashboard.
+   Arquivo 13 de 17: a ordem dos arquivos no index.html importa. */
+
+  /* ================= ANAMNESES RESPONDIDAS PELA PACIENTE ================= */
+  async function renderAnamnesesRespondidas(){
+    const container = document.getElementById('anamnesesRespondidasContainer');
+    container.innerHTML = '';
+    if(!currentPatient) return;
+
+    let data;
+    if(isPacienteReal(currentPatient)){
+      const { data: rows, error } = await supabaseClient
+        .from('anamneses')
+        .select('*')
+        .eq('paciente_id', currentPatient.id)
+        .order('respondida_em', { ascending: false });
+      if(error || !rows) return;
+      data = semAnamnesesRepetidas(rows);
+    } else {
+      data = demoAnamnesesPorPaciente[currentPatient.id] || [];
+    }
+
+    if(!data || data.length === 0) return;
+
+    data.forEach(a => {
+      const dt = new Date(a.respondida_em);
+      const pad2 = n => String(n).padStart(2, '0');
+      const horario = `${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
+      const dataFormatada = `${dt.getDate()} de ${monthNames[dt.getMonth()]}, ${dt.getFullYear()} às ${horario}`;
+      const sist = a.sistemica || {};
+      const ev = a.estilo_vida || {};
+      const sk = a.skincare || {};
+      const autoList = (a.autopercepcao || []).map(t => `<div class="rotina-summary-item">${t}</div>`).join('')
+        || '<div class="rotina-summary-item" style="color:var(--text-muted);">Nenhum item marcado.</div>';
+
+      const details = document.createElement('details');
+      details.className = 'historico-entry';
+      details.innerHTML = `
+        <summary>
+          <div class="historico-entry-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3v2h6V3"/></svg>
+          </div>
+          <div>
+            <div class="historico-entry-title">${a.token ? 'Anamnese respondida pela paciente' : 'Anamnese preenchida pela profissional'}</div>
+            <div class="historico-entry-date">${dataFormatada}</div>
+          </div>
+          <div class="historico-entry-spacer"></div>
+          <button class="historico-pdf-btn" data-pdf-anamnese="true">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Baixar PDF
+          </button>
+          <svg class="historico-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="historico-entry-body">
+          ${a.confirmada_em
+            ? `<div class="consentimento-registro">✓ Conferida e confirmada pela paciente em ${new Date(a.confirmada_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · consentimento ${escHTML(a.consentimento_versao || '')}</div>`
+            : a.consentimento_em
+            ? `<div class="consentimento-registro">✓ Consentimento aceito pela paciente em ${new Date(a.consentimento_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${escHTML(a.consentimento_versao || '')}</div>`
+            : a.confirmacao_token
+            ? `<div class="consentimento-registro falta">Aguardando a paciente conferir e confirmar. <button type="button" class="fin-btn-mini" data-reenviar-conf="${escHTML(a.confirmacao_token)}" style="margin-left:6px;">Enviar link pelo WhatsApp</button></div>`
+            : '<div class="consentimento-registro falta">Sem consentimento registrado (anamnese anterior a esta função).</div>'}
+          <div class="toggle-subtitle">Anamnese Sistêmica</div>
+          <div class="rotina-summary-item">Medicamentos: ${sist.medicamentos || '—'}</div>
+          <div class="rotina-summary-item">Alergias: ${sist.alergias || '—'}${sist.alergia_tipo ? ' — Tipo: ' + sist.alergia_tipo : ''}</div>
+          <div class="rotina-summary-item">Gestante: ${sist.gestante || '—'} · Lactante: ${sist.lactante || '—'}</div>
+          <div class="rotina-summary-item">Diabética: ${sist.diabetica || '—'}${sist.diabetica_tipo ? ' (' + sist.diabetica_tipo + ')' : ''} · Tireoide: ${sist.tireoide || '—'}${sist.tireoide_tipo ? ' (' + sist.tireoide_tipo + ')' : ''}</div>
+          <div class="rotina-summary-item">Hipertensão: ${sist.hipertensao || '—'} · Hipotensão: ${sist.hipotensao || '—'}</div>
+          <div class="rotina-summary-item">Cardiopatologia: ${sist.cardiopatologia || '—'} · Epilepsia: ${sist.epilepsia || '—'}</div>
+          <div class="rotina-summary-item">Trombose: ${sist.trombose || '—'} · Insuficiência renal: ${sist.insuficiencia_renal || '—'} · Hepatite: ${sist.hepatite || '—'}</div>
+          <div class="rotina-summary-item">SOP: ${sist.sop || '—'} · Antecedentes oncológicos: ${sist.oncologicos || '—'} · Cirurgia bariátrica: ${sist.bariatrico || '—'}</div>
+          <div class="rotina-summary-item">Ansiedade: ${sist.ansiedade || '—'} · Depressão: ${sist.depressao || '—'}</div>
+          <div class="rotina-summary-item">Dermatite: ${sist.dermatite || '—'}${sist.dermatite_frequencia ? ' (freq: ' + sist.dermatite_frequencia + ')' : ''} · Asma: ${sist.asma || '—'}${sist.asma_frequencia ? ' (freq: ' + sist.asma_frequencia + ')' : ''}</div>
+          ${sist.outras_doencas ? `<div class="rotina-summary-item">Outras doenças: ${sist.outras_doencas}</div>` : ''}
+          <div class="toggle-subtitle">Estilo de Vida</div>
+          <div class="rotina-summary-item">Atividade física: ${ev.atividade_fisica || '—'} · Alimentação: ${ev.alimentacao || '—'}</div>
+          <div class="rotina-summary-item">Água: ${ev.agua || '—'} · Sono: ${ev.sono || '—'}</div>
+          <div class="rotina-summary-item">Exposição ao sol: ${ev.sol || '—'} · Tabagista: ${ev.tabagista || '—'}</div>
+          <div class="rotina-summary-item">Bebida alcoólica: ${ev.alcool || '—'}${ev.alcool_frequencia ? ' (freq: ' + ev.alcool_frequencia + ')' : ''}</div>
+          <div class="rotina-summary-item">Evacuação: ${ev.evacuacao || '—'} · Hábito urinário: ${ev.habito_urinario || '—'}</div>
+          <div class="rotina-summary-item">Frequência menstrual: ${ev.frequencia_menstrual || '—'}</div>
+          ${a.integrativa ? `<div class="toggle-subtitle">Anamnese Integrativa</div><div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${a.integrativa}</div>` : ''}
+          <div class="toggle-subtitle">Descobrindo a Sua Pele</div>
+          <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">Principal Queixa: ${a.principal_queixa || '—'}</div>
+          ${a.tratamentos_anteriores ? `<div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">Tratamentos Anteriores: ${a.tratamentos_anteriores}</div>` : ''}
+          ${autoList}
+          <div class="toggle-subtitle">Skincare</div>
+          <div class="rotina-summary-item">Rotina atual: ${sk.atual || '—'}</div>
+          ${sk.parado ? `<div class="rotina-summary-item">Produtos parados: ${sk.parado}</div>` : ''}
+          <div class="rotina-summary-item">Regularidade: ${sk.regularidade || '—'} · Como gostaria: ${sk.como_gostaria || '—'}</div>
+          <div class="toggle-subtitle">Investimento Confortável</div>
+          <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${a.investimento || '—'}</div>
+          ${a.observacoes ? `<div class="toggle-subtitle">Observações Adicionais</div><div class="rotina-summary-item" style="border:none;">${a.observacoes}</div>` : ''}
+        </div>
+      `;
+      const btnReenviar = details.querySelector('[data-reenviar-conf]');
+      if(btnReenviar) btnReenviar.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        abrirEnvioMensagem({ paciente: currentPatient, modelo: 'confirmar_anamnese', link: linkConfirmacaoAnamnese(btnReenviar.dataset.reenviarConf) });
+      });
+      details.querySelector('[data-pdf-anamnese]').addEventListener('click', (e) => {
+        e.preventDefault();
+        openAnamnesePdf(a, dataFormatada);
+      });
+      container.appendChild(details);
+    });
+  }
+
+  function openAnamnesePdf(a, dataFormatada){
+    pushNavHistory();
+    setLandscapePrintMode(false);
+    const sist = a.sistemica || {};
+    const ev = a.estilo_vida || {};
+    const sk = a.skincare || {};
+
+    document.getElementById('pdfAnamneseBrand').textContent = perfilProfissional.nome || '—';
+    document.getElementById('pdfAnamneseRole').textContent = perfilProfissional.titulo || '';
+    document.getElementById('pdfAnamneseContact').textContent = [perfilProfissional.email, perfilProfissional.telefone].filter(Boolean).join(' · ') || '—';
+    document.getElementById('pdfAnamnesePaciente').textContent = currentPatient ? currentPatient.name : '—';
+    document.getElementById('pdfAnamneseData').textContent = dataFormatada;
+    document.getElementById('pdfPrincipalQueixa').textContent = a.principal_queixa || '—';
+    document.getElementById('pdfTratamentosAnteriores').textContent = a.tratamentos_anteriores || '—';
+    document.getElementById('pdfAutopercepcao').textContent = (a.autopercepcao || []).join('; ') || 'Nenhum item marcado.';
+    document.getElementById('pdfIntegrativa').textContent = a.integrativa || '—';
+    document.getElementById('pdfSistemica').textContent =
+      `Medicamentos: ${sist.medicamentos || '—'} · Alergias: ${sist.alergias || '—'}${sist.alergia_tipo ? ' (' + sist.alergia_tipo + ')' : ''} · Gestante: ${sist.gestante || '—'} · Lactante: ${sist.lactante || '—'} · Diabética: ${sist.diabetica || '—'}${sist.diabetica_tipo ? ' (' + sist.diabetica_tipo + ')' : ''} · Tireoide: ${sist.tireoide || '—'}${sist.tireoide_tipo ? ' (' + sist.tireoide_tipo + ')' : ''} · Hipertensão: ${sist.hipertensao || '—'} · Hipotensão: ${sist.hipotensao || '—'} · Cardiopatologia: ${sist.cardiopatologia || '—'} · Epilepsia: ${sist.epilepsia || '—'} · Trombose: ${sist.trombose || '—'} · Insuficiência renal: ${sist.insuficiencia_renal || '—'} · Hepatite: ${sist.hepatite || '—'} · SOP: ${sist.sop || '—'} · Antecedentes oncológicos: ${sist.oncologicos || '—'} · Cirurgia bariátrica: ${sist.bariatrico || '—'} · Ansiedade: ${sist.ansiedade || '—'} · Depressão: ${sist.depressao || '—'} · Dermatite: ${sist.dermatite || '—'}${sist.dermatite_frequencia ? ' (freq: ' + sist.dermatite_frequencia + ')' : ''} · Asma: ${sist.asma || '—'}${sist.asma_frequencia ? ' (freq: ' + sist.asma_frequencia + ')' : ''}${sist.outras_doencas ? ' · Outras doenças: ' + sist.outras_doencas : ''}`;
+
+    const explicacoesTireoide = {
+      'Hipotireoidismo': 'Hipotireoidismo: A tireoide produz poucos hormônios, deixando o metabolismo lento. Os sinais comuns são cansaço extremo, ganho de peso, pele seca, prisão de ventre e intolerância ao frio.',
+      'Hipertireoidismo': 'Hipertireoidismo: A tireoide produz hormônios em excesso, acelerando o organismo. Os sinais comuns são perda de peso rápida, coração acelerado (taquicardia), ansiedade, tremores e intolerância ao calor.'
+    };
+    const pdfTireoideExplicacao = document.getElementById('pdfTireoideExplicacao');
+    if(sist.tireoide_tipo && explicacoesTireoide[sist.tireoide_tipo]){
+      pdfTireoideExplicacao.textContent = explicacoesTireoide[sist.tireoide_tipo];
+      pdfTireoideExplicacao.style.display = 'block';
+    } else {
+      pdfTireoideExplicacao.textContent = '';
+      pdfTireoideExplicacao.style.display = 'none';
+    }
+    document.getElementById('pdfEstiloVida').textContent =
+      `Atividade física: ${ev.atividade_fisica || '—'} · Alimentação: ${ev.alimentacao || '—'} · Água: ${ev.agua || '—'} · Sono: ${ev.sono || '—'} · Exposição ao sol: ${ev.sol || '—'} · Tabagista: ${ev.tabagista || '—'} · Bebida alcoólica: ${ev.alcool || '—'}${ev.alcool_frequencia ? ' (freq: ' + ev.alcool_frequencia + ')' : ''} · Evacuação: ${ev.evacuacao || '—'} · Hábito urinário: ${ev.habito_urinario || '—'} · Frequência menstrual: ${ev.frequencia_menstrual || '—'}`;
+    document.getElementById('pdfSkincare').textContent =
+      `Rotina atual: ${sk.atual || '—'}${sk.parado ? ' · Produtos parados: ' + sk.parado : ''} · Regularidade: ${sk.regularidade || '—'} · Como gostaria: ${sk.como_gostaria || '—'}`;
+    document.getElementById('pdfInvestimento').textContent = a.investimento || '—';
+    document.getElementById('pdfObservacoes').textContent = a.observacoes || '—';
+
+    navItems.forEach(i => i.classList.remove('active'));
+    const pacientesNavForPdf = document.querySelector('.nav-item[data-view="pacientes"]');
+    if(pacientesNavForPdf) pacientesNavForPdf.classList.add('active');
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById('view-skincare-pdf').classList.add('active');
+    pageTitle.textContent = 'Ficha de Anamnese — ' + (currentPatient ? currentPatient.name : '');
+    pageSubtitle.style.display = 'none';
+  }
+
+  function setLandscapePrintMode(on){
+    let styleEl = document.getElementById('landscapePrintStyle');
+    if(on){
+      if(!styleEl){
+        styleEl = document.createElement('style');
+        styleEl.id = 'landscapePrintStyle';
+        styleEl.textContent = '@page{ size: landscape; margin: 12mm; @top-left{ content: "\\00a0"; } @bottom-right{ content: counter(page) " / " counter(pages); font-family: Inter, Arial, sans-serif; font-size: 9px; color: #8a7768; } }';
+        document.head.appendChild(styleEl);
+      }
+    } else if(styleEl){
+      styleEl.remove();
+    }
+  }
+
+  function openPlanoPdf(plano){
+    pushNavHistory();
+    setLandscapePrintMode(true);
+    document.getElementById('pdfPlanoBrand').textContent = perfilProfissional.nome || '—';
+    document.getElementById('pdfPlanoRole').textContent = perfilProfissional.titulo || '';
+    document.getElementById('pdfPlanoContact').textContent = [perfilProfissional.email, perfilProfissional.telefone].filter(Boolean).join(' · ') || '—';
+    document.getElementById('pdfPlanoPaciente').textContent = currentPatient ? currentPatient.name : '—';
+    document.getElementById('pdfPlanoData').textContent = plano.dataGerada || '—';
+    document.getElementById('pdfPlanoObjetivo').textContent = plano.objetivo || '—';
+    document.getElementById('pdfPlanoDuracao').textContent = plano.duracao ? plano.duracao + ' dias' : '—';
+
+    const pdfPlaceholderImg = 'data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2216%22%20fill%3D%22%23f4ede8%22/%3E%3Cpath%20d%3D%22M40%2028h20v9l7%207v42a5%205%200%2001-5%205H38a5%205%200%2001-5-5V44l7-7z%22%20fill%3D%22none%22%20stroke%3D%22%238a7060%22%20stroke-width%3D%224%22%20stroke-linejoin%3D%22round%22/%3E%3Cline%20x1%3D%2240%22%20y1%3D%2250%22%20x2%3D%2260%22%20y2%3D%2250%22%20stroke%3D%22%238a7060%22%20stroke-width%3D%224%22/%3E%3C/svg%3E';
+    // Planos antigos guardaram o endereço da foto da época; se a foto mudou de lugar, usa a foto ATUAL
+    // do catálogo (mesmo nome do produto). Se mesmo assim não carregar, mostra o desenho padrão.
+    const normNome = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+    function produtoAtualDoCatalogo(p){
+      try{
+        const lista = (typeof products !== 'undefined' && Array.isArray(products)) ? products : [];
+        const n = normNome(p.name), b = normNome(p.brand);
+        return lista.find(x => normNome(x.name) === n && normNome(x.brand) === b) || lista.find(x => normNome(x.name) === n) || null;
+      }catch(e){ return null; }
+    }
+    function fotoAtualDoProduto(p){
+      const achado = produtoAtualDoCatalogo(p);
+      if(achado && achado.image) return achado.image;
+      return p.image || '';
+    }
+    // Preço aproximado (faixa) na moeda do país de residência da paciente — usa o preço ATUAL do catálogo
+    function precoAproximadoDoProduto(p){
+      try{
+        const achado = produtoAtualDoCatalogo(p);
+        const valor = achado && achado.price != null ? achado.price : p.price;
+        const soBrasil = achado ? !!achado.apenasBrasil : !!p.apenasBrasil;
+        if(valor == null || isNaN(valor)) return '';
+        const i = faixaIndex(valor);
+        if(soBrasil) return faixasPrecoBRL[i] + ' · venda somente no Brasil';
+        const todas = { BRL: faixasPrecoBRL[i], USD: faixasPrecoUSD[i], EUR: faixasPrecoEUR[i] };
+        return todas[moedaAnamnesePaciente()] || todas.BRL;
+      }catch(e){ return ''; }
+    }
+    // O filtro de segurança tira "onerror" e o desenho SVG do HTML, então o substituto é colocado por aqui.
+    function protegerFotosPdf(el){
+      el.querySelectorAll('img.pdf-product-thumb').forEach(img => {
+        const usarPadrao = () => { img.removeEventListener('error', usarPadrao); img.src = pdfPlaceholderImg; };
+        if(!img.getAttribute('src')) usarPadrao();
+        else { img.addEventListener('error', usarPadrao); if(img.complete && img.naturalWidth === 0) usarPadrao(); }
+      });
+    }
+    const ICONE_SOL = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+    const ICONE_LUA = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>';
+    function iconePeriodoHtml(periodos){
+      const manha = periodos.includes('manha'), noite = periodos.includes('noite');
+      const titulo = manha && noite ? 'Usar de manhã e à noite' : (manha ? 'Usar de manhã' : 'Usar à noite');
+      const icones = (manha ? `<span class="pdf-periodo-sol">${ICONE_SOL}</span>` : '') + '' + (noite ? `<span class="pdf-periodo-lua">${ICONE_LUA}</span>` : '');
+      return `<div class="pdf-product-periodo" title="${titulo}">${icones}</div>`;
+    }
+    function renderPdfProdutoCard(p){
+      const whyHtml = (p.why && p.why.length)
+        ? `<div class="pdf-product-why"><div class="pdf-product-why-title">Por que foi sugerido</div><div class="pdf-product-why-item"><b>Contém:</b> ${p.why.map(w => w.nome).join(', ')}</div>${p.func ? `<div class="pdf-product-why-item">${p.func}</div>` : ''}</div>`
+        : (p.func
+          ? `<div class="pdf-product-why"><div class="pdf-product-why-title">Por que foi indicado</div><div class="pdf-product-why-item">${p.func}</div></div>`
+          : '');
+      const preco = precoAproximadoDoProduto(p);
+      const precoHtml = preco ? `<div class="pdf-product-preco"><b>Preço aproximado:</b> ${preco}</div>` : '';
+      const usageHtml = p.usage
+        ? `<div class="pdf-product-usage-title">Modo de uso</div><div class="pdf-product-usage">${p.usage}</div>`
+        : '';
+      // Frequência: "Diário" fica implícito; dias escolhidos aparecem para a paciente
+      const NOMES_DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const freqHtml = (p.frequencia === 'personalizar' && p.dias && p.dias.length)
+        ? `<div class="pdf-product-freq"><b>Quando usar:</b> ${p.dias.map(d => NOMES_DIAS[d]).filter(Boolean).join(', ')}</div>`
+        : '';
+      // Link do produto (onde comprar): clicável no PDF e com o site escrito, para quem imprimir
+      let linkHtml = '';
+      const linkBruto = String(p.link || '').trim();
+      if(linkBruto){
+        const url = /^https?:\/\//i.test(linkBruto) ? linkBruto : 'https://' + linkBruto;
+        let site = url;
+        try{ site = new URL(url).hostname.replace(/^www\./, ''); }catch(e){}
+        if(/^https?:\/\//i.test(url)){
+          linkHtml = `<div class="pdf-product-link"><b>Onde comprar:</b> <a href="${escHTML(url)}" target="_blank" rel="noopener">${escHTML(site)} ↗</a></div>`;
+        }
+      }
+      return `<div class="pdf-product">${iconePeriodoHtml(p.periodos || [])}<img class="pdf-product-thumb" src="${fotoAtualDoProduto(p)}" alt="${p.name}"><div class="pdf-product-info"><div class="pdf-product-name">${p.name}</div><div class="pdf-product-brand">${p.brand}</div>${precoHtml}${linkHtml}${usageHtml}${freqHtml}${whyHtml}</div></div>`;
+    }
+
+    // O PDF é organizado por etapa (Limpador, Hidratante, Protetor Solar…). Cada cartão mostra quando usar:
+    // ☀ manhã, ☾ noite ou ☀/☾ manhã e noite. O mesmo produto na manhã e na noite vira um cartão só.
+    function juntarPeriodos(manha, noite){
+      const itens = [];
+      const chave = p => normNome(p.name) + '|' + normNome(p.brand) + '|' + categoriaCanonica(p.categoria);
+      [['manha', manha], ['noite', noite]].forEach(([periodo, lista]) => {
+        (lista || []).forEach(p => {
+          const ja = itens.find(x => x._chave === chave(p));
+          if(ja){
+            if(!ja.periodos.includes(periodo)) ja.periodos.push(periodo);
+            ['usage', 'link', 'func'].forEach(k => { if(!ja[k] && p[k]) ja[k] = p[k]; });
+          } else {
+            itens.push({ ...p, periodos: [periodo], _chave: chave(p) });
+          }
+        });
+      });
+      return itens;
+    }
+    // Explicação curta de cada etapa para a paciente (no máximo 2 linhas)
+    const EXPLICACAO_ETAPA = {
+      'Demaquilante': 'Remove maquiagem, protetor solar e a oleosidade acumulada no dia. É o primeiro passo da limpeza, antes do limpador.',
+      'Limpador': 'Limpa a pele e tira impurezas, suor e excesso de oleosidade, preparando-a para receber os próximos produtos.',
+      'Tônico': 'Equilibra o pH depois da limpeza e já é uma etapa de tratamento: pode entregar ativos calmantes, hidratantes ou clareadores.',
+      'Esfoliante': 'Remove as células mortas da superfície, deixando a pele mais lisa, uniforme e com mais viço. Use só na frequência indicada.',
+      'Hidratante': 'Repõe água e protege a barreira da pele, deixando-a macia, confortável e menos sensível.',
+      'Área dos Olhos': 'Cuida da pele fina ao redor dos olhos, ajudando com olheiras, inchaço e linhas finas.',
+      'Tratamento': 'Traz os ativos que tratam a sua necessidade principal, como oleosidade, manchas, acne ou envelhecimento.',
+      'Protetor Solar': 'Protege a pele do sol, que causa manchas e envelhecimento. Indispensável todos os dias, mesmo nublado ou dentro de casa.',
+    };
+    function renderPdfEtapas(lista){
+      const grupos = [];
+      lista.forEach(p => {
+        const etapa = categoriaCanonica(p.categoria) || 'Outros';
+        let g = grupos.find(x => x.etapa === etapa);
+        if(!g){ g = { etapa, itens: [] }; grupos.push(g); }
+        g.itens.push(p);
+      });
+      const ordem = e => { const i = skincareCategories.indexOf(e); return i === -1 ? skincareCategories.length : i; };
+      grupos.sort((a, b) => ordem(a.etapa) - ordem(b.etapa));
+      return grupos.map(g => {
+        // "Escolha uma das opções" só quando há mais de um produto da etapa no mesmo período
+        const temOpcoes = ['manha', 'noite'].some(per => g.itens.filter(p => p.periodos.includes(per)).length > 1);
+        return `<div class="pdf-etapa">
+          <div class="pdf-etapa-head"><span class="pdf-etapa-nome">${g.etapa}</span>${temOpcoes ? '<span class="pdf-etapa-dica">Escolha uma das opções</span>' : ''}</div>
+          ${EXPLICACAO_ETAPA[g.etapa] ? `<div class="pdf-etapa-explicacao">${EXPLICACAO_ETAPA[g.etapa]}</div>` : ''}
+          <div class="pdf-etapa-opcoes">${g.itens.map(renderPdfProdutoCard).join('')}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // ---------- Resumo visual da rotina (etapas numeradas, como um infográfico) ----------
+    const RESUMO_ETAPA = {
+      'Demaquilante': 'Remove maquiagem, protetor e a oleosidade do dia.',
+      'Limpador': 'Limpa impurezas, suor e excesso de oleosidade.',
+      'Tônico': 'Equilibra o pH e prepara a pele para os ativos.',
+      'Esfoliante': 'Renova a superfície e deixa a pele mais uniforme.',
+      'Hidratante': 'Hidrata e fortalece a barreira da pele.',
+      'Área dos Olhos': 'Cuida da pele fina ao redor dos olhos.',
+      'Tratamento': 'Ativos que tratam a sua necessidade principal.',
+      'Protetor Solar': 'Protege do sol e previne manchas. Todos os dias.',
+    };
+    const ICONE_ETAPA = {
+      'Demaquilante': '<svg viewBox="0 0 24 24"><path d="M7 9h10v10a3 3 0 01-3 3h-4a3 3 0 01-3-3z"/><path d="M9 9V6h6v3"/><path d="M10 4h4"/><circle cx="18.5" cy="5" r="1.2"/><circle cx="20.5" cy="8" r="0.9"/></svg>',
+      'Limpador': '<svg viewBox="0 0 24 24"><path d="M8 10h8v9a3 3 0 01-3 3h-2a3 3 0 01-3-3z"/><path d="M10 10V7h4v3"/><path d="M12 7V4h4"/><circle cx="17.5" cy="14" r="1.6"/><circle cx="19.5" cy="17.5" r="1.1"/></svg>',
+      'Tônico': '<svg viewBox="0 0 24 24"><path d="M9 3h6v3l1.5 2v12a2 2 0 01-2 2h-5a2 2 0 01-2-2V8L9 6z"/><path d="M7.5 12h9"/></svg>',
+      'Esfoliante': '<svg viewBox="0 0 24 24"><path d="M5 11h14v7a4 4 0 01-4 4H9a4 4 0 01-4-4z"/><path d="M4 11h16"/><circle cx="9" cy="16" r="0.8"/><circle cx="12.5" cy="17.5" r="0.8"/><circle cx="15" cy="15" r="0.8"/><path d="M12 3l1 2.5L15.5 6 13 7l-1 2.5L11 7 8.5 6 11 5.5z"/></svg>',
+      'Hidratante': '<svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="3"/><path d="M5 11V9a2 2 0 012-2h10a2 2 0 012 2v2"/><path d="M8 15.5h8"/></svg>',
+      'Área dos Olhos': '<svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></svg>',
+      'Tratamento': '<svg viewBox="0 0 24 24"><path d="M10 2h4v3h-4z"/><path d="M9 5h6l1 3v11a3 3 0 01-3 3h-2a3 3 0 01-3-3V8z"/><path d="M12 11.5c1.2 1.6 1.8 2.6 1.8 3.5a1.8 1.8 0 01-3.6 0c0-.9.6-1.9 1.8-3.5z"/></svg>',
+      'Protetor Solar': '<svg viewBox="0 0 24 24"><path d="M7 4h10l-1 16a2 2 0 01-2 2h-4a2 2 0 01-2-2z"/><circle cx="12" cy="11" r="2.2"/><path d="M12 6.8v1M12 14.2v1M8.6 11h1M14.4 11h1"/></svg>',
+    };
+    function quandoUsarEtapa(itens){
+      const temManha = itens.some(p => (p.periodos || []).includes('manha'));
+      const temNoite = itens.some(p => (p.periodos || []).includes('noite'));
+      const todosSemanais = itens.length && itens.every(p => p.frequencia === 'personalizar' && p.dias && p.dias.length);
+      if(todosSemanais){
+        const n = Math.max(...itens.map(p => p.dias.length));
+        return n + (n === 1 ? 'x por semana' : 'x por semana');
+      }
+      if(temManha && temNoite) return 'Manhã e noite';
+      if(temManha) return 'Manhã';
+      if(temNoite) return 'Noite';
+      return '';
+    }
+    function renderResumoRotina(lista){
+      const grupos = [];
+      lista.forEach(p => {
+        const etapa = categoriaCanonica(p.categoria) || 'Outros';
+        let g = grupos.find(x => x.etapa === etapa);
+        if(!g){ g = { etapa, itens: [] }; grupos.push(g); }
+        g.itens.push(p);
+      });
+      const ordem = e => { const i = skincareCategories.indexOf(e); return i === -1 ? skincareCategories.length : i; };
+      grupos.sort((a, b) => ordem(a.etapa) - ordem(b.etapa));
+      if(!grupos.length) return '';
+      const cards = grupos.map((g, i) => {
+        const nomes = g.itens.map(p => escHTML(p.name)).join(' <span class="pdf-resumo-ou">ou</span> ');
+        const quando = quandoUsarEtapa(g.itens);
+        return `<div class="pdf-resumo-etapa">
+          <div class="pdf-resumo-num">${String(i + 1).padStart(2, '0')}</div>
+          <div class="pdf-resumo-icone">${ICONE_ETAPA[g.etapa] || ICONE_ETAPA['Tratamento']}</div>
+          <div class="pdf-resumo-nome">${escHTML(g.etapa)}</div>
+          <div class="pdf-resumo-texto">${RESUMO_ETAPA[g.etapa] || ''}</div>
+          <div class="pdf-resumo-produtos">${nomes}</div>
+          ${quando ? `<div class="pdf-resumo-quando">${quando}</div>` : ''}
+        </div>`;
+      }).join('');
+      return `<div class="pdf-resumo-titulo">Sua rotina em ${grupos.length} ${grupos.length === 1 ? 'etapa' : 'etapas'}</div>
+        <div class="pdf-resumo-linha" style="--n:${grupos.length}">${cards}</div>`;
+    }
+
+    const todosOsProdutos = juntarPeriodos(plano.manha, plano.noite);
+    const resumoEl = document.getElementById('pdfPlanoResumo');
+    if(resumoEl) resumoEl.innerHTML = renderResumoRotina(todosOsProdutos);
+    const etapasEl = document.getElementById('pdfPlanoEtapas');
+    etapasEl.innerHTML = todosOsProdutos.length
+      ? renderPdfEtapas(todosOsProdutos)
+      : '<p style="color:var(--text-muted);">Nenhum produto adicionado.</p>';
+    protegerFotosPdf(etapasEl);
+
+    navItems.forEach(i => i.classList.remove('active'));
+    const pacientesNavForPdf = document.querySelector('.nav-item[data-view="pacientes"]');
+    if(pacientesNavForPdf) pacientesNavForPdf.classList.add('active');
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById('view-plano-pdf').classList.add('active');
+    pageTitle.textContent = 'Plano de SkinCare — ' + (currentPatient ? currentPatient.name : '');
+    pageSubtitle.style.display = 'none';
+  }
+
+  /* ---------- Cor do tema ---------- */
+  const TEMAS = [
+    { id:'bordo', nome:'Bordô com Dourado', cor1:'#4a1524', cor2:'#a9762f', cor3:'#f2e2e6' },
+    { id:'azul',  nome:'Azul com Dourado',  cor1:'#14284a', cor2:'#a9762f', cor3:'#e2e8f2' },
+    { id:'verde', nome:'Verde com Dourado', cor1:'#1d3a2b', cor2:'#a9762f', cor3:'#e1ede5' },
+    { id:'terracota', nome:'Terracota com Dourado', cor1:'#5a3326', cor2:'#a9762f', cor3:'#f4e5dc' },
+  ];
+  // Quem usava um tema que saiu da lista (ex.: Grafite) volta para o Bordô.
+  try{ const t0 = document.documentElement.getAttribute('data-tema'); if(t0 && !TEMAS.some(x => x.id === t0)) aplicarTema('bordo'); }catch(e){}
+  function temaAtual(){
+    const t = document.documentElement.getAttribute('data-tema') || 'bordo';
+    return TEMAS.some(x => x.id === t) ? t : 'bordo';
+  }
+  function aplicarTema(id){
+    if(!TEMAS.some(t => t.id === id)) id = 'bordo';
+    if(id === 'bordo') document.documentElement.removeAttribute('data-tema');
+    else document.documentElement.setAttribute('data-tema', id);
+    try{ localStorage.setItem('skinExpertTema', id); }catch(e){}
+    renderSeletorTema();
+  }
+  function renderSeletorTema(){
+    const wrap = document.getElementById('temaOpcoes');
+    if(!wrap) return;
+    const atual = temaAtual();
+    wrap.innerHTML = '';
+    TEMAS.forEach(t => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tema-opcao' + (t.id === atual ? ' ativo' : '');
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', t.id === atual ? 'true' : 'false');
+      b.innerHTML = `
+        <div class="tema-bola-wrap">
+          <div class="tema-bola"><span style="background:${t.cor1}"></span><span style="background:${t.cor2}"></span><span style="background:${t.cor3}"></span></div>
+          <span class="tema-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </div>
+        <span class="tema-nome">${t.nome}</span>`;
+      b.addEventListener('click', () => {
+        if(t.id === temaAtual()) return;
+        aplicarTema(t.id);
+        salvarConfig('tema', t.id);
+        showToast('Tema "' + t.nome + '" aplicado!');
+      });
+      wrap.appendChild(b);
+    });
+  }
+  // Quem tinha escolhido um tema que saiu da lista (ex.: Rosa, Prata) volta para o padrão.
+  if(document.documentElement.getAttribute('data-tema') && temaAtual() === 'bordo') aplicarTema('bordo');
+  renderSeletorTema();
+
+  /* ---------- Configurações (preferências de moeda/idioma) ---------- */
+  (function initConfiguracoes(){
+    const paisSelect = document.getElementById('cfgPaisAtuacao');
+    paisSelect.value = localStorage.getItem('skinExpertPaisAtuacao') || 'BR';
+    document.getElementById('cfgMoeda').value = localStorage.getItem('skinExpertMoeda') || '';
+
+    document.getElementById('btnSalvarConfiguracoes').addEventListener('click', () => {
+      localStorage.setItem('skinExpertPaisAtuacao', paisSelect.value);
+      salvarConfig('pais_atuacao', paisSelect.value);
+      const moedaSel = document.getElementById('cfgMoeda').value;
+      try{ localStorage.setItem('skinExpertMoeda', moedaSel); }catch(e){}
+      salvarConfig('moeda', moedaSel);
+      renderCatalogo();
+      aplicarMoedaNoApp();
+      showToast('Preferências salvas! Moeda do sistema: ' + simboloMoeda());
+    });
+
+    document.getElementById('btnSalvarDadosProfissionais').addEventListener('click', async () => {
+      const nome = document.getElementById('cfgNomeProfissional').value.trim();
+      const titulo = document.getElementById('cfgTituloProfissional').value.trim();
+      const telefone = document.getElementById('cfgTelefoneProfissional').value.trim();
+
+      if(!nome){ showToast('Informe seu nome.'); return; }
+
+      perfilProfissional.nome = nome;
+      perfilProfissional.titulo = titulo || 'Esteticista e Cosmetóloga';
+      perfilProfissional.telefone = telefone;
+
+      const usuarioPerfil = await usuarioParaSalvar();
+      if(!usuarioPerfil && !modoDemonstracao) return; // sessão caiu: não finge que salvou
+      if(usuarioPerfil){
+        try {
+          const { error: erroPerfil } = await supabaseClient.from('perfis').upsert({ id: usuarioPerfil.id, nome: perfilProfissional.nome, titulo: perfilProfissional.titulo, telefone: perfilProfissional.telefone });
+          if(erroPerfil){ showToast('Não foi possível salvar seus dados: ' + erroPerfil.message); return; }
+        } catch(err){
+          console.warn('Não foi possível salvar Meus Dados Profissionais no Supabase.', err);
+          showToast('Não foi possível salvar seus dados. Verifique a internet e tente de novo.');
+          return;
+        }
+      } else {
+        localStorage.setItem('skinExpertDemoNome', perfilProfissional.nome);
+        localStorage.setItem('skinExpertDemoTitulo', perfilProfissional.titulo);
+        localStorage.setItem('skinExpertDemoTelefone', perfilProfissional.telefone);
+      }
+
+      atualizarSidebarPerfil();
+      showToast('Seus dados foram salvos com sucesso!');
+    });
+
+    document.getElementById('btnSalvarWhatsapp').addEventListener('click', async () => {
+      const numero = document.getElementById('cfgWhatsappNumero').value.trim();
+      const phoneId = document.getElementById('cfgWhatsappPhoneId').value.trim();
+      const token = document.getElementById('cfgWhatsappToken').value.trim();
+
+      if(!phoneId || !token){ showToast('Preencha o Phone Number ID e o Access Token.'); return; }
+
+      integracaoWhatsapp = { provider: 'meta_cloud_api', phone_number_id: phoneId, access_token: token, numero_whatsapp: numero, ativo: true };
+
+      const usuarioWhats = await usuarioParaSalvar();
+      if(!usuarioWhats && !modoDemonstracao) return;
+      if(usuarioWhats){
+        try {
+          const { error: erroWhats } = await supabaseClient.from('integracoes_whatsapp').upsert({
+            profissional_id: usuarioWhats.id,
+            provider: integracaoWhatsapp.provider,
+            phone_number_id: integracaoWhatsapp.phone_number_id,
+            access_token: integracaoWhatsapp.access_token,
+            numero_whatsapp: integracaoWhatsapp.numero_whatsapp,
+            ativo: true,
+            atualizado_em: new Date().toISOString()
+          });
+          if(erroWhats) throw erroWhats;
+        } catch(err){
+          console.warn('Não foi possível salvar a integração de WhatsApp no Supabase.', err);
+          showToast('Erro ao salvar a integração. Tente novamente.');
+          return;
+        }
+      } else {
+        localStorage.setItem('skinExpertWhatsappPhoneId', phoneId);
+        localStorage.setItem('skinExpertWhatsappToken', token);
+        localStorage.setItem('skinExpertWhatsappNumero', numero);
+        localStorage.setItem('skinExpertWhatsappAtivo', 'true');
+      }
+
+      preencherCamposWhatsapp();
+      showToast('Integração com WhatsApp salva com sucesso!');
+    });
+
+    document.getElementById('btnTestarWhatsapp').addEventListener('click', async () => {
+      if(!integracaoWhatsapp.phone_number_id || !integracaoWhatsapp.access_token){
+        showToast('Salve sua integração antes de testar.');
+        return;
+      }
+      showToast('Enviando mensagem de teste...');
+      try{
+        const { data, error } = await supabaseClient.functions.invoke('testar-whatsapp', { body: {} });
+        if(error){
+          showToast('Não foi possível confirmar o envio. Verifique seu Phone Number ID e Token.');
+        } else {
+          showToast('Mensagem de teste enviada! Verifique o WhatsApp do número cadastrado.');
+        }
+      } catch(e){
+        showToast('Não foi possível conectar para testar agora.');
+      }
+    });
+
+    document.getElementById('btnConectarGoogleAgenda').addEventListener('click', async () => {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(!userData || !userData.user){
+        showToast('Conecte-se com uma conta real (fora do modo demonstração) para usar a Google Agenda.');
+        return;
+      }
+      iniciarConexaoGoogleAgenda(userData.user.id);
+    });
+
+    document.getElementById('btnDesconectarGoogleAgenda').addEventListener('click', async () => {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(!userData || !userData.user) return;
+      // Apaga a conexão inteira (inclusive os tokens do Google), como prometido na Política de Privacidade.
+      // Se o banco não permitir apagar (falta a regra de DELETE no Supabase), pelo menos desativa e avisa no console.
+      try{
+        const { error } = await supabaseClient.from('integracoes_google_agenda').delete().eq('profissional_id', userData.user.id);
+        if(error){
+          console.warn('Não foi possível apagar a conexão com a Google Agenda; ela foi só desativada.', error);
+          await supabaseClient.from('integracoes_google_agenda').update({ ativo: false }).eq('profissional_id', userData.user.id);
+        }
+      } catch(err){
+        console.warn('Não foi possível desconectar a Google Agenda.', err);
+      }
+      googleAgendaConectado = false;
+      preencherStatusGoogleAgenda();
+      showToast('Google Agenda desconectada.');
+    });
+  })();
+
+  document.getElementById('backFromPlanoPdf').addEventListener('click', () => {
+    setLandscapePrintMode(false);
+    navItems.forEach(i => i.classList.remove('active'));
+    const pacientesNavBack = document.querySelector('.nav-item[data-view="pacientes"]');
+    if(pacientesNavBack) pacientesNavBack.classList.add('active');
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById('view-registro-paciente').classList.add('active');
+    pageTitle.textContent = 'Registro de Paciente';
+    pageSubtitle.style.display = 'none';
+    switchRegistroTab('recomendacoes');
+  });
+  // Ao salvar um PDF, o arquivo já vem com o nome do documento + o nome da paciente
+  // (o navegador usa o título da página como nome do arquivo). Vale para o botão e para o Ctrl + P.
+  //   Plano:    "Planejamento de SkinCare - Nome da Paciente"
+  //   Anamnese: "Ficha de Anamnese - Nome da Paciente"
+  let tituloAntesDoPdf = null;
+  function nomeArquivoPdf(documento){
+    const nome = (currentPatient && currentPatient.name ? currentPatient.name : '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+    return nome ? `${documento} - ${nome}` : documento;
+  }
+  const PDFS_COM_NOME = { 'view-plano-pdf': 'Planejamento de SkinCare', 'view-skincare-pdf': 'Ficha de Anamnese' };
+  window.addEventListener('beforeprint', () => {
+    const viewId = Object.keys(PDFS_COM_NOME).find(id => { const v = document.getElementById(id); return v && v.classList.contains('active'); });
+    if(!viewId) return;
+    tituloAntesDoPdf = document.title;
+    document.title = nomeArquivoPdf(PDFS_COM_NOME[viewId]);
+  });
+  window.addEventListener('afterprint', () => {
+    if(tituloAntesDoPdf !== null){ document.title = tituloAntesDoPdf; tituloAntesDoPdf = null; }
+  });
+  document.getElementById('btnBaixarPdfPlano').addEventListener('click', () => window.print());
+
+  // Assinatura do conteúdo de uma anamnese: duas com a mesma assinatura (mesma paciente) são repetição.
+  function assinaturaAnamnese(a){
+    const campos = ['paciente_id', 'principal_queixa', 'tratamentos_anteriores', 'autopercepcao', 'integrativa',
+                    'sistemica', 'estilo_vida', 'skincare', 'investimento', 'observacoes'];
+    return JSON.stringify(campos.map(c => a[c] == null ? null : a[c]));
+  }
+  // Remove repetições: mesmo link (token) ou mesmo conteúdo da mesma paciente em até 24h.
+  // Fica a primeira enviada. A lista deve vir da mais recente para a mais antiga.
+  function semAnamnesesRepetidas(lista){
+    const porToken = new Set(), porConteudo = new Map(), saida = [];
+    lista.slice().reverse().forEach(a => { // da mais antiga para a mais recente
+      if(a.token){
+        const t = String(a.token);
+        if(porToken.has(t)) return;
+        porToken.add(t);
+      }
+      const sig = assinaturaAnamnese(a);
+      const quando = new Date(a.respondida_em || 0).getTime();
+      const anterior = porConteudo.get(sig);
+      if(anterior != null && Math.abs(quando - anterior) < 24 * 3600 * 1000) return;
+      porConteudo.set(sig, quando);
+      saida.push(a);
+    });
+    return saida.reverse();
+  }
+
+  let renderPreFichasEmAndamento = null;
+  function renderPreFichasDashboard(){
+    if(renderPreFichasEmAndamento) return renderPreFichasEmAndamento; // evita montar a lista duas vezes ao mesmo tempo
+    renderPreFichasEmAndamento = (async () => {
+      const container = document.getElementById('preFichasContainer');
+      const { data, error } = await supabaseClient
+        .from('anamneses')
+        .select('*, pacientes(nome)')
+        .not('token', 'is', null)             // só as respondidas pela paciente pelo link
+        .order('respondida_em', { ascending: false })
+        .limit(60);
+      if(error || !data) return;
+
+      const lista = semAnamnesesRepetidas(data.filter(a => a.token)).slice(0, 5);
+      container.innerHTML = '';
+      if(!lista.length){
+        container.innerHTML = '<div class="empty-state">Nenhuma pré-ficha respondida.</div>';
+        return;
+      }
+      lista.forEach(a => {
+        const dt = new Date(a.respondida_em);
+        const dataFormatada = `${pad(dt.getDate())}/${pad(dt.getMonth()+1)}`;
+        const nome = a.pacientes ? a.pacientes.nome : ((patients.find(x => String(x.id) === String(a.paciente_id)) || {}).name || 'Paciente');
+        const item = document.createElement('div');
+        item.className = 'produtos-com-ativo-item';
+        item.innerHTML = `
+          <div><div class="pca-name">${escHTML(nome)}</div><div class="pca-brand">Respondida em ${dataFormatada}</div></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        `;
+        item.addEventListener('click', () => {
+          const p = patients.find(x => String(x.id) === String(a.paciente_id));
+          if(p) openPatientRegistro(p.id, 'historico');
+        });
+        container.appendChild(item);
+      });
+    })().catch(e => console.warn('Pré-fichas:', e)).finally(() => { renderPreFichasEmAndamento = null; });
+    return renderPreFichasEmAndamento;
+  }

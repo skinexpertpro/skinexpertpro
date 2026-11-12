@@ -1,0 +1,594 @@
+/* Skin Expert Pro — Plano de SkinCare e Recomendações (planos salvos da paciente).
+   Arquivo 4 de 17: a ordem dos arquivos no index.html importa. */
+
+  /* ================= PLANO DE SKINCARE MODULE ================= */
+  const skincareCategories = ["Demaquilante","Limpador","Tônico","Esfoliante","Hidratante","Área dos Olhos","Tratamento","Protetor Solar"];
+  const routineEntries = []; // { id, category, product, period, frequency, selectedDays:[], usage, link, expanded }
+  const weekdayLabels = ["D","S","T","Q","Q","S","S"];
+  const MAX_OPCOES_POR_ETAPA = 3;
+  function etapaDoProduto(cat){
+    try{ return categoriaCanonica(cat); }catch(e){ return cat || 'Outros'; }
+  }
+  // "Opção 2 de 3" quando a etapa tem mais de um produto no mesmo período
+  function opcaoDaEtapa(entry){
+    const etapa = etapaDoProduto(entry.category);
+    const grupo = routineEntries.filter(e => e.period === entry.period && etapaDoProduto(e.category) === etapa);
+    return grupo.length > 1 ? { n: grupo.indexOf(entry) + 1, total: grupo.length } : null;
+  }
+
+  function updateSkincareMeta(){
+    const basicEl = document.getElementById('skincareMetaBasic');
+    if(currentPatient){
+      basicEl.textContent = `${currentPatient.age} anos · ${currentPatient.gender || '—'}`;
+    } else {
+      basicEl.textContent = '— anos · —';
+    }
+    const baumannVal = document.getElementById('baumannResult') ? document.getElementById('baumannResult').textContent : '—';
+    document.getElementById('skincareBaumannBadge').textContent = baumannVal || '—';
+    const fitzSel = document.querySelector('#panel-avaliacao .scale-card.selected[data-group="fitzpatrick"]');
+    document.getElementById('skincareFototipoBadge').textContent = fitzSel ? fitzSel.querySelector('.sc-title').textContent : '—';
+    try{ atualizarResumoBuscaPaciente(); }catch(e){ console.warn('Busca guiada (resumo):', e); }
+  }
+
+  /* ---------- Busca guiada: começa pela paciente ----------
+     Junta o que já se sabe (última anamnese, avaliação da pele e país de residência),
+     mostra um resumo "Buscando para" e já liga o filtro de gestante/lactante. */
+  let skcResumoSeq = 0;
+  let skcGestanteAutoPara = null; // paciente para quem o filtro de gestante já foi ligado automaticamente
+
+  function lerAvaliacaoDaTela(){
+    const sel = (grupo) => document.querySelector(`#panel-avaliacao .selected[data-group="${grupo}"]`);
+    const ligado = (alvoId) => { const i = document.querySelector(`#panel-avaliacao [data-toggle-target="${alvoId}"]`); return !!(i && i.checked); };
+    const titulo = el => el ? ((el.querySelector('.sc-title') || el).textContent || '').trim() : '';
+    const olei = sel('oleosidade'), sens = sel('sensibilidade');
+    const out = {};
+    const baumann = (document.getElementById('baumannResult') || {}).textContent || '';
+    if(baumann && baumann.trim() !== '—') out.baumann = baumann.trim();
+    const partes = [];
+    if(olei) partes.push(olei.dataset.value === 'O' ? 'Oleosa' : 'Seca');
+    if(sens) partes.push(sens.dataset.value === 'S' ? 'sensível' : 'resistente');
+    if(partes.length) out.tipoPele = partes.join(' e ');
+    const fitz = sel('fitzpatrick'); if(fitz) out.fototipo = titulo(fitz);
+    const glogau = sel('glogau'); if(glogau) out.glogau = titulo(glogau);
+    const hid = sel('hidratacao'); if(hid) out.hidratacao = titulo(hid);
+    const cond = [];
+    if(ligado('acneBody')){ const g = sel('grau-acne'); cond.push('Acne' + (g ? ' ' + titulo(g).replace(/^Grau/i, 'grau') : '')); }
+    if(ligado('rosaceaBody')) cond.push('Rosácea');
+    if(ligado('discromiasBody')) cond.push('Manchas');
+    if(ligado('olheirasBody')) cond.push('Olheiras');
+    if(cond.length) out.condicoes = cond;
+    return out;
+  }
+
+  async function lerAnamneseParaBusca(p){
+    try{
+      if(isPacienteReal(p)){
+        const { data, error } = await supabaseClient.from('anamneses').select('sistemica')
+          .eq('paciente_id', p.id).order('respondida_em', { ascending: false }).limit(1);
+        if(!error && data && data[0]) return data[0].sistemica || {};
+      } else {
+        const lista = demoAnamnesesPorPaciente[p.id] || [];
+        if(lista[0]) return lista[0].sistemica || {};
+      }
+    }catch(e){ console.warn('Busca guiada (anamnese):', e); }
+    return null;
+  }
+
+  async function atualizarResumoBuscaPaciente(){
+    const box = document.getElementById('skcResumoPaciente');
+    if(!box) return;
+    const p = currentPatient;
+    const seq = ++skcResumoSeq;
+    if(!p){ box.innerHTML = ''; return; }
+
+    const av = lerAvaliacaoDaTela();
+    const sist = await lerAnamneseParaBusca(p);
+    if(seq !== skcResumoSeq || currentPatient !== p) return; // trocou de paciente enquanto carregava
+
+    const itens = [];
+    if(av.tipoPele) itens.push({ txt: 'Pele ' + av.tipoPele.toLowerCase() });
+    if(av.baumann) itens.push({ rot: 'Baumann', txt: av.baumann });
+    if(av.fototipo) itens.push({ rot: 'Fototipo', txt: av.fototipo.replace(/^Tipo\s*/i, '') });
+    if(av.glogau) itens.push({ rot: 'Glogau', txt: av.glogau.replace(/^Grau\s*/i, '') });
+    if(av.hidratacao) itens.push({ txt: av.hidratacao });
+    (av.condicoes || []).forEach(c => itens.push({ txt: c }));
+
+    const gestante = sist && sist.gestante === 'Sim';
+    const lactante = sist && sist.lactante === 'Sim';
+    if(gestante) itens.push({ txt: 'Gestante', cls: 'atencao' });
+    if(lactante) itens.push({ txt: 'Lactante', cls: 'atencao' });
+    if(sist && sist.alergias === 'Sim') itens.push({ rot: 'Alergia', txt: sist.alergia_tipo || 'não especificada', cls: 'alergia' });
+
+    const pais = String(p.pais || '').trim();
+    if(pais) itens.push({ txt: 'Mora ' + (/brasil|brazil/i.test(pais) ? 'no Brasil' : 'em ' + pais) });
+
+    const faltando = [];
+    if(!sist) faltando.push('anamnese');
+    if(!av.tipoPele && !av.baumann && !av.fototipo) faltando.push('avaliação da pele');
+
+    box.innerHTML = `
+      <div class="skc-resumo-titulo">Buscando para ${escHTML(p.name || 'a paciente')}</div>
+      ${itens.length ? `<div class="skc-resumo-itens">${itens.map(i => `<span class="skc-resumo-item ${i.cls || ''}">${i.rot ? `<b>${escHTML(i.rot)}:</b>` : ''}${escHTML(i.txt)}</span>`).join('')}</div>` : ''}
+      ${(gestante || lactante) ? '<div class="skc-resumo-nota">Filtro de gestante/lactante ligado: só aparecem ativos liberados para ela.</div>' : ''}
+      ${faltando.length ? `<div class="skc-resumo-nota">Sem ${faltando.join(' nem ')} preenchida${faltando.length > 1 ? 's' : ''} ainda: o resumo fica mais completo quando ${faltando.length > 1 ? 'elas forem preenchidas' : 'ela for preenchida'}.</div>` : ''}
+    `;
+
+    // Liga o filtro de gestante/lactante automaticamente uma vez por paciente
+    // (se a profissional desligar depois, o app respeita a escolha dela).
+    const chk = document.getElementById('skcAssistGestante');
+    if(chk && (gestante || lactante) && skcGestanteAutoPara !== p.id){
+      skcGestanteAutoPara = p.id;
+      if(!chk.checked){
+        chk.checked = true;
+        try{ renderSkcAtivosDesejadosChips(); }catch(e){}
+      }
+    }
+  }
+
+  function toggleRoutineEntry(product, period, why){
+    const idx = routineEntries.findIndex(e => e.product.id === product.id && e.period === period);
+    if(idx >= 0){
+      routineEntries.splice(idx, 1);
+    } else {
+      // Cada etapa (Limpador, Hidratante…) aceita até 3 opções por período, para a paciente escolher uma no PDF
+      const etapa = etapaDoProduto(product.category);
+      const jaNaEtapa = routineEntries.filter(e => e.period === period && etapaDoProduto(e.category) === etapa).length;
+      if(jaNaEtapa >= MAX_OPCOES_POR_ETAPA){
+        showToast(`Máximo de ${MAX_OPCOES_POR_ETAPA} opções de ${etapa} na rotina da ${period === 'manha' ? 'manhã' : 'noite'}.`);
+        return;
+      }
+      routineEntries.push({
+        id: 'r' + Date.now() + Math.random().toString(36).slice(2,6),
+        category: product.category || 'Outros',
+        product: product,
+        period: period,
+        frequency: 'diario',
+        selectedDays: [],
+        usage: product.usage || '',
+        link: '',
+        expanded: false,
+        why: why || [],
+      });
+    }
+    renderSkcProdutosEncontrados();
+    renderJornada();
+  }
+
+  function renderJornada(){
+    const container = document.getElementById('jornadaContainer');
+    container.innerHTML = '';
+    if(routineEntries.length === 0){
+      container.innerHTML = '<div class="routine-empty">Nenhum produto adicionado ainda. Escolha produtos ao lado para montar a rotina.</div>';
+      return;
+    }
+
+    routineEntries.forEach(entry => {
+      const card = document.createElement('div');
+      card.className = 'routine-entry' + (entry.expanded ? ' expanded' : '');
+
+      const daysHTML = weekdayLabels.map((label, i) => `
+        <div class="weekday-chip ${entry.selectedDays.includes(i) ? 'selected' : ''}" data-day="${i}">${label}</div>
+      `).join('');
+
+      const opcao = opcaoDaEtapa(entry);
+      const opcaoHTML = opcao ? `<span class="routine-opcao-pill">Opção ${opcao.n} de ${opcao.total}</span>` : '';
+
+      card.innerHTML = `
+        <div class="routine-entry-head">
+          <div class="routine-entry-title">
+            <span class="routine-period-pill ${entry.period}">${entry.period === 'manha' ? 'Manhã' : 'Noite'}</span>
+            ${entry.product.name} <span style="color:var(--text-muted); font-weight:500;">— ${entry.category}</span>
+            ${opcaoHTML}
+          </div>
+          <button class="routine-remove-btn" title="Remover">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          </button>
+        </div>
+        <div class="routine-entry-body">
+          <label>Frequência</label>
+          <select class="freq-select">
+            <option value="diario" ${entry.frequency === 'diario' ? 'selected' : ''}>Diário</option>
+            <option value="personalizar" ${entry.frequency === 'personalizar' ? 'selected' : ''}>Personalizar</option>
+          </select>
+          <div class="weekday-picker" style="${entry.frequency === 'personalizar' ? '' : 'display:none;'}">${daysHTML}</div>
+          <label>Modo de uso</label>
+          <textarea class="usage-input">${entry.usage}</textarea>
+          <label>Link do produto (opcional)</label>
+          <input type="text" class="link-input" value="${entry.link}" placeholder="https://...">
+        </div>
+      `;
+
+      card.querySelector('.routine-entry-head').addEventListener('click', (e) => {
+        if(e.target.closest('.routine-remove-btn')) return;
+        entry.expanded = !entry.expanded;
+        renderJornada();
+      });
+      card.querySelector('.routine-remove-btn').addEventListener('click', () => {
+        const idx = routineEntries.indexOf(entry);
+        if(idx >= 0) routineEntries.splice(idx, 1);
+        renderJornada();
+        renderSkcProdutosEncontrados();
+      });
+      const freqSelect = card.querySelector('.freq-select');
+      freqSelect.addEventListener('click', (e) => e.stopPropagation());
+      freqSelect.addEventListener('change', () => {
+        entry.frequency = freqSelect.value;
+        renderJornada();
+      });
+      card.querySelectorAll('.weekday-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const day = parseInt(chip.dataset.day, 10);
+          const pos = entry.selectedDays.indexOf(day);
+          if(pos >= 0) entry.selectedDays.splice(pos, 1); else entry.selectedDays.push(day);
+          chip.classList.toggle('selected');
+        });
+      });
+      const usageInput = card.querySelector('.usage-input');
+      usageInput.addEventListener('click', (e) => e.stopPropagation());
+      usageInput.addEventListener('input', () => { entry.usage = usageInput.value; });
+      const linkInput = card.querySelector('.link-input');
+      linkInput.addEventListener('click', (e) => e.stopPropagation());
+      linkInput.addEventListener('input', () => { entry.link = linkInput.value; });
+
+      container.appendChild(card);
+    });
+  }
+
+  /* ================= RECOMENDAÇÕES MODULE (planos de skincare salvos) ================= */
+  const recomendacoesDataDemo = []; // usado apenas no modo demonstração (pacientes fictícias)
+  const demoAnamnesesPorPaciente = {}; // { pacienteId: [ payload, payload, ... ] } — usado apenas no modo demonstração
+
+  function isPacienteReal(p){
+    return p && String(p.id).includes('-');
+  }
+
+  // Evita cadastrar a mesma cliente duas vezes: considera duplicado quando o nome
+  // (ignorando maiúsculas/espaços) e o número de telefone (só os dígitos) já existem
+  // em outra paciente cadastrada. excludeId serve para não comparar a paciente com ela mesma ao editar.
+  function encontrarPacienteDuplicado(nome, telefoneNumero, excludeId){
+    const nomeNorm = (nome || '').trim().toLowerCase();
+    const telNorm = (telefoneNumero || '').replace(/\D/g, '');
+    if(!nomeNorm || !telNorm) return null;
+    return patients.find(p => {
+      if(excludeId && String(p.id) === String(excludeId)) return false;
+      const pNome = (p.name || '').trim().toLowerCase();
+      const pTel = (p.phoneNumber || '').replace(/\D/g, '');
+      return pNome === nomeNorm && pTel === telNorm;
+    }) || null;
+  }
+
+  /* ---------- Cabeçalho de alerta da paciente (gestante/lactante/alergia) ---------- */
+  async function atualizarHeaderPaciente(p){
+    const badgesEl = document.getElementById('patientHeaderBadges');
+    if(!badgesEl || !p) return;
+
+    badgesEl.innerHTML = '';
+
+    let sist = null;
+    if(isPacienteReal(p)){
+      const { data, error } = await supabaseClient
+        .from('anamneses')
+        .select('sistemica')
+        .eq('paciente_id', p.id)
+        .order('respondida_em', { ascending: false })
+        .limit(1);
+      if(!error && data && data[0]) sist = data[0].sistemica || {};
+    } else {
+      const lista = demoAnamnesesPorPaciente[p.id] || [];
+      if(lista[0]) sist = lista[0].sistemica || {};
+    }
+    if(!sist || currentPatient !== p) return;
+
+    const badges = [];
+    if(sist.gestante === 'Sim') badges.push({ tipo:'atencao', label:'Atenção', valor:'Gestante' });
+    if(sist.lactante === 'Sim') badges.push({ tipo:'atencao', label:'Atenção', valor:'Lactante' });
+    if(sist.alergias === 'Sim') badges.push({ tipo:'alergia', label:'Alergia', valor: sist.alergia_tipo || 'Não especificada' });
+
+    badgesEl.innerHTML = badges.map(b => `
+      <div class="patient-alert-badge ${b.tipo}">
+        <span class="pab-icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L14.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        </span>
+        <span>
+          <span class="pab-label">${b.label}</span>
+          <span class="pab-value">${b.valor}</span>
+        </span>
+      </div>
+    `).join('');
+  }
+
+  function planoCardHTML(plano){
+    const manhaHTML = plano.manha.length
+      ? plano.manha.map(p => `<div class="rotina-summary-item">${p.name} — ${p.brand}</div>`).join('')
+      : '<div class="rotina-summary-item" style="color:var(--text-muted);">Nenhum produto adicionado.</div>';
+    const noiteHTML = plano.noite.length
+      ? plano.noite.map(p => `<div class="rotina-summary-item">${p.name} — ${p.brand}</div>`).join('')
+      : '<div class="rotina-summary-item" style="color:var(--text-muted);">Nenhum produto adicionado.</div>';
+
+    return `
+      <summary>
+        <div class="historico-entry-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2h6v3.5l2 2V20a2 2 0 01-2 2H9a2 2 0 01-2-2V7.5l2-2z"/></svg>
+        </div>
+        <div>
+          <div class="historico-entry-title">${plano.objetivo || 'Plano de SkinCare'}</div>
+          <div class="historico-entry-date">${plano.dataGerada}${plano.duracao ? ' · Acompanhamento de ' + plano.duracao + ' dias' : ''}</div>
+        </div>
+        <div class="historico-entry-spacer"></div>
+        <button class="historico-pdf-btn" data-pdf-plano="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Baixar PDF
+        </button>
+        <button class="historico-excluir-btn" data-excluir-plano="true" title="Excluir este plano" aria-label="Excluir este plano">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        </button>
+        <svg class="historico-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="historico-entry-body">
+        <div class="rotina-summary-cols">
+          <div>
+            <div class="rotina-summary-title">Rotina da Manhã</div>
+            ${manhaHTML}
+          </div>
+          <div>
+            <div class="rotina-summary-title">Rotina da Noite</div>
+            ${noiteHTML}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function attachPlanoPdfButton(details, plano){
+    details.querySelector('[data-pdf-plano]').addEventListener('click', (e) => {
+      e.preventDefault();
+      openPlanoPdf(plano);
+    });
+    const btnExcluir = details.querySelector('[data-excluir-plano]');
+    if(btnExcluir) btnExcluir.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation(); // não abre/fecha o cartão
+      abrirExcluirPlano(plano);
+    });
+  }
+
+  async function renderRecomendacoes(){
+    const list = document.getElementById('recomendacoesList');
+    const badge = document.getElementById('recomendacoesCountBadge');
+    const paciente = currentPatient; // a paciente aberta quando a busca começou
+    list.innerHTML = '';
+
+    let planos = [];
+
+    if(isPacienteReal(paciente)){
+      const { data, error } = await supabaseClient
+        .from('planos_skincare')
+        .select('*')
+        .eq('paciente_id', paciente.id)
+        .order('data_gerada', { ascending: false });
+      if(currentPatient !== paciente) return; // trocou de paciente enquanto carregava: não mostra a lista errada
+      if(error) console.warn('Recomendações:', error.message);
+
+      if(!error && data){
+        planos = data.map(row => {
+          const dt = new Date(row.data_gerada);
+          return {
+            id: row.id,
+            objetivo: row.objetivo,
+            duracao: row.duracao_dias,
+            dataGerada: `${dt.getDate()} de ${monthNames[dt.getMonth()]}, ${dt.getFullYear()}`,
+            manha: row.rotina_manha || [],
+            noite: row.rotina_noite || [],
+          };
+        });
+      }
+    } else {
+      planos = recomendacoesDataDemo.filter(pl => paciente && String(pl.pacienteId) === String(paciente.id)).reverse();
+    }
+
+    list.innerHTML = ''; // limpa de novo: evita lista duplicada se abriu a aba duas vezes rápido
+    badge.textContent = planos.length + (planos.length === 1 ? ' plano' : ' planos');
+
+    if(planos.length === 0){
+      list.innerHTML = '<div class="registro-card empty-state">Nenhum plano de SkinCare foi salvo ainda para esta paciente.</div>';
+      return;
+    }
+
+    planos.forEach(plano => {
+      const details = document.createElement('details');
+      details.className = 'historico-entry';
+      details.innerHTML = planoCardHTML(plano);
+      attachPlanoPdfButton(details, plano);
+      list.appendChild(details);
+    });
+  }
+  renderRecomendacoes();
+
+  document.getElementById('btnFinalizarSkincarePlano').addEventListener('click', async () => {
+    const objetivo = document.getElementById('skincareObjetivo').value.trim();
+    const duracao = document.getElementById('skincareDuracao').value.trim();
+    // O que vai para o plano salvo (e para o PDF da paciente): inclui o link do produto e a frequência de uso
+    const paraPlano = e => ({
+      name: e.product.name, brand: e.product.brand, image: e.product.image || '',
+      categoria: e.category || e.product.category || '', usage: e.usage || e.product.usage || '',
+      func: e.product.func || '', why: e.why || [],
+      link: (e.link || '').trim(),
+      price: e.product.price != null ? e.product.price : null,
+      apenasBrasil: !!e.product.apenasBrasil,
+      frequencia: e.frequency || 'diario',
+      dias: e.frequency === 'personalizar' ? (e.selectedDays || []).slice().sort((a, b) => a - b) : [],
+    });
+    const manha = routineEntries.filter(e => e.period === 'manha').map(paraPlano);
+    const noite = routineEntries.filter(e => e.period === 'noite').map(paraPlano);
+
+    if(isPacienteReal(currentPatient)){
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if(!userData || !userData.user){ showToast('Sessão expirada, faça login novamente.'); return; }
+
+      const { error } = await supabaseClient.from('planos_skincare').insert({
+        paciente_id: currentPatient.id,
+        profissional_id: userData.user.id,
+        objetivo, duracao_dias: parseInt(duracao, 10) || null,
+        rotina_manha: manha, rotina_noite: noite,
+      });
+
+      if(error){ showToast('Erro ao salvar: ' + error.message); return; }
+    } else {
+      const hoje = new Date();
+      recomendacoesDataDemo.push({
+        id: 'demo-plano-' + Date.now(),
+        pacienteId: currentPatient ? currentPatient.id : null,
+        objetivo, duracao,
+        dataGerada: `${hoje.getDate()} de ${monthNames[hoje.getMonth()]}, ${hoje.getFullYear()}`,
+        manha, noite,
+      });
+    }
+
+    try{ registrarNovoPlanoAcompanhamento(currentPatient, duracao); }catch(e){ console.warn('Acompanhamentos:', e); }
+    await renderRecomendacoes();
+    await renderPlanosSkincareHistorico();
+    showToast('Plano de SkinCare salvo com sucesso!');
+  });
+
+  /* ---------- Planos de SkinCare no Histórico ---------- */
+  async function renderPlanosSkincareHistorico(){
+    const container = document.getElementById('planosSkincareHistoricoContainer');
+    container.innerHTML = '';
+    if(!isPacienteReal(currentPatient)) return;
+
+    const { data, error } = await supabaseClient
+      .from('planos_skincare')
+      .select('*')
+      .eq('paciente_id', currentPatient.id)
+      .order('data_gerada', { ascending: false });
+
+    if(error || !data) return;
+
+    data.forEach(row => {
+      const dt = new Date(row.data_gerada);
+      const plano = {
+        id: row.id,
+        objetivo: row.objetivo,
+        duracao: row.duracao_dias,
+        dataGerada: `${dt.getDate()} de ${monthNames[dt.getMonth()]}, ${dt.getFullYear()}`,
+        manha: row.rotina_manha || [],
+        noite: row.rotina_noite || [],
+      };
+      const details = document.createElement('details');
+      details.className = 'historico-entry';
+      details.innerHTML = planoCardHTML(plano);
+      attachPlanoPdfButton(details, plano);
+      container.appendChild(details);
+    });
+  }
+
+  function updateHistoricoCountBadge(){
+    const total = document.querySelectorAll('#anamnesesRespondidasContainer .historico-entry, #planosSkincareHistoricoContainer .historico-entry, #avaliacoesHistoricoContainer .historico-entry').length;
+    const badge = document.getElementById('historicoCountBadge');
+    if(badge) badge.textContent = total + (total === 1 ? ' registro' : ' registros');
+  }
+
+  document.getElementById('backFromPdf').addEventListener('click', () => {
+    navItems.forEach(i => i.classList.remove('active'));
+    const pacientesNavBack = document.querySelector('.nav-item[data-view="pacientes"]');
+    if(pacientesNavBack) pacientesNavBack.classList.add('active');
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById('view-registro-paciente').classList.add('active');
+    pageTitle.textContent = 'Registro de Paciente';
+    pageSubtitle.style.display = 'none';
+    switchRegistroTab('historico');
+  });
+
+  document.getElementById('btnBaixarPdf').addEventListener('click', () => window.print());
+
+  /* ---------- Excluir um plano de SkinCare (pede a senha da profissional) ---------- */
+  const modalExcluirPlanoOverlay = document.getElementById('modalExcluirPlanoOverlay');
+  const expCiente = document.getElementById('expCiente');
+  const expSenha = document.getElementById('expSenha');
+  const expErro = document.getElementById('expErro');
+  const expConfirmar = document.getElementById('expConfirmar');
+  let excluirPlanoCtx = null; // { plano, paciente }
+
+  function atualizarBotaoExcluirPlano(){
+    const precisaSenha = !modoDemonstracao;
+    expConfirmar.disabled = !excluirPlanoCtx || !expCiente.checked || (precisaSenha && !expSenha.value);
+  }
+
+  function abrirExcluirPlano(plano){
+    const paciente = currentPatient;
+    if(!modalExcluirPlanoOverlay){ showToast('Atualize a página (Ctrl + Shift + R) para usar a exclusão.'); return; }
+    if(!paciente || !plano || !plano.id){ showToast('Não foi possível identificar este plano.'); return; }
+    excluirPlanoCtx = { plano, paciente };
+    const nome = paciente.name || 'esta paciente';
+    const titulo = plano.objetivo || 'Plano de SkinCare';
+    document.getElementById('expResumo').textContent =
+      `Você vai excluir o plano "${titulo}" de ${nome}, gerado em ${plano.dataGerada}${plano.duracao ? ' (acompanhamento de ' + plano.duracao + ' dias)' : ''}. ` +
+      'Ele some da aba Recomendações, do Histórico e dos Acompanhamentos. Esta ação não pode ser desfeita.';
+    document.getElementById('expCienteTexto').textContent = `Estou ciente de que estou excluindo o plano de SkinCare de ${nome}.`;
+    expCiente.checked = false;
+    expSenha.value = '';
+    expErro.textContent = '';
+    document.getElementById('expSenhaCampo').style.display = modoDemonstracao ? 'none' : '';
+    expConfirmar.textContent = 'Excluir plano';
+    atualizarBotaoExcluirPlano();
+    modalExcluirPlanoOverlay.classList.add('open');
+    setTimeout(() => expCiente.focus(), 50);
+  }
+
+  function fecharExcluirPlano(){
+    modalExcluirPlanoOverlay.classList.remove('open');
+    excluirPlanoCtx = null;
+    expSenha.value = '';
+  }
+
+  async function confirmarExcluirPlano(){
+    if(!excluirPlanoCtx || expConfirmar.disabled) return;
+    const { plano, paciente } = excluirPlanoCtx;
+    expErro.textContent = '';
+    expConfirmar.disabled = true;
+    expConfirmar.textContent = 'Verificando…';
+    const voltar = () => { expConfirmar.textContent = 'Excluir plano'; atualizarBotaoExcluirPlano(); };
+
+    if(modoDemonstracao || !isPacienteReal(paciente)){
+      const i = recomendacoesDataDemo.findIndex(pl => pl.id === plano.id);
+      if(i >= 0) recomendacoesDataDemo.splice(i, 1);
+    } else {
+      // 1) confere a senha da profissional logada
+      const { data: userData } = await supabaseClient.auth.getUser();
+      const email = userData && userData.user && userData.user.email;
+      if(!email){ expErro.textContent = 'Sessão expirada. Faça login novamente.'; voltar(); return; }
+      const { error: erroSenha } = await supabaseClient.auth.signInWithPassword({ email, password: expSenha.value });
+      if(erroSenha){
+        expErro.textContent = /invalid|credenciais|credentials/i.test(erroSenha.message || '') ? 'Senha incorreta. Nada foi excluído.' : 'Não foi possível conferir a senha: ' + erroSenha.message;
+        expSenha.value = ''; expSenha.focus(); voltar(); return;
+      }
+      // 2) exclui só este plano
+      const { data: apagados, error } = await supabaseClient.from('planos_skincare').delete().eq('id', plano.id).select('id');
+      if(error){ expErro.textContent = 'Nada foi excluído: ' + error.message; voltar(); return; }
+      if(!apagados || !apagados.length){
+        expErro.textContent = 'O banco de dados não permitiu excluir (falta a permissão de exclusão em planos_skincare). Nada foi excluído.';
+        voltar(); return;
+      }
+    }
+
+    fecharExcluirPlano();
+    showToast('Plano de SkinCare excluído.');
+    if(currentPatient === paciente){
+      await renderRecomendacoes();
+      try{ await renderPlanosSkincareHistorico(); updateHistoricoCountBadge(); }catch(e){}
+    }
+    try{
+      if(modoDemonstracao) aplicarAcompanhamentoNosPacientes(), renderPacientesTable();
+      else await carregarAcompanhamentos(); // recalcula "Última rotina" e Acompanhamentos sem este plano
+    }catch(e){ console.warn('Acompanhamentos:', e); }
+  }
+
+  if(modalExcluirPlanoOverlay){ // (só liga os botões se o index.html novo, com esta janela, já estiver no ar)
+  expCiente.addEventListener('change', atualizarBotaoExcluirPlano);
+  expSenha.addEventListener('input', () => { expErro.textContent = ''; atualizarBotaoExcluirPlano(); });
+  expSenha.addEventListener('keydown', (e) => { if(e.key === 'Enter') confirmarExcluirPlano(); });
+  expConfirmar.addEventListener('click', confirmarExcluirPlano);
+  document.getElementById('expCancelar').addEventListener('click', fecharExcluirPlano);
+  modalExcluirPlanoOverlay.addEventListener('click', (e) => { if(e.target === modalExcluirPlanoOverlay) fecharExcluirPlano(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modalExcluirPlanoOverlay.classList.contains('open')) fecharExcluirPlano(); });
+  }

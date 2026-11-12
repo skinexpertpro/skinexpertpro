@@ -1,0 +1,249 @@
+/* Agenda: calendário, visão diária/semanal */
+
+  /* ================= AGENDA VIEW ================= */
+  .content-agenda{ padding: 24px 36px 48px 36px; }
+
+  .agenda-actions{ display:flex; gap:12px; margin-bottom:22px; }
+  .btn-pill-outline{
+    display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--border);
+    border-radius: 999px; padding: 11px 18px; font-size:14px; font-weight:700; color: var(--text-dark);
+    cursor:pointer; white-space:nowrap;
+  }
+  .btn-pill-outline:hover{ background:#f7f8f9; }
+
+  .agenda-grid{
+    display:grid; grid-template-columns: 260px 1fr; gap:22px; align-items:start;
+  }
+
+  .calendar-card{ padding: 16px; }
+  .agenda-lateral{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+  .btn-bloquear-lateral{ width:100%; justify-content:center; }
+  .calendar-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; }
+  .calendar-month-label{ font-size:14px; font-weight:700; }
+  .calendar-nav{ display:flex; gap:4px; }
+  .calendar-nav button{
+    width:22px; height:22px; border-radius:7px; border:1px solid var(--border); background:#fff;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; color: var(--text-dark);
+  }
+  .calendar-nav button:hover{ background:#f7f8f9; }
+
+  .calendar-weekdays{
+    display:grid; grid-template-columns: repeat(7, 1fr); text-align:center;
+    font-size:10.5px; font-weight:600; color: var(--text-muted); margin-bottom:4px;
+  }
+
+  .calendar-days{ display:grid; grid-template-columns: repeat(7, 1fr); row-gap:2px; }
+  .cal-day{
+    position:relative; aspect-ratio: 1/1; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:600; color: var(--text-dark); border-radius:50%; cursor:pointer;
+    justify-self:center; width:27px; height:27px;
+  }
+  .cal-day:hover{ background: var(--bg); }
+  .cal-day.empty{ cursor:default; }
+  .cal-day.empty:hover{ background:none; }
+  .cal-day.today{ box-shadow: inset 0 0 0 1.5px var(--pink); color: var(--pink); }
+  .cal-day.selected{ background: var(--pink); color:#fff; box-shadow:none; }
+  .cal-day .day-dots{ position:absolute; bottom:2px; display:flex; gap:2px; }
+  .cal-day .day-dot{ width:4px; height:4px; border-radius:50%; }
+
+  .calendar-legend{ margin-top:12px; display:flex; flex-direction:column; gap:5px; font-size:11.5px; color: var(--text-dark); }
+  .calendar-legend div{ display:flex; align-items:center; gap:8px; }
+  .legend-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .legend-today{ background: var(--pink); }
+  .legend-appt{ background: var(--yellow); }
+  .legend-block{ background: var(--block-red); }
+
+  .schedule-card{ padding: 22px; }
+  .schedule-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom: 16px; }
+  @media (max-width: 560px){
+    .schedule-header{ flex-direction:column; align-items:stretch; }
+    .schedule-header .btn-agenda-primary{ justify-content:center; }
+    .schedule-toolbar{ flex-wrap:wrap; gap:10px; }
+  }
+  .schedule-date{ font-family:'Playfair Display', serif; font-size:19px; font-weight:700; }
+  .schedule-count{ font-size:13.5px; color: var(--text-muted); margin-top:3px; }
+
+  .schedule-toolbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .view-mode-toggle{ display:flex; background: var(--gray-pill-bg); border-radius:9px; padding:3px; gap:2px; }
+  .view-mode-toggle button{
+    border:none; background:transparent; padding:7px 14px; border-radius:7px; font-size:12.5px; font-weight:700;
+    color: var(--text-muted); cursor:pointer;
+  }
+  .view-mode-toggle button.active{ background:#fff; color: var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .schedule-nav{ display:flex; align-items:center; gap:6px; }
+  .schedule-nav button{
+    width:28px; height:28px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color: var(--text-dark); flex-shrink:0;
+  }
+  .schedule-nav button:hover{ background:#f7f8f9; }
+  .schedule-nav-today{ width:auto !important; padding:0 12px; font-size:12.5px; font-weight:700; }
+
+  .week-scroll{ overflow-x:hidden; }
+  .week-grid{ display:flex; width:100%; }
+  .week-time-gutter{ width:44px; flex-shrink:0; position:sticky; left:0; background:#fff; z-index:2; }
+  .week-time-gutter .time-row{ padding-right:0; }
+  .week-time-gutter .time-label{ width:44px; padding:4px 0 0 6px; font-size:11px; box-sizing:border-box; }
+  .week-day-col{ flex:1; min-width:0; border-left:1px solid var(--border); position:relative; }
+  .week-day-header{
+    position:sticky; top:0; background:#fff; z-index:1; text-align:center; padding:10px 4px; border-bottom:1px solid var(--border);
+    font-size:11.5px; font-weight:700; color: var(--text-muted);
+  }
+  .week-day-header .wdh-date{ display:block; font-size:13px; color: var(--text-dark); margin-top:2px; }
+  /* Todos os cabeçalhos (inclusive o canto da coluna de horas) com a mesma altura,
+     para a grade de horários ficar alinhada entre a coluna das horas e os dias. */
+  .week-day-header{ height:52px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 4px; }
+  .week-time-gutter .week-day-header{ border-bottom:1px solid var(--border); }
+  .week-time-gutter .week-day-header + .time-row{ border-top:none; }
+  .week-day-header.is-today{ color: var(--pink); }
+  .week-day-header.is-today .wdh-date{ color: var(--pink); }
+  .week-day-rows{ position:relative; }
+  .week-day-rows .time-row{ border-top:1px solid var(--border); }
+  .week-day-rows .time-row:first-child{ border-top:none; }
+  .week-block{
+    position:absolute; left:3px; right:3px; border-radius:6px; padding:4px 6px; font-size:10.5px; overflow:hidden; line-height:1.3;
+  }
+  .week-block.appt{ background: var(--pink-light); border-left:2.5px solid var(--pink); color: var(--sidebar-bg); }
+  .week-block.block{ background:#fbe9e4; border-left:2.5px solid var(--block-red); color:#9c3a20; }
+  .week-block .wb-title{ font-weight:700; }
+
+  .btn-agenda-primary{
+    display:flex; align-items:center; gap:7px; background: var(--pink); color:#fff; border:none;
+    padding: 11px 18px; border-radius: 999px; font-size:14px; font-weight:700; cursor:pointer; white-space:nowrap;
+  }
+  .btn-agenda-primary:hover{ background: var(--sidebar-bg); }
+
+  .schedule-scroll{ max-height: 560px; overflow-y:auto; border:1px solid var(--border); border-radius:10px; }
+  .schedule-rows{ position:relative; }
+  .time-row{ display:flex; height:44px; border-top:1px solid var(--border); }
+  .time-row:first-child{ border-top:none; }
+  .time-label{ width:64px; flex-shrink:0; font-size:12px; color: var(--text-muted); padding: 4px 0 0 14px; }
+  .time-row.hour .time-label{ color: var(--text-dark); font-weight:600; font-size:13px; }
+  .time-line{ flex:1; }
+
+  .schedule-block{
+    position:absolute; left:74px; right:10px; border-radius:8px; padding: 6px 10px;
+    font-size:12.5px; overflow:hidden; cursor:default;
+  }
+  .schedule-block.appt{ background: var(--pink-light); border-left: 3px solid var(--pink); color: var(--sidebar-bg); }
+  .schedule-block.block{ background:#fbe9e4; border-left:3px solid var(--block-red); color:#9c3a20; }
+  .schedule-block .sb-title{ font-weight:700; }
+  .schedule-block .sb-time{ opacity:.8; }
+
+  /* ================= AGENDA DO ESTÚDIO (plano Studio) =================
+     Só aparece quando a profissional faz parte de um estúdio (js/agenda-estudio.js). */
+  .estudio-escopo{ display:flex; background: var(--gray-pill-bg); border-radius:9px; padding:3px; gap:2px; }
+  .estudio-escopo button{
+    border:none; background:transparent; padding:7px 14px; border-radius:7px; font-size:12.5px; font-weight:700;
+    color: var(--text-muted); cursor:pointer; font-family:inherit;
+  }
+  .estudio-escopo button.active{ background:#fff; color: var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  #view-agenda .schedule-toolbar > .view-mode-toggle + .estudio-escopo{ margin-right:auto; margin-left:10px; }
+
+  .estudio-pros-card{ padding:14px 16px; }
+  .estudio-pros-titulo{ font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--text-muted); margin-bottom:8px; }
+  .estudio-pros-titulo span{ display:block; text-transform:none; letter-spacing:0; font-size:12px; font-weight:600; color: var(--text-dark); margin-top:2px; }
+  .estudio-pro{ display:flex; align-items:center; gap:10px; padding:7px 4px; border-radius:9px; cursor:pointer; font-size:13.5px; }
+  .estudio-pro:hover{ background: var(--bg); }
+  .estudio-pro input{
+    appearance:none; -webkit-appearance:none; width:18px; height:18px; margin:0; border-radius:5px; flex-shrink:0;
+    border:1.5px solid var(--border); display:grid; place-content:center; cursor:pointer; background:#fff;
+  }
+  .estudio-pro input:checked{ background: var(--ec-c); border-color: var(--ec-c); }
+  .estudio-pro input:checked::after{
+    content:""; width:9px; height:5px; border:2px solid #fff; border-top:none; border-right:none; transform: rotate(-45deg) translate(1px,-1px);
+  }
+  .estudio-pro input:disabled{ cursor:not-allowed; opacity:.55; }
+  .estudio-pro input:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .estudio-pro-nome{ flex:1; min-width:0; font-weight:600; color: var(--text-dark); }
+  .estudio-pro-nome small{ display:block; font-size:11.5px; font-weight:500; color: var(--text-muted); }
+  .estudio-pro-qtd{ font-size:12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+  /* Diário com colunas */
+  .estudio-ativo #scheduleScrollDay{ overflow-x:auto; }
+  #view-agenda.estudio-ativo .agenda-grid > .schedule-card{ min-width:0; max-width:100%; }
+  .schedule-rows.estudio-cols{ position:relative; }
+  .ec-grid{ display:flex; min-width:max-content; width:100%; }
+  .ec-gutter{ width:64px; flex-shrink:0; position:sticky; left:0; z-index:4; background:#fff; }
+  .ec-gutter .time-row{ border-top:1px solid var(--border); }
+  .ec-gutter .time-row:nth-child(2){ border-top:none; }
+  .ec-col{ flex:1 0 170px; min-width:170px; border-left:1px solid var(--border); position:relative; }
+  .ec-head{
+    position:sticky; top:0; z-index:3; height:52px; background:#fff; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:9px; padding:0 10px; box-sizing:border-box;
+  }
+  .ec-gutter .ec-head{ z-index:5; padding:0; }
+  .ec-av{
+    width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; background: var(--ec-l); color: var(--ec-t);
+  }
+  .ec-head-t{ min-width:0; line-height:1.25; }
+  .ec-head-t b{ display:block; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ec-head-t span{ font-size:11.5px; color: var(--text-muted); }
+  .ec-rows{ position:relative; cursor:pointer; }
+  .ec-rows .time-row:first-child{ border-top:none; }
+  .ec-off{
+    position:absolute; left:0; right:0; pointer-events:none;
+    background: repeating-linear-gradient(135deg, rgba(138,119,104,.09) 0 6px, transparent 6px 12px);
+  }
+  .schedule-block.ec-block{ left:4px; right:4px; cursor:pointer; z-index:1; }
+  .ec-vazio{ padding:40px 16px; text-align:center; color: var(--text-muted); font-size:13.5px; }
+
+  /* Cores por profissional e horários das colegas */
+  .schedule-block.ec-cor, .week-block.ec-cor{ background: var(--ec-l); border-left-color: var(--ec-c); color: var(--ec-t); }
+  .schedule-block.ec-privado, .week-block.ec-privado{
+    background: repeating-linear-gradient(135deg, var(--ec-l) 0 6px, #fff 6px 11px); color: var(--text-muted);
+  }
+  .schedule-block.ec-privado .sb-title, .week-block.ec-privado .wb-title{ color: var(--text-dark); font-weight:600; }
+  .ec-outra{ cursor:pointer; }
+  .ec-outra:focus-visible{ outline:2px solid var(--gold); outline-offset:1px; }
+  .ec-lock{ display:inline-block; vertical-align:-1px; margin-right:3px; }
+
+  /* Janelas do estúdio */
+  .estudio-janela .modal-box{ width:400px; max-height:90vh; overflow-y:auto; }
+  .ec-chip{
+    display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px;
+    background: var(--ec-l); color: var(--ec-t);
+  }
+  .ec-chip i{ width:7px; height:7px; border-radius:50%; background: var(--ec-c); }
+  .ec-kv{ display:grid; grid-template-columns:90px 1fr; gap:6px 12px; margin:14px 0 0; font-size:13.5px; }
+  .ec-kv dt{ color: var(--text-muted); }
+  .ec-kv dd{ margin:0; font-weight:600; color: var(--text-dark); }
+  .ec-nota{ margin:14px 0 0; background: var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.5; color: var(--text-muted); }
+  .ec-nota b{ color: var(--text-dark); }
+  .ec-ajuda{ display:block; font-size:11.5px; color: var(--text-muted); margin-top:5px; }
+  .ec-duas{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .ec-erro{ background:#fbe9e4; color:#9c3a20; border-radius:9px; padding:9px 11px; font-size:12.5px; font-weight:600; }
+  @media (max-width:480px){ .ec-duas{ grid-template-columns:1fr; } .ec-col{ flex-basis:150px; min-width:150px; } }
+
+  /* ---- Agenda compartilhada, fase 2: seletor de estúdio, salas, conexões ---- */
+  .estudio-seletor{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color: var(--text-muted); margin-left:10px; }
+  .estudio-seletor select{ border:1px solid var(--border); border-radius:9px; padding:7px 10px; font-size:13px; font-weight:600; background:#fff; color: var(--text-dark); font-family:inherit; }
+  #view-agenda .schedule-toolbar > .estudio-escopo + .estudio-seletor{ margin-right:auto; }
+  #view-agenda .schedule-toolbar > .view-mode-toggle + .estudio-escopo:has(+ .estudio-seletor:not([hidden])){ margin-right:0; }
+  .estudio-pros-titulo.ec-sub{ margin-top:12px; padding-top:10px; border-top:1px solid var(--border); }
+  .ec-av.ec-sala{ border-radius:8px; background: var(--gray-pill-bg); color: var(--text-dark); }
+  .ec-busy{
+    position:absolute; left:4px; right:4px; pointer-events:none; overflow:hidden; border-radius:6px;
+    border:1px dashed var(--border);
+    background: repeating-linear-gradient(135deg, rgba(138,119,104,.10) 0 5px, transparent 5px 10px);
+  }
+  .ec-busy span{ display:block; padding:3px 7px; font-size:10.5px; font-weight:700; color: var(--text-muted); white-space:nowrap; }
+  .ec-local[hidden], #ecSalaWrap[hidden]{ display:none !important; }
+  .ec-local select option:disabled{ color:#b3a79c; }
+  @media (max-width:700px){ .estudio-seletor{ margin-left:0; } .estudio-seletor span{ display:none; } }
+  .estudio-seletor[hidden], .estudio-escopo[hidden]{ display:none !important; }
+
+  /* ---- Celular: Diário/Semanal e Todas/Só a minha lado a lado, navegação embaixo ---- */
+  @media (max-width:600px){
+    #view-agenda .schedule-toolbar{ gap:8px; }
+    #view-agenda .schedule-toolbar > .view-mode-toggle,
+    #view-agenda .schedule-toolbar > .estudio-escopo{ flex:1 1 0; min-width:0; margin:0 !important; }
+    #view-agenda .schedule-toolbar > .view-mode-toggle button,
+    #view-agenda .schedule-toolbar > .estudio-escopo button{ flex:1 1 auto; min-width:0; padding:7px 6px; font-size:12px; white-space:nowrap; }
+    #view-agenda .schedule-toolbar > .estudio-escopo{ flex-grow:1.4; }
+    #view-agenda .schedule-toolbar > .estudio-seletor{ order:3; flex:1 1 100%; margin:0 !important; }
+    #view-agenda .schedule-toolbar > .estudio-seletor select{ flex:1; }
+    #view-agenda .schedule-toolbar > .schedule-nav{ order:4; flex:1 1 100%; justify-content:flex-start; }
+    /* O quadro da agenda ocupa a largura toda (antes ficava estreito sem estúdio). */
+    html.celular-ativo #view-agenda .agenda-grid > .schedule-card{ align-self:stretch; width:100%; min-width:0; box-sizing:border-box; }
+  }
