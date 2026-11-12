@@ -103,3 +103,10 @@
     html.celular-ativo #view-pacientes .patient-name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:44vw; }
     html.celular-ativo #view-pacientes .filter-bar{ gap:8px; }
   }
+
+  /* ================= TABLET E TELAS MÉDIAS ================= */
+  @media (min-width: 761px) and (max-width: 1280px){
+    /* Tabelas largas rolam para o lado em vez de cortar as últimas colunas */
+    .card-table{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .phone-cell, .date-cell{ white-space:nowrap; }
+  }
