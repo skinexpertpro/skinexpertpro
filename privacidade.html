@@ -30,7 +30,7 @@
 <main class="legal-main">
   <div class="legal-cabecalho">
     <h1>Política de Privacidade</h1>
-    <p class="legal-data">Última atualização: 16 de outubro de 2026</p>
+    <p class="legal-data">Última atualização: 15 de novembro de 2026</p>
   </div>
 
   <div class="legal-resumo">
@@ -106,7 +106,8 @@
     </div>
 
     <h3>O que o app acessa</h3>
-    <p>O Skin Expert Pro solicita apenas a permissão <strong>“Ver e editar eventos em todas as suas agendas”</strong> (escopo <code>https://www.googleapis.com/auth/calendar.events</code>). Não pedimos acesso ao seu Gmail, contatos, Drive ou qualquer outro serviço do Google.</p>
+    <p>O Skin Expert Pro solicita apenas a permissão <strong>“Ver, criar, mudar e excluir eventos nas suas agendas do Google”</strong> (escopo <code>https://www.googleapis.com/auth/calendar.events.owned</code>), que vale só para as agendas de que você é dona. Não pedimos acesso ao seu Gmail, contatos, Drive, lista de agendas, agendas de outras pessoas ou qualquer outro serviço do Google.</p>
+    <p>Os únicos dados do Google que o app recebe e guarda são: os <strong>tokens de acesso</strong> (as “chaves” que o Google entrega quando você autoriza) e o <strong>identificador (ID) de cada evento que o próprio app criou</strong>. O app não lê, não lista e não guarda os outros eventos da sua agenda, nem cria dados agregados ou anonimizados a partir deles.</p>
 
     <h3>Como usamos</h3>
     <ul>
@@ -114,7 +115,25 @@
       <li>Quando você altera o horário, a data ou as observações desse atendimento, o app atualiza o mesmo evento.</li>
       <li>Quando você cancela ou exclui o atendimento, o app remove o evento correspondente.</li>
     </ul>
-    <p>Para isso, guardamos o identificador de cada evento criado pelo app e os tokens de acesso fornecidos pelo Google, de forma protegida no nosso banco de dados. Não usamos esse acesso para ler, analisar ou guardar os demais eventos da sua agenda.</p>
+    <p>O evento criado leva o título do atendimento (nome da paciente e serviço, ou “Horário bloqueado”), a data e o horário. Esses dados vão do Skin Expert Pro para a sua própria Google Agenda, a seu pedido. Não usamos esse acesso para ler, analisar ou guardar os demais eventos da sua agenda.</p>
+
+    <h3>Com quem os dados do Google são compartilhados</h3>
+    <p>Com ninguém, além dos provedores de infraestrutura que guardam e processam os dados para o app funcionar (banco de dados e servidores da Supabase, na União Europeia, e hospedagem da Vercel — seção 6). Eles atuam apenas como operadores, seguindo as nossas instruções, e não podem usar os dados para fins próprios.</p>
+
+    <h3>Como protegemos</h3>
+    <ul>
+      <li>Toda a comunicação entre o app, os nossos servidores e o Google é criptografada (HTTPS/TLS).</li>
+      <li>Os dados ficam no banco de dados com criptografia em repouso e regras de acesso por conta: cada profissional só acessa a própria conexão.</li>
+      <li>Os tokens de acesso são usados apenas pelas funções do servidor que criam, atualizam e removem os eventos; eles nunca são mostrados na tela nem enviados a outras pessoas.</li>
+      <li>O acesso administrativo aos servidores é restrito e protegido por senha forte e verificação em duas etapas.</li>
+    </ul>
+
+    <h3>Por quanto tempo guardamos</h3>
+    <ul>
+      <li>Os tokens de acesso ficam guardados enquanto a Google Agenda estiver conectada. Ao desconectar, ou se você revogar o acesso no Google, eles são apagados (ou deixam de valer) imediatamente.</li>
+      <li>O identificador de cada evento fica junto do atendimento correspondente e é apagado quando o atendimento é excluído ou quando a conta é encerrada.</li>
+      <li>Ao encerrar a sua conta no Skin Expert Pro, todos os dados ligados ao Google são apagados em até 30 dias.</li>
+    </ul>
 
     <h3>O que nunca fazemos com dados do Google</h3>
     <ul>
