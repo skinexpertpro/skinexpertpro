@@ -1,6 +1,7 @@
 /* Skin Expert Pro — Assinatura (Stripe).
    - Ao entrar, o app pergunta ao banco (minha_assinatura) se a conta está liberada:
-     cortesia, assinatura em período grátis/ativa/com pagamento pendente, ou profissional de um estúdio Studio ativo.
+     cortesia, assinatura em período grátis ou em dia, ou profissional de um estúdio Studio em dia.
+   - Pagamento recusado (past_due/unpaid/incomplete): trava o app com a tela "pagamento não aprovado".
    - Sem acesso: mostra a tela "Escolha o seu plano" (14 dias grátis, cartão no início). O botão leva ao
      link de pagamento do Stripe com o id da conta (client_reference_id) e o e-mail já preenchidos.
    - Na volta do pagamento (?assinatura=ok) espera o aviso do Stripe chegar (função stripe-webhook) e libera.
@@ -159,6 +160,54 @@
     document.body.classList.remove('com-tela-planos');
   }
 
+  /* ---------- Pagamento recusado: trava o app e explica o que fazer ---------- */
+  const PORTAL_STRIPE = 'https://billing.stripe.com/p/login/5kQeVd8HZ89d44M1PXdEs00';
+  async function abrirPortalAssinatura(){
+    let email = '';
+    try{ email = (await supabaseClient.auth.getUser()).data.user.email || ''; }catch(e){}
+    location.href = PORTAL_STRIPE + (email ? '?prefilled_email=' + encodeURIComponent(email) : '');
+  }
+  function mostrarTelaPagamentoPendente(a){
+    const tela = telaPlanos();
+    const doEstudio = !!a.estudio_pendente && !['past_due', 'unpaid', 'incomplete'].includes(a.status);
+    tela.innerHTML = `
+      <div class="tp-caixa tp-aviso">
+        <div class="tp-aviso-icone" aria-hidden="true">!</div>
+        <h1 id="telaPlanosTitulo">${doEstudio ? 'A assinatura do estúdio está com pagamento pendente' : 'O pagamento da sua assinatura não foi aprovado'}</h1>
+        ${doEstudio
+          ? `<p class="tp-sub">O acesso das profissionais do estúdio está pausado até a titular regularizar o pagamento do plano Studio. Fale com ela; assim que o pagamento for aprovado, o acesso volta na hora.</p>`
+          : `<p class="tp-sub">O Stripe não conseguiu cobrar o seu plano ${NOME_PLANO[a.plano] || ''}. Por isso o acesso ao Skin Expert Pro está pausado.</p>
+             <div class="tp-passos">
+               <p><strong>Como resolver:</strong></p>
+               <ol>
+                 <li>Clique em <strong>Atualizar cartão e pagar</strong>.</li>
+                 <li>Entre com o seu e-mail: o Stripe manda um link de acesso.</li>
+                 <li>Troque o cartão (ou confira o saldo/limite) e pague a fatura em aberto.</li>
+               </ol>
+               <p>Assim que o pagamento for aprovado, o acesso volta sozinho. <strong>Os seus dados continuam guardados</strong>: nada foi apagado.</p>
+             </div>
+             <button type="button" class="tp-botao" id="tpAtualizarCartao">Atualizar cartão e pagar</button>`}
+        <button type="button" class="tp-link tp-verificar" id="tpVerificar">Já resolvi, verificar de novo</button>
+        <div class="tp-rodape">
+          <a class="tp-link" href="mailto:contato@skinexpertpro.com">Precisa de ajuda? contato@skinexpertpro.com</a>
+          <button type="button" class="tp-link" id="tpSair">Sair da conta</button>
+        </div>
+      </div>`;
+    tela.querySelector('#tpAtualizarCartao')?.addEventListener('click', abrirPortalAssinatura);
+    tela.querySelector('#tpSair').addEventListener('click', async () => { try{ await supabaseClient.auth.signOut(); }catch(e){} location.reload(); });
+    tela.querySelector('#tpVerificar').addEventListener('click', async (e) => {
+      e.target.disabled = true; e.target.textContent = 'Verificando…';
+      try{
+        const nova = await lerAssinatura();
+        if(nova && nova.liberado){ assinaturaAtual = nova; fecharTelaPlanos(); preencherCartaoAssinatura(); showToast('Pagamento confirmado! Bem-vinda de volta.'); return; }
+      }catch(err){}
+      e.target.disabled = false; e.target.textContent = 'Já resolvi, verificar de novo';
+      showToast('O pagamento ainda não foi confirmado. Pode levar alguns minutos depois de pagar.');
+    });
+    tela.classList.add('aberta');
+    document.body.classList.add('com-tela-planos');
+  }
+
   /* ---------- Volta do pagamento: espera a confirmação do Stripe ---------- */
   async function aguardarConfirmacao(){
     const tela = telaPlanos();
@@ -197,6 +246,7 @@
     preencherCartaoAssinatura();
     if(a.liberado){ fecharTelaPlanos(); return; }
     if(voltouDoPagamento){ await aguardarConfirmacao(); return; }
+    if(['past_due', 'unpaid', 'incomplete'].includes(a.status) || a.estudio_pendente){ mostrarTelaPagamentoPendente(a); return; }
     mostrarTelaPlanos(a);
   }
 
@@ -212,7 +262,7 @@
     else if(a.via_estudio) txt = '<strong>Acesso pelo estúdio</strong> · a assinatura Studio é da titular do estúdio';
     else if(a.status === 'trialing') txt = `${plano} · período grátis até ${dataCurtaBR(a.teste_ate)}${a.cancela_no_fim ? ' · cancelada, não será cobrada' : ' · primeira cobrança nesse dia'}`;
     else if(a.status === 'active') txt = a.cancela_no_fim ? `${plano} · cancelada, acesso até ${dataCurtaBR(a.renova_em)}` : `${plano} · próxima cobrança em ${dataCurtaBR(a.renova_em)}`;
-    else if(a.status === 'past_due') txt = `${plano} · <span style="color:var(--block-red);">pagamento pendente: atualize o cartão</span>`;
+    else if(['past_due', 'unpaid', 'incomplete'].includes(a.status)) txt = `${plano} · <span style="color:var(--block-red);">pagamento não aprovado: atualize o cartão</span>`;
     else txt = 'Sem assinatura ativa';
     el.innerHTML = 'Situação: ' + txt;
     if(btn) btn.style.display = (a.cortesia && !a.tem_stripe) || (a.via_estudio && !a.tem_stripe) ? 'none' : '';

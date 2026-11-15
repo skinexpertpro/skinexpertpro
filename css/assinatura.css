@@ -40,3 +40,12 @@ body.com-tela-planos{ overflow:hidden; }
   .tp-cartoes{ grid-template-columns: 1fr; max-width:460px; margin:0 auto; gap:22px; }
   .tp-topo h1{ font-size:25px; }
 }
+/* Pagamento não aprovado */
+.tp-aviso{ max-width:560px; text-align:center; padding-top:6vh; }
+.tp-aviso h1{ font-family:'Playfair Display', serif; font-size:26px; margin:0 0 12px; color: var(--text-dark); line-height:1.25; }
+.tp-aviso-icone{ width:52px; height:52px; border-radius:50%; background: var(--block-red); color:#fff; font-size:30px; font-weight:800; line-height:52px; margin:0 auto 18px; }
+.tp-passos{ text-align:left; background:#fff; border:1px solid var(--border); border-radius:14px; padding:16px 20px; margin:20px 0 22px; font-size:14px; color: var(--text-dark); line-height:1.55; }
+.tp-passos p{ margin:0 0 8px; } .tp-passos p:last-child{ margin:10px 0 0; }
+.tp-passos ol{ margin:0; padding-left:20px; }
+.tp-aviso .tp-botao{ width:100%; }
+.tp-verificar{ display:block; margin:14px auto 0; }
