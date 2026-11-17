@@ -219,3 +219,61 @@
     .cel-lista-vazia{ padding:18px 4px; font-size:13.5px; color: var(--text-muted); }
     html.celular-ativo #view-agenda.cel-modo-mes .cal-day{ min-height:46px; border-radius:12px; }
   }
+
+  /* ---- Agenda no celular igual ao modelo aprovado (página 3) ---- */
+  .cel-agenda-topo, .cel-hoje-topo{ display:none; }
+  @media (max-width: 760px){
+    html.celular-ativo body.cel-tela-agenda #pageTitle, html.celular-ativo body.cel-tela-agenda #pageSubtitle,
+    html.celular-ativo body.cel-tela-agenda .conta-wrap{ display:none !important; }
+    html.celular-ativo body.cel-tela-agenda .cel-agenda-topo{ display:block; }
+    .cel-agenda-mes{ font-family:'Playfair Display', serif; font-size:26px; font-weight:600; color: var(--sidebar-bg); }
+    html.celular-ativo body.cel-tela-agenda .cel-hoje-topo{
+      display:inline-flex; align-items:center; font-family:inherit; font-size:13px; font-weight:600; color: var(--pink);
+      background: var(--pink-light); border:none; border-radius:18px; padding:8px 14px; min-height:36px; cursor:pointer;
+    }
+    html.celular-ativo body.cel-tela-agenda .topbar{ background:#fff; padding-bottom:6px; }
+
+    /* Quadro da agenda: topo branco colado no cabeçalho, grade no fundo claro */
+    html.celular-ativo #view-agenda .content-agenda{ padding:0 0 24px; }
+    html.celular-ativo #view-agenda .agenda-grid{ gap:0; }
+    html.celular-ativo #view-agenda .schedule-card{ border:none; border-radius:0; padding:4px 0 0; background:transparent; box-shadow:none; }
+    html.celular-ativo #view-agenda .schedule-toolbar{ background:#fff; padding:6px 16px 4px; margin:0; }
+    html.celular-ativo #view-agenda .cel-semana{ background:#fff; margin:0; padding:6px 12px 12px; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, #fff); }
+    html.celular-ativo #view-agenda .estudio-escopo{ flex:0 0 auto !important; }
+    html.celular-ativo #view-agenda .estudio-escopo button{ padding:7px 10px !important; }
+
+    /* Dia: sem setas nem título repetido (a semana em cima já mostra o dia) */
+    html.celular-ativo #view-agenda:not(.cel-modo-semana):not(.cel-modo-mes) .schedule-nav,
+    html.celular-ativo #view-agenda:not(.cel-modo-semana):not(.cel-modo-mes) .schedule-header{ display:none !important; }
+    html.celular-ativo #view-agenda.cel-modo-semana .schedule-nav, html.celular-ativo #view-agenda.cel-modo-semana .schedule-header,
+    html.celular-ativo #view-agenda.cel-modo-mes .schedule-header, html.celular-ativo #view-agenda.cel-modo-mes .cel-lista-dia,
+    html.celular-ativo #view-agenda.cel-modo-mes .calendar-card{ padding-left:16px; padding-right:16px; }
+    html.celular-ativo #view-agenda.cel-modo-mes .schedule-card, html.celular-ativo #view-agenda.cel-modo-semana .schedule-card{ background:#fff; }
+    html.celular-ativo #view-agenda #scheduleScrollDay{ padding:10px 10px 0 4px; }
+
+    /* Grade do dia: só as horas cheias escritas, coluna das horas mais estreita */
+    html.celular-ativo #scheduleRows .time-row:not(.hour) .time-label{ visibility:hidden; }
+    html.celular-ativo #scheduleRows .time-label{ width:48px; padding-left:4px; font-size:11.5px; color: var(--text-muted); font-weight:500; }
+    html.celular-ativo #scheduleRows .time-row.hour .time-label{ font-size:11.5px; font-weight:500; color: var(--text-muted); }
+    html.celular-ativo #scheduleRows .time-row{ border-top-color: color-mix(in srgb, var(--border) 70%, #fff); }
+    html.celular-ativo #scheduleRows:not(.estudio-cols) .schedule-block{ left:54px; }
+    html.celular-ativo #scheduleRows:not(.estudio-cols) .agora-linha{ left:50px; }
+    html.celular-ativo #scheduleRows:not(.estudio-cols) .agora-linha span{ left:-50px; }
+
+    /* Uma coluna só (estúdio/conexões juntas): sem cabeçalhos de pessoas */
+    html.celular-ativo #scheduleRows.cel-uma-coluna .ec-head{ display:none; }
+    html.celular-ativo #scheduleRows.cel-uma-coluna .ec-gutter{ width:48px; background:transparent; }
+    html.celular-ativo #scheduleRows.cel-uma-coluna .ec-col{ border-left:none; min-width:0; flex:1 1 auto; }
+    html.celular-ativo #scheduleRows.cel-uma-coluna .ec-grid{ min-width:0; }
+    html.celular-ativo #scheduleScrollDay:has(.cel-uma-coluna){ overflow-x:hidden; }
+    html.celular-ativo #scheduleRows.cel-uma-coluna .ec-off{ background:none; }
+    html.celular-ativo #scheduleRows.cel-uma-coluna .agora-linha span{ display:none; }
+    html.celular-ativo #view-agenda .schedule-block{ border-radius:10px; border-left-width:4px; }
+    .cel-quem{ font-size:11.5px; font-weight:700; color: var(--text-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ec-privado .cel-quem::after, .ec-outra .cel-quem::after{ content:""; }
+  }
+  @media (max-width: 760px){
+    html.celular-ativo #view-agenda .schedule-card{ padding-top:0; }
+    html.celular-ativo #view-agenda .schedule-toolbar{ padding-top:8px; }
+    html.celular-ativo #view-agenda #scheduleScrollDay{ border:none; border-radius:0; background:transparent; }
+  }

@@ -86,6 +86,7 @@
     const ativa = document.querySelector('.view.active');
     const id = ativa ? ativa.id.replace('view-', '') : '';
     document.body.classList.toggle('cel-tela-inicio', id === 'dashboard');
+    document.body.classList.toggle('cel-tela-agenda', id === 'agenda');
   }
   new MutationObserver(celMarcarTela).observe(document.querySelector('.main'), { subtree: true, attributes: true, attributeFilter: ['class'] });
 
@@ -299,10 +300,84 @@
     if(!e.matches && agendaViewMode === 'mes'){ const d = document.querySelector('.view-mode-toggle [data-agenda-view="diario"]'); if(d) d.click(); }
   });
 
+
+  /* ---------- Agenda no celular igual ao modelo: mês + Hoje no topo, semana deslizável, uma coluna só ---------- */
+  const celAgendaTopo = document.createElement('div');
+  celAgendaTopo.className = 'cel-agenda-topo';
+  celAgendaTopo.innerHTML = '<span class="cel-agenda-mes"></span>';
+  document.getElementById('pageTitle').parentElement.appendChild(celAgendaTopo);
+  const celHojeTopo = document.createElement('button');
+  celHojeTopo.type = 'button';
+  celHojeTopo.className = 'cel-hoje-topo';
+  celHojeTopo.textContent = 'Hoje';
+  celHojeTopo.addEventListener('click', () => document.getElementById('scheduleNavToday').click());
+  document.querySelector('.topbar-right').prepend(celHojeTopo);
+  function celAtualizarMesTopo(){ celAgendaTopo.querySelector('.cel-agenda-mes').textContent = monthNames[selectedDate.getMonth()]; }
+
+  // Arrastar a semana para o lado troca de semana
+  let celToqueX = null, celToqueY = null;
+  celSemana.addEventListener('touchstart', (e) => { const t = e.touches[0]; celToqueX = t.clientX; celToqueY = t.clientY; }, { passive: true });
+  celSemana.addEventListener('touchend', (e) => {
+    if(celToqueX == null) return;
+    const t = e.changedTouches[0], dx = t.clientX - celToqueX, dy = t.clientY - celToqueY;
+    celToqueX = null;
+    if(Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
+    selectedDate = new Date(selectedDate); selectedDate.setDate(selectedDate.getDate() + (dx < 0 ? 7 : -7));
+    viewMonth = selectedDate.getMonth(); viewYear = selectedDate.getFullYear();
+    celRedesenharAgenda();
+  }, { passive: true });
+
+  // "Só a minha" vira "Minha" e "Por sala" vira "Salas" no celular (cabe na mesma linha)
+  function celRotulosEscopo(){
+    if(!ehCelular()) return;
+    document.querySelectorAll('.estudio-escopo [data-escopo]').forEach(b => {
+      const novo = { minha: 'Minha', sala: 'Salas' }[b.dataset.escopo];
+      if(novo && b.textContent !== novo) b.textContent = novo;
+    });
+  }
+  new MutationObserver(celRotulosEscopo).observe(document.querySelector('#view-agenda .schedule-toolbar'), { childList: true, subtree: true });
+
+  // Estúdio/conexões no Dia (Todas): no celular tudo numa coluna só, como no modelo.
+  // Os horários das colegas ficam lado a lado com os seus quando coincidem.
+  function celJuntarColunas(){
+    if(!ehCelular() || agendaViewMode !== 'diario') return;
+    const cols = Array.from(scheduleRows.querySelectorAll('.ec-col'));
+    if(cols.length < 2) return;
+    const escopo = document.querySelector('.estudio-escopo [data-escopo].active');
+    if(escopo && escopo.dataset.escopo === 'sala') return;
+    const alvo = cols[0].querySelector('.ec-rows');
+    if(!alvo) return;
+    const ehBloco = el => !el.classList.contains('time-row') && !el.classList.contains('ec-off') && !el.classList.contains('ec-busy') && !el.classList.contains('agora-linha');
+    cols.forEach((c, i) => {
+      if(i === 0) return;
+      const nome = ((c.querySelector('.ec-head-t b') || {}).textContent || '').trim();
+      Array.from(c.querySelector('.ec-rows').children).filter(ehBloco).forEach(b => {
+        if(nome && !b.querySelector('.cel-quem')){
+          const q = document.createElement('div'); q.className = 'cel-quem'; q.textContent = primeiroNomeDe(nome) + (nome.split(/\s+/)[1] ? ' ' + nome.split(/\s+/)[1] : '');
+          b.prepend(q);
+        }
+        alvo.appendChild(b);
+      });
+      c.style.display = 'none';
+    });
+    scheduleRows.classList.add('cel-uma-coluna');
+    // Distribui em faixas quando os horários se cruzam
+    const blocos = Array.from(alvo.children).filter(ehBloco).map(b => ({ b, ini: parseFloat(b.style.top) || 0, fim: (parseFloat(b.style.top) || 0) + (parseFloat(b.style.height) || 0) })).sort((x, y) => x.ini - y.ini);
+    let grupo = [], fimGrupo = -1;
+    const fechar = () => {
+      const faixas = [];
+      grupo.forEach(o => { let f = faixas.findIndex(fim => fim <= o.ini); if(f < 0){ f = faixas.length; faixas.push(0); } faixas[f] = o.fim; o.f = f; });
+      grupo.forEach(o => { const n = faixas.length; o.b.style.left = `calc(${(o.f * 100) / n}% + 4px)`; o.b.style.width = `calc(${100 / n}% - 8px)`; o.b.style.right = 'auto'; });
+      grupo = []; fimGrupo = -1;
+    };
+    blocos.forEach(o => { if(grupo.length && o.ini >= fimGrupo) fechar(); grupo.push(o); fimGrupo = Math.max(fimGrupo, o.fim); });
+    if(grupo.length) fechar();
+  }
+
   const celRenderCurrentViewOriginal = renderCurrentView;
   renderCurrentView = function(){
     const r = celRenderCurrentViewOriginal.apply(this, arguments);
-    try{ renderSemanaCelular(); renderListaDiaCelular(); celLinhaAgora(); renderInicioCelular(); }catch(e){ console.warn('Celular:', e); }
+    try{ renderSemanaCelular(); renderListaDiaCelular(); celLinhaAgora(); renderInicioCelular(); celAtualizarMesTopo(); celRotulosEscopo(); }catch(e){ console.warn('Celular:', e); }
     return r;
   };
   const celRenderCalendarOriginal = renderCalendar;
@@ -313,7 +388,7 @@
   };
   // O desenho do dia (inclusive o das colunas do estúdio) também recebe a linha de agora
   const celRenderScheduleOriginal = renderSchedule;
-  renderSchedule = function(){ const r = celRenderScheduleOriginal.apply(this, arguments); try{ celLinhaAgora(); }catch(e){} return r; };
+  renderSchedule = function(){ const r = celRenderScheduleOriginal.apply(this, arguments); try{ scheduleRows.classList.remove('cel-uma-coluna'); celJuntarColunas(); celLinhaAgora(); celRotulosEscopo(); }catch(e){ console.warn('Celular (agenda):', e); } return r; };
   const celRenderWeekOriginal = renderWeekSchedule;
   renderWeekSchedule = function(){ const r = celRenderWeekOriginal.apply(this, arguments); try{ celLinhaAgora(); }catch(e){} return r; };
 
@@ -323,6 +398,7 @@
   setInterval(() => { if(document.visibilityState === 'visible' && document.body.classList.contains('cel-tela-inicio')) renderInicioCelular(); }, 60000);
   celAplicarModoMes();
   celMarcarTela();
+  try{ celAtualizarMesTopo(); }catch(e){}
   try{ renderSemanaCelular(); renderInicioCelular(); }catch(e){}
 
   /* ---------- Início: se já está logada, entra direto (precisa ser a última coisa a rodar) ---------- */
