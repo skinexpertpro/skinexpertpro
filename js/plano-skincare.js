@@ -146,6 +146,7 @@
         selectedDays: [],
         usage: product.usage || '',
         link: '',
+        cupom: '',
         expanded: false,
         why: why || [],
       });
@@ -195,6 +196,8 @@
           <textarea class="usage-input">${entry.usage}</textarea>
           <label>Link do produto (opcional)</label>
           <input type="text" class="link-input" value="${entry.link}" placeholder="https://...">
+          <label>Cupom de desconto (opcional)</label>
+          <input type="text" class="cupom-input" value="${escHTML(entry.cupom || '')}" placeholder="Ex.: BRUNA10" maxlength="40">
         </div>
       `;
 
@@ -230,6 +233,9 @@
       const linkInput = card.querySelector('.link-input');
       linkInput.addEventListener('click', (e) => e.stopPropagation());
       linkInput.addEventListener('input', () => { entry.link = linkInput.value; });
+      const cupomInput = card.querySelector('.cupom-input');
+      cupomInput.addEventListener('click', (e) => e.stopPropagation());
+      cupomInput.addEventListener('input', () => { entry.cupom = cupomInput.value; });
 
       container.appendChild(card);
     });
@@ -326,6 +332,17 @@
         <svg class="historico-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </summary>
       <div class="historico-entry-body">
+        <div class="plano-enviar">
+          <span>Enviar para a paciente ver no celular:</span>
+          <button type="button" class="plano-enviar-btn" data-enviar-plano="whatsapp">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11 11 0 0 0 3.2 17.3L2 22l4.8-1.2A11 11 0 1 0 20.5 3.5zM12 20a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.7.8-2.8-.2-.3A8 8 0 1 1 12 20z"/></svg>
+            WhatsApp
+          </button>
+          <button type="button" class="plano-enviar-btn" data-enviar-plano="copiar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copiar link
+          </button>
+        </div>
         <div class="rotina-summary-cols">
           <div>
             <div class="rotina-summary-title">Rotina da Manhã</div>
@@ -345,11 +362,33 @@
       e.preventDefault();
       openPlanoPdf(plano);
     });
+    details.querySelectorAll('[data-enviar-plano]').forEach(b => b.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      enviarPlanoParaPaciente(plano, b.dataset.enviarPlano);
+    }));
     const btnExcluir = details.querySelector('[data-excluir-plano]');
     if(btnExcluir) btnExcluir.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation(); // não abre/fecha o cartão
       abrirExcluirPlano(plano);
     });
+  }
+
+  // Link da página do plano para a paciente (?rotina=código): abre no celular dela, sem login.
+  function linkDoPlano(plano){ return enderecoPublico() + '?rotina=' + plano.token; }
+  async function enviarPlanoParaPaciente(plano, como){
+    if(!plano.token){ showToast('O link para a paciente funciona com pacientes cadastradas (não no modo demonstração).'); return; }
+    const link = linkDoPlano(plano);
+    if(como === 'copiar'){
+      try{ await navigator.clipboard.writeText(link); showToast('Link do plano copiado.'); }
+      catch(e){ window.prompt('Copie o link do plano:', link); }
+      return;
+    }
+    const primeiro = primeiroNomeDe(currentPatient && currentPatient.name);
+    const assinatura = perfilProfissional && perfilProfissional.nome ? `\n\n${perfilProfissional.nome}` : '';
+    const msg = `Oi${primeiro ? ', ' + primeiro : ''}! Aqui está o seu plano de skincare, com a rotina da manhã e da noite e onde comprar cada produto:\n${link}${assinatura}`;
+    const wa = linkWhatsapp(currentPatient, msg);
+    if(!wa){ try{ await navigator.clipboard.writeText(link); }catch(e){} showToast('A paciente não tem WhatsApp cadastrado. O link foi copiado.'); return; }
+    window.open(wa, '_blank', 'noopener');
   }
 
   async function renderRecomendacoes(){
@@ -379,6 +418,7 @@
             dataGerada: `${dt.getDate()} de ${monthNames[dt.getMonth()]}, ${dt.getFullYear()}`,
             manha: row.rotina_manha || [],
             noite: row.rotina_noite || [],
+            token: row.token || null,
           };
         });
       }
@@ -413,6 +453,7 @@
       categoria: e.category || e.product.category || '', usage: e.usage || e.product.usage || '',
       func: e.product.func || '', why: e.why || [],
       link: (e.link || '').trim(),
+      cupom: (e.cupom || '').trim(),
       price: e.product.price != null ? e.product.price : null,
       apenasBrasil: !!e.product.apenasBrasil,
       frequencia: e.frequency || 'diario',
@@ -473,6 +514,7 @@
         dataGerada: `${dt.getDate()} de ${monthNames[dt.getMonth()]}, ${dt.getFullYear()}`,
         manha: row.rotina_manha || [],
         noite: row.rotina_noite || [],
+        token: row.token || null,
       };
       const details = document.createElement('details');
       details.className = 'historico-entry';

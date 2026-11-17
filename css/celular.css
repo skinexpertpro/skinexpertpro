@@ -103,3 +103,119 @@
     html.celular-ativo #view-pacientes .patient-name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:44vw; }
     html.celular-ativo #view-pacientes .filter-bar{ gap:8px; }
   }
+
+  /* ================= CELULAR — visual novo (nov/2026) ================= */
+  .so-celular, .rot-cel, .cel-saudacao, .cel-inicio, .cel-semana, .cel-lista-dia{ display:none; }
+  .agora-linha{ position:absolute; left:64px; right:0; height:2px; background:#c0392b; z-index:3; pointer-events:none; }
+  .agora-linha::before{ content:""; position:absolute; left:-5px; top:-4px; width:10px; height:10px; border-radius:50%; background:#c0392b; }
+  .agora-linha span{ position:absolute; left:-62px; top:-8px; font-size:10px; font-weight:800; color:#fff; background:#c0392b; border-radius:6px; padding:1px 5px; }
+  .ec-rows .agora-linha, .week-day-rows .agora-linha{ left:0; }
+  .ec-rows .agora-linha span{ left:-60px; }
+
+  @media (max-width: 760px){
+    /* 4. Visual mais leve: fundo claro, cartões brancos e arredondados */
+    html.celular-ativo body, html.celular-ativo .main{ background: #fbf8f3; background: color-mix(in srgb, var(--bg) 40%, #fff); }
+    html.celular-ativo .topbar{ background: transparent; border-bottom:none; box-shadow:none; }
+    html.celular-ativo .card, html.celular-ativo .card-table, html.celular-ativo .registro-card{ border-radius:18px; border-color: color-mix(in srgb, var(--border) 70%, #fff); box-shadow:none; }
+    html.celular-ativo .card-title .dot{ display:none; }
+
+    /* 1. Menu de baixo: Início · Agenda · + · Pacientes · Menu */
+    html.celular-ativo .mobile-nav{ padding-top:4px; align-items:flex-start; }
+    html.celular-ativo .mobile-nav button{ font-weight:600; font-size:11px; min-height:50px; }
+    html.celular-ativo .mobile-nav button.active{ background:none; color: var(--pink); }
+    html.celular-ativo .mobile-nav .mobile-nav-mais{ overflow:visible; }
+    html.celular-ativo .mobile-nav-mais-bola{
+      width:56px; height:56px; border-radius:50%; margin-top:-24px; display:flex; align-items:center; justify-content:center;
+      background: var(--pink); color:#fff; box-shadow:0 6px 16px color-mix(in srgb, var(--pink) 38%, transparent);
+    }
+    html.celular-ativo body.cel-painel-aberto .mobile-nav-mais-bola{ background: var(--sidebar-bg); transform: rotate(45deg); }
+    html.celular-ativo .mobile-nav-mais-bola{ transition: transform .2s ease, background .2s ease; }
+
+    .cel-painel-fundo{ position:fixed; inset:0; z-index:880; background:rgba(44,27,32,0); transition: background .2s ease; display:flex; align-items:flex-end; }
+    .cel-painel-fundo.aberto{ background:rgba(44,27,32,.45); }
+    .cel-painel{
+      width:100%; background:#fff; border-radius:26px 26px 0 0; box-sizing:border-box;
+      padding:10px 18px calc(96px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .22s ease;
+    }
+    .cel-painel-fundo.aberto .cel-painel{ transform:none; }
+    .cel-painel-alca{ width:40px; height:5px; border-radius:3px; background: var(--border); margin:0 auto 14px; }
+    .cel-painel-titulo{ font-family:'Playfair Display', serif; font-size:20px; font-weight:600; color: var(--sidebar-bg); margin:0 0 8px; }
+    .cel-painel-itens{ display:flex; flex-direction:column; gap:4px; }
+    .cel-painel-item{ display:flex; align-items:center; gap:14px; width:100%; padding:11px 10px; border:none; background:none; border-radius:16px; text-align:left; font-family:inherit; color: var(--text-dark); cursor:pointer; min-height:62px; }
+    .cel-painel-item.destaque{ background: var(--pink-light); }
+    .cel-painel-item:focus-visible{ outline:2px solid var(--gold); outline-offset:1px; }
+    .cel-painel-icone{ width:44px; height:44px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background: var(--pink); color:#fff; }
+    .cel-painel-icone.dourado{ background: var(--gold-light); color: var(--gold-dark); }
+    .cel-painel-icone.neutro{ background: var(--gray-pill-bg, #efe9e4); color: var(--text-dark); }
+    .cel-painel-txt{ display:flex; flex-direction:column; gap:2px; }
+    .cel-painel-txt b{ font-size:15px; font-weight:600; }
+    .cel-painel-txt small{ font-size:12.5px; color: var(--text-muted); }
+    .cel-painel-nota{ font-size:12.5px; color: var(--text-muted); margin:6px 10px; line-height:1.45; }
+    html.celular-ativo .mobile-nav{ z-index:900; }
+
+    /* 2. Início: saudação no topo, números e atendimentos de hoje */
+    html.celular-ativo body.cel-tela-inicio #pageTitle, html.celular-ativo body.cel-tela-inicio #pageSubtitle{ display:none !important; }
+    html.celular-ativo body.cel-tela-inicio .cel-saudacao{ display:flex; flex-direction:column; gap:3px; }
+    .cel-saudacao-data{ font-size:13px; color: var(--text-muted); }
+    .cel-saudacao-ola{ font-family:'Playfair Display', serif; font-size:27px; font-weight:600; color: var(--sidebar-bg); line-height:1.15; }
+    html.celular-ativo .cel-inicio{ display:flex; flex-direction:column; gap:12px; padding:4px 12px 4px; }
+    .cel-numeros{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
+    .cel-numero{ background:#fff; border:1px solid color-mix(in srgb, var(--border) 70%, #fff); border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:1px; }
+    .cel-numero b{ font-size:22px; color: var(--sidebar-bg); }
+    .cel-numero span{ font-size:12px; color: var(--text-muted); }
+    .cel-hoje-topo{ display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+    .cel-hoje-topo h2{ margin:0; font-size:16px; font-weight:600; color: var(--text-dark); }
+    .cel-link{ background:none; border:none; font-family:inherit; font-size:13px; font-weight:600; color: var(--pink); padding:8px 0 8px 8px; cursor:pointer; }
+    .cel-hoje-lista{ display:flex; flex-direction:column; gap:10px; }
+    .cel-atend{ display:flex; align-items:center; gap:14px; width:100%; background:#fff; border:1px solid color-mix(in srgb, var(--border) 70%, #fff); border-radius:16px; padding:13px 14px; font-family:inherit; text-align:left; cursor:pointer; color: var(--text-dark); }
+    .cel-atend-hora{ display:flex; flex-direction:column; align-items:center; min-width:48px; }
+    .cel-atend-hora b{ font-size:15px; color: var(--sidebar-bg); }
+    .cel-atend-hora small{ font-size:11px; color: var(--text-muted); }
+    .cel-atend-barra{ width:3px; align-self:stretch; border-radius:2px; background: var(--gold); }
+    .cel-atend:nth-child(even) .cel-atend-barra{ background: var(--pink); }
+    .cel-atend-txt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+    .cel-atend-txt b{ font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cel-atend-txt small{ font-size:13px; color: var(--text-muted); }
+    .cel-agora{ font-size:11px; font-weight:700; color: var(--gold-dark); background: var(--gold-light); padding:4px 8px; border-radius:10px; }
+    .cel-vazio{ border:1px dashed var(--border); border-radius:16px; padding:18px 16px; display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; }
+    .cel-vazio b{ font-size:14px; color: var(--sidebar-bg); }
+    .cel-vazio span{ font-size:12.5px; color: var(--text-muted); }
+    .cel-vazio-btn{ margin-top:6px; background: var(--pink); color:#fff; border:none; border-radius:22px; padding:11px 18px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+    html.celular-ativo #view-dashboard .content-dash{ padding-top:16px; }
+
+    /* 3. Agenda: Dia/Semana/Mês, semana em cima, linha de agora, visão Mês */
+    html.celular-ativo .so-celular{ display:inline-flex; }
+    html.celular-ativo .view-mode-toggle .rot-pc{ display:none; }
+    html.celular-ativo .view-mode-toggle .rot-cel{ display:inline; }
+    html.celular-ativo #view-agenda .view-mode-toggle button{ justify-content:center; }
+    html.celular-ativo #btnNovoAtendimento, html.celular-ativo .btn-bloquear-lateral{ display:none !important; }
+    html.celular-ativo #view-agenda:not(.cel-modo-mes) .calendar-card{ display:none; }
+    html.celular-ativo #view-agenda .cel-semana{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:4px; margin:10px 0 4px; }
+    html.celular-ativo #view-agenda.cel-modo-mes .cel-semana, html.celular-ativo #view-agenda.cel-modo-semana .cel-semana{ display:none; }
+    .cel-dia{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0 5px; border:none; background:none; border-radius:14px; font-family:inherit; color: var(--text-dark); cursor:pointer; min-height:56px; }
+    .cel-dia span{ font-size:11px; color: var(--text-muted); }
+    .cel-dia b{ font-size:15px; font-weight:600; }
+    .cel-dia i{ width:5px; height:5px; border-radius:50%; background:transparent; }
+    .cel-dia i.tem{ background: var(--gold); }
+    .cel-dia.hoje b{ color: var(--pink); }
+    .cel-dia.escolhido{ background: var(--pink); color:#fff; }
+    .cel-dia.escolhido span, .cel-dia.escolhido b{ color:#fff; }
+    .cel-dia.escolhido i.tem{ background:#fff; }
+    html.celular-ativo .agora-linha{ left:52px; }
+    html.celular-ativo .ec-rows .agora-linha, html.celular-ativo .week-day-rows .agora-linha{ left:0; }
+    html.celular-ativo .agora-linha span{ left:-52px; }
+
+    /* Mês: calendário em cima, lista do dia embaixo */
+    html.celular-ativo #view-agenda.cel-modo-mes .calendar-card{ border:none; padding:6px 0 0; margin:4px 0 8px; box-shadow:none; }
+    html.celular-ativo #view-agenda.cel-modo-mes .calendar-legend{ display:none; }
+    html.celular-ativo #view-agenda.cel-modo-mes #scheduleScrollDay,
+    html.celular-ativo #view-agenda.cel-modo-mes #scheduleScrollWeek,
+    html.celular-ativo #view-agenda.cel-modo-mes .schedule-nav{ display:none !important; }
+    html.celular-ativo #view-agenda.cel-modo-mes .cel-lista-dia{ display:flex; flex-direction:column; gap:2px; margin-top:6px; }
+    .cel-lista-item{ display:flex; gap:12px; align-items:baseline; width:100%; padding:11px 4px; border:none; border-bottom:1px solid color-mix(in srgb, var(--border) 60%, #fff); background:none; text-align:left; font-family:inherit; font-size:14px; color: var(--text-dark); cursor:pointer; }
+    .cel-lista-item b{ min-width:46px; color: var(--sidebar-bg); font-size:13px; }
+    .cel-lista-item small{ color: var(--text-muted); font-size:12px; }
+    .cel-lista-item.bloqueio{ color: var(--text-muted); cursor:default; }
+    .cel-lista-vazia{ padding:18px 4px; font-size:13.5px; color: var(--text-muted); }
+    html.celular-ativo #view-agenda.cel-modo-mes .cal-day{ min-height:46px; border-radius:12px; }
+  }
