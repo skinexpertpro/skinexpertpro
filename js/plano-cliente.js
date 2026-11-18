@@ -65,7 +65,8 @@
       const foto = p.image || (cat && cat.image) || '';
       const uso = p.usage || (cat && cat.usage) || '';
       const preco = precoDe(p, pais);
-      const link = linkSeguro(p.link);
+      // Sem link da profissional, o Comprar abre a busca do produto nas lojas (Google Shopping)
+      const link = linkSeguro(p.link) || ('https://www.google.com/search?tbm=shop&q=' + encodeURIComponent([p.brand, p.name].filter(Boolean).join(' ')));
       const quando = (p.frequencia === 'personalizar' && p.dias && p.dias.length) ? 'Usar: ' + p.dias.map(d => NOMES_DIAS[d]).filter(Boolean).join(', ') : '';
       return `<article class="plano-cli-passo">
         <div class="plano-cli-passo-topo"><span class="plano-cli-num">${n}</span><span class="plano-cli-etapa">${esc(etapaDe(p) || 'Passo ' + n)}</span></div>
@@ -79,7 +80,7 @@
             ${preco ? `<span class="plano-cli-preco">${esc(preco)}</span>` : ''}
           </div>
         </div>
-        ${(p.cupom || link) ? `<div class="plano-cli-acoes">
+        ${p.name ? `<div class="plano-cli-acoes">
           ${p.cupom ? `<button type="button" class="plano-cli-cupom" data-cupom="${esc(p.cupom)}" aria-label="Copiar cupom ${esc(p.cupom)}">Cupom <strong>${esc(p.cupom)}</strong></button>` : ''}
           ${link ? `<a class="plano-cli-comprar" href="${esc(link)}" target="_blank" rel="noopener">Comprar</a>` : ''}
         </div>` : ''}
