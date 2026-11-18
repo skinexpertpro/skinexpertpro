@@ -342,7 +342,7 @@
   function celJuntarColunas(){
     if(!ehCelular() || agendaViewMode !== 'diario') return;
     const cols = Array.from(scheduleRows.querySelectorAll('.ec-col'));
-    if(cols.length < 2) return;
+    if(!cols.length) return;
     const escopo = document.querySelector('.estudio-escopo [data-escopo].active');
     if(escopo && escopo.dataset.escopo === 'sala') return;
     const alvo = cols[0].querySelector('.ec-rows');
