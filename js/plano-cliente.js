@@ -60,7 +60,8 @@
     const ICONE_LUA = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>';
     const FOTO_PADRAO = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2h6v3.5l2 2V20a2 2 0 01-2 2H9a2 2 0 01-2-2V7.5l2-2z"/><path d="M9 11h6"/></svg>';
 
-    function cartaoPasso(p, n, pais){
+    // Um produto (dentro de um passo). Com mais de um produto na mesma etapa, cada um é uma "Opção".
+    function blocoProduto(p, opcao, pais){
       const cat = doCatalogo(p);
       const foto = p.image || (cat && cat.image) || '';
       const uso = p.usage || (cat && cat.usage) || '';
@@ -68,8 +69,8 @@
       // Sem link da profissional, o Comprar abre a busca do produto nas lojas (Google Shopping)
       const link = linkSeguro(p.link) || ('https://www.google.com/search?tbm=shop&q=' + encodeURIComponent([p.brand, p.name].filter(Boolean).join(' ')));
       const quando = (p.frequencia === 'personalizar' && p.dias && p.dias.length) ? 'Usar: ' + p.dias.map(d => NOMES_DIAS[d]).filter(Boolean).join(', ') : '';
-      return `<article class="plano-cli-passo">
-        <div class="plano-cli-passo-topo"><span class="plano-cli-num">${n}</span><span class="plano-cli-etapa">${esc(etapaDe(p) || 'Passo ' + n)}</span></div>
+      return `<div class="plano-cli-opcao">
+        ${opcao ? `<span class="plano-cli-opcao-pill">Opção ${opcao}</span>` : ''}
         <div class="plano-cli-prod">
           <div class="plano-cli-foto">${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : ''}<span class="plano-cli-foto-padrao">${FOTO_PADRAO}</span></div>
           <div class="plano-cli-info">
@@ -80,11 +81,30 @@
             ${preco ? `<span class="plano-cli-preco">${esc(preco)}</span>` : ''}
           </div>
         </div>
-        ${p.name ? `<div class="plano-cli-acoes">
+        <div class="plano-cli-acoes">
           ${p.cupom ? `<button type="button" class="plano-cli-cupom" data-cupom="${esc(p.cupom)}" aria-label="Copiar cupom ${esc(p.cupom)}">Cupom <strong>${esc(p.cupom)}</strong></button>` : ''}
-          ${link ? `<a class="plano-cli-comprar" href="${esc(link)}" target="_blank" rel="noopener">Comprar</a>` : ''}
-        </div>` : ''}
+          <a class="plano-cli-comprar" href="${esc(link)}" target="_blank" rel="noopener">Comprar</a>
+        </div>
+      </div>`;
+    }
+    function cartaoPasso(grupo, n, pais){
+      const varias = grupo.itens.length > 1;
+      return `<article class="plano-cli-passo">
+        <div class="plano-cli-passo-topo"><span class="plano-cli-num">${n}</span><span class="plano-cli-etapa">${esc(grupo.etapa || 'Passo ' + n)}</span></div>
+        ${varias ? `<p class="plano-cli-escolha">Escolha uma das ${grupo.itens.length} opções</p>` : ''}
+        ${grupo.itens.map((p, i) => blocoProduto(p, varias ? i + 1 : 0, pais)).join('')}
       </article>`;
+    }
+    // Junta os produtos da mesma etapa num passo só, na ordem em que a etapa aparece na rotina
+    function agruparPorEtapa(itens){
+      const grupos = [];
+      itens.forEach(p => {
+        const etapa = etapaDe(p) || '';
+        let g = etapa ? grupos.find(x => x.etapa === etapa) : null;
+        if(!g){ g = { etapa, itens: [] }; grupos.push(g); }
+        g.itens.push(p);
+      });
+      return grupos;
     }
 
     (async () => {
@@ -127,7 +147,7 @@
         const itens = aba === 'manha' ? manha : noite;
         tela.querySelectorAll('[data-aba]').forEach(b => { const on = b.dataset.aba === aba; b.classList.toggle('ativa', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
         lista.innerHTML = itens.length
-          ? itens.map((p, i) => cartaoPasso(p, i + 1, dados.paciente_pais)).join('')
+          ? agruparPorEtapa(itens).map((g, i) => cartaoPasso(g, i + 1, dados.paciente_pais)).join('')
           : `<div class="plano-cli-vazio">Nenhum produto na rotina da ${aba === 'manha' ? 'manhã' : 'noite'}.</div>`;
         lista.querySelectorAll('.plano-cli-foto img').forEach(img => {
           const falhou = () => img.remove();
