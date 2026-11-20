@@ -647,7 +647,7 @@
         .limit(60);
       if(error || !data) return;
 
-      const lista = semAnamnesesRepetidas(data.filter(a => a.token)).slice(0, 5);
+      const lista = semAnamnesesRepetidas(data.filter(a => a.token)).slice(0, 3); // só as 3 mais recentes
       container.innerHTML = '';
       if(!lista.length){
         container.innerHTML = '<div class="empty-state">Nenhuma pré-ficha respondida.</div>';
