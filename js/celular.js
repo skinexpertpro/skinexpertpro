@@ -308,7 +308,7 @@
   document.getElementById('pageTitle').parentElement.appendChild(celAgendaTopo);
   const celHojeTopo = document.createElement('button');
   celHojeTopo.type = 'button';
-  celHojeTopo.className = 'cel-hoje-topo';
+  celHojeTopo.className = 'cel-btn-hoje';
   celHojeTopo.textContent = 'Hoje';
   celHojeTopo.addEventListener('click', () => document.getElementById('scheduleNavToday').click());
   document.querySelector('.topbar-right').prepend(celHojeTopo);

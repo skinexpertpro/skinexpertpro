@@ -221,13 +221,13 @@
   }
 
   /* ---- Agenda no celular igual ao modelo aprovado (página 3) ---- */
-  .cel-agenda-topo, .cel-hoje-topo{ display:none; }
+  .cel-agenda-topo, .cel-btn-hoje{ display:none; }
   @media (max-width: 760px){
     html.celular-ativo body.cel-tela-agenda #pageTitle, html.celular-ativo body.cel-tela-agenda #pageSubtitle,
     html.celular-ativo body.cel-tela-agenda .conta-wrap{ display:none !important; }
     html.celular-ativo body.cel-tela-agenda .cel-agenda-topo{ display:block; }
     .cel-agenda-mes{ font-family:'Playfair Display', serif; font-size:26px; font-weight:600; color: var(--sidebar-bg); }
-    html.celular-ativo body.cel-tela-agenda .cel-hoje-topo{
+    html.celular-ativo body.cel-tela-agenda .cel-btn-hoje{
       display:inline-flex; align-items:center; font-family:inherit; font-size:13px; font-weight:600; color: var(--pink);
       background: var(--pink-light); border:none; border-radius:18px; padding:8px 14px; min-height:36px; cursor:pointer;
     }
