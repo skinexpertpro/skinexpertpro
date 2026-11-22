@@ -61,3 +61,27 @@
   .msg-paciente-lista .msg-hist-item{ cursor:pointer; }
   .msg-paciente-lista .msg-hist-item.aberto .txt{ display:block; -webkit-line-clamp:unset; overflow:visible; white-space:pre-wrap; }
   .msg-paciente-nota{ font-size:11.5px; color: var(--text-muted); margin-top:10px; }
+
+  /* Modelos em caixas (duas por linha) */
+  .msg-modelos-grade{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
+  .msg-modelos-grade .msg-modelo{ margin:0; display:flex; flex-direction:column; gap:12px; padding:16px 18px; border-radius:16px; background:#fffdfa; min-height:236px; box-sizing:border-box; }
+  .msg-modelos-grade .msg-modelo-topo{ margin:0; }
+  .msg-modelo-topo h3{ flex:1; margin:0; font-size:15px; font-weight:700; color: var(--text-dark); }
+  .msg-modelo-ic{ width:32px; height:32px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background: var(--pink-light); color: var(--pink); }
+  .msg-modelo-topo .tag.editado{ background:#e6f2e5; color:#2f6b3a; }
+  .msg-modelo-topo .tag.meu{ background: var(--pink-light); color: var(--pink); }
+  .msg-balao{ flex:1; background: var(--bg); border-radius:4px 14px 14px 14px; padding:12px 14px; font-size:13px; line-height:1.55; color: var(--text-dark); white-space:pre-line; overflow:hidden; display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; max-height:calc(1.55em * 6 + 24px); }
+  .msg-var{ color: var(--pink); font-weight:600; background:#fff; border-radius:4px; padding:0 2px; }
+  .msg-modelos-grade .msg-modelo-acoes{ margin:0; align-items:center; }
+  .msg-acao-esq{ margin-right:auto; }
+  .msg-link{ background:none; border:none; font-family:inherit; font-size:12px; font-weight:600; color: var(--text-muted); cursor:pointer; padding:6px 4px; }
+  .msg-link:hover{ color: var(--pink); }
+  .fin-btn-mini.msg-btn-cheio{ background: var(--pink); border-color: var(--pink); color:#fff; }
+  .msg-modelos-grade .msg-modelo.editando{ border-color: var(--pink); box-shadow:0 0 0 3px color-mix(in srgb, var(--pink) 12%, transparent); }
+  .msg-modelos-grade .msg-modelo.editando textarea{ flex:1; min-height:130px; }
+  .msg-modelos-grade .msg-modelo-topo input{ border-color: var(--border); background:#fff; }
+  .msg-modelo-novo{ grid-column:1 / -1; display:flex; align-items:center; justify-content:center; gap:8px; min-height:88px; border:1.5px dashed var(--border); border-radius:16px; background:transparent; font-family:inherit; font-size:14px; font-weight:700; color: var(--pink); cursor:pointer; }
+  .msg-modelo-novo:hover{ background: var(--pink-light); }
+  @media (max-width: 900px){ .msg-modelos-grade{ grid-template-columns:1fr; } }
+  #btnMsgNovoModelo[hidden]{ display:none !important; }
+  .msg-modelos-grade .msg-modelo.editando textarea:focus{ outline:none; border-color: var(--pink); }
