@@ -336,7 +336,9 @@
       box.innerHTML = '';
       box.classList.add('msg-modelos-grade');
       const ICONE_MSG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.4 8.4 0 01-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.4 8.4 0 013.8-.9h.5a8.5 8.5 0 018 8z"/></svg>';
-      const comVariaveis = (t) => escHTML(t).replace(/\{[a-z_]+\}/g, v => `<span class="msg-var">${v}</span>`);
+      // O balão mostra a mensagem já preenchida com um exemplo (como a paciente recebe)
+      const exemploModelo = { paciente: { name: 'Ana Souza' }, key: dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)), hora: '10:00', servico: 'Limpeza de Pele', link: enderecoPublico() + '?anamnese=…' };
+      const variaveisHtml = (document.querySelector('#msgPainel-modelos .msg-variaveis') || {}).innerHTML || '';
       listaModelos().forEach(m => {
         const el = document.createElement('article');
         el.className = 'msg-modelo';
@@ -347,6 +349,7 @@
         el.innerHTML = emEdicao
           ? `<div class="msg-modelo-topo"><span class="msg-modelo-ic">${ICONE_MSG}</span><input type="text" value="${escHTML(m.titulo)}" maxlength="50" aria-label="Nome do modelo">${selo}</div>
              <textarea aria-label="Texto do modelo ${escHTML(m.titulo)}">${escHTML(m.texto)}</textarea>
+             <div class="msg-variaveis msg-variaveis-caixa">${variaveisHtml}</div>
              <div class="msg-modelo-acoes">
                ${m.padrao ? '' : '<button type="button" class="fin-btn-mini msg-acao-esq" data-acao="apagar">Apagar</button>'}
                <button type="button" class="fin-btn-mini" data-acao="previa">Ver exemplo</button>
@@ -354,10 +357,9 @@
                <button type="button" class="fin-btn-mini msg-btn-cheio" data-acao="salvar">Salvar</button>
              </div>`
           : `<div class="msg-modelo-topo"><span class="msg-modelo-ic">${ICONE_MSG}</span><h3>${escHTML(m.titulo)}</h3>${selo}</div>
-             <div class="msg-balao">${comVariaveis(m.texto)}</div>
+             <div class="msg-balao">${escHTML(preencherModelo(m.texto, exemploModelo))}</div>
              <div class="msg-modelo-acoes">
                ${editado ? '<button type="button" class="msg-link msg-acao-esq" data-acao="restaurar">Restaurar original</button>' : ''}
-               <button type="button" class="fin-btn-mini" data-acao="previa">Ver exemplo</button>
                <button type="button" class="fin-btn-mini msg-btn-cheio" data-acao="editar">Editar</button>
              </div>`;
         if(emEdicao) el.classList.add('editando');
@@ -379,7 +381,7 @@
           const acao = b.dataset.acao;
           if(acao === 'previa'){
             const exemplo = { paciente: { name: 'Ana Souza' }, key: dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)), hora: '10:00', servico: 'Limpeza de Pele' };
-            alert('Exemplo de como a paciente recebe:\n\n' + preencherModelo(area ? area.value : m.texto, exemplo));
+            alert('Exemplo de como a paciente recebe:\n\n' + preencherModelo(area ? area.value : m.texto, { ...exemplo, link: exemploModelo.link }));
           } else if(acao === 'editar'){
             modeloEmEdicao = m.id; redesenhar();
             const a2 = box.querySelector('.msg-modelo.editando textarea');

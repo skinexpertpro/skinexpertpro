@@ -85,3 +85,6 @@
   @media (max-width: 900px){ .msg-modelos-grade{ grid-template-columns:1fr; } }
   #btnMsgNovoModelo[hidden]{ display:none !important; }
   .msg-modelos-grade .msg-modelo.editando textarea:focus{ outline:none; border-color: var(--pink); }
+  /* As variáveis só aparecem dentro da caixa que está sendo editada */
+  #msgPainel-modelos > .msg-variaveis{ display:none; }
+  .msg-variaveis-caixa{ margin:0; font-size:11.5px; line-height:1.7; }
