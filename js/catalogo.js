@@ -122,94 +122,104 @@
     </div>`;
   }
 
-  let catalogoPaginaAtual = 1;
-  const CATALOGO_POR_PAGINA = 10;
+  // Catálogo no mesmo formato do Dicionário de Ativos: barra A–Z + cartões por letra.
+  let catalogoLetra = 'A';
+  const CATALOGO_LETRAS = ['#'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+  const escCat = (t) => String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const semAcentoCat = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  function letraDoProduto(nome){
+    const l = String(nome || '').trim().charAt(0).normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+    return /^[A-Z]$/.test(l) ? l : '#';
+  }
 
   function renderCatalogo(){
-    const searchTerm = document.getElementById('catalogoSearch').value.trim().toLowerCase();
+    const termoBruto = document.getElementById('catalogoSearch').value.trim();
+    const termo = semAcentoCat(termoBruto);
+    const termoAtivo = termo.replace(/\s+/g, '-');
     const categoryFilter = document.getElementById('catalogoCategoria').value;
     const filtered = products.filter(p => {
-      const matchesSearch = !searchTerm || p.name.toLowerCase().includes(searchTerm) || p.brand.toLowerCase().includes(searchTerm);
+      const matchesSearch = !termo || semAcentoCat(p.name).includes(termo) || semAcentoCat(p.brand).includes(termo)
+        || (p.ativos || []).some(a => semAcentoCat(a).includes(termoAtivo));
       const matchesCategory = !categoryFilter || p.category === categoryFilter;
       return matchesSearch && matchesCategory;
-    });
+    }).sort((x, y) => String(x.name).localeCompare(String(y.name), 'pt-BR'));
 
     document.getElementById('catalogoCount').textContent = filtered.length;
 
-    const totalPaginas = Math.max(1, Math.ceil(filtered.length / CATALOGO_POR_PAGINA));
-    if(catalogoPaginaAtual > totalPaginas) catalogoPaginaAtual = totalPaginas;
-    if(catalogoPaginaAtual < 1) catalogoPaginaAtual = 1;
-
-    const inicio = (catalogoPaginaAtual - 1) * CATALOGO_POR_PAGINA;
-    const paginaItens = filtered.slice(inicio, inicio + CATALOGO_POR_PAGINA);
-
-    const body = document.getElementById('catalogoBody');
-    body.innerHTML = '';
-    if(filtered.length === 0){
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td colspan="5"><div class="empty-state">Nenhum produto encontrado.</div></td>`;
-      body.appendChild(tr);
-      renderCatalogoPagination(0);
+    const container = document.getElementById('catalogoCards');
+    const azNav = document.getElementById('catalogoAzNav');
+    container.innerHTML = '';
+    if(!filtered.length){
+      container.innerHTML = '<div class="registro-card empty-state">Nenhum produto encontrado.</div>';
+      azNav.innerHTML = '';
       return;
     }
-    paginaItens.forEach(p => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>
-          <div class="product-name-cell" data-product-id="${p.id}" style="display:flex; align-items:center; gap:10px;">
-            ${p.image
-              ? `<span class="img-zoomavel mini cat-thumb" role="button" tabindex="0" title="Ver imagem maior" style="display:inline-block; width:50px; height:50px; flex-shrink:0;"><img src="${p.image}" alt="${p.name}" style="width:50px; height:50px; border-radius:8px; object-fit:cover; display:block;"><span class="img-zoom-hint">${ICONE_LUPA}</span></span>`
-              : `<div style="width:50px; height:50px; border-radius:8px; background:var(--gold-light); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--gold-dark);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2h6v3.5l2 2V20a2 2 0 01-2 2H9a2 2 0 01-2-2V7.5l2-2z"/></svg></div>`}
-            <span>${p.name}</span>
-          </div>
-        </td>
-        <td>${p.brand}</td>
-        <td><span class="category-chip">${p.category}</span></td>
-        <td><div class="product-func-cell">${p.func}</div></td>
-        <td><div class="price-cell">${faixaDePrecoCompacta(p.price, p.apenasBrasil)}</div></td>
-      `;
-      tr.querySelector('.product-name-cell').addEventListener('click', () => openProduto(p.id));
-      const thumb = tr.querySelector('.cat-thumb');
-      if(thumb){
-        const abrir = (e) => { e.stopPropagation(); abrirImagemTelaCheia(p.image, p.name, p.brand); };
-        thumb.addEventListener('click', abrir);
-        thumb.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); abrir(e); } });
-      }
-      body.appendChild(tr);
-    });
 
-    renderCatalogoPagination(totalPaginas);
-  }
+    const grupos = {};
+    filtered.forEach(p => { const l = letraDoProduto(p.name); (grupos[l] = grupos[l] || []).push(p); });
+    const letrasCom = CATALOGO_LETRAS.filter(l => grupos[l]);
+    const buscando = !!termo;
+    if(!buscando && catalogoLetra !== 'TODAS' && !grupos[catalogoLetra]) catalogoLetra = letrasCom[0];
+    const visiveis = (buscando || catalogoLetra === 'TODAS') ? letrasCom : [catalogoLetra];
 
-  function renderCatalogoPagination(totalPaginas){
-    const bar = document.getElementById('catalogoPagination');
-    bar.innerHTML = '';
-    if(totalPaginas <= 1) return;
+    azNav.innerHTML = CATALOGO_LETRAS.map(l => {
+      const tem = !!grupos[l];
+      const ativa = !buscando && catalogoLetra === l;
+      const rotulo = l === '#' ? 'começando com número' : 'com a letra ' + l;
+      return `<button type="button" class="az-nav-letter ${tem ? '' : 'disabled'} ${ativa ? 'active' : ''}" data-letra="${l}" ${tem ? '' : 'disabled'} aria-pressed="${ativa}" title="${tem ? grupos[l].length + ' produto(s) ' + rotulo : 'Nenhum produto ' + rotulo}">${l}</button>`;
+    }).join('') + `<button type="button" class="az-nav-letter todas ${!buscando && catalogoLetra === 'TODAS' ? 'active' : ''}" data-letra="TODAS" aria-pressed="${!buscando && catalogoLetra === 'TODAS'}">Todas</button>`;
+    azNav.querySelectorAll('.az-nav-letter:not(.disabled)').forEach(btn => btn.addEventListener('click', () => {
+      catalogoLetra = btn.dataset.letra;
+      const busca = document.getElementById('catalogoSearch');
+      if(busca.value) busca.value = '';
+      renderCatalogo();
+    }));
 
-    const btnAnterior = document.createElement('button');
-    btnAnterior.className = 'pagination-btn';
-    btnAnterior.textContent = '‹';
-    btnAnterior.disabled = catalogoPaginaAtual === 1;
-    btnAnterior.addEventListener('click', () => { catalogoPaginaAtual--; renderCatalogo(); });
-    bar.appendChild(btnAnterior);
-
-    for(let i = 1; i <= totalPaginas; i++){
-      const btn = document.createElement('button');
-      btn.className = 'pagination-btn' + (i === catalogoPaginaAtual ? ' active' : '');
-      btn.textContent = i;
-      btn.addEventListener('click', () => { catalogoPaginaAtual = i; renderCatalogo(); });
-      bar.appendChild(btn);
+    if(buscando){
+      const info = document.createElement('div');
+      info.className = 'ativo-busca-info';
+      info.textContent = `${filtered.length} produto(s) encontrado(s) para "${termoBruto}" em todas as letras`;
+      container.appendChild(info);
     }
 
-    const btnProximo = document.createElement('button');
-    btnProximo.className = 'pagination-btn';
-    btnProximo.textContent = '›';
-    btnProximo.disabled = catalogoPaginaAtual === totalPaginas;
-    btnProximo.addEventListener('click', () => { catalogoPaginaAtual++; renderCatalogo(); });
-    bar.appendChild(btnProximo);
+    visiveis.forEach(l => {
+      const grupo = document.createElement('div');
+      grupo.className = 'ativo-letter-group';
+      grupo.innerHTML = `<div class="ativo-letter-heading">${l === '#' ? 'Produtos que começam com número' : 'Produtos com letra ' + l} (${grupos[l].length})</div>`;
+      const grid = document.createElement('div');
+      grid.className = 'ativo-card-grid';
+      grupos[l].forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'ativo-card produto-card';
+        card.innerHTML = `
+          <div class="produto-card-topo">
+            ${p.image
+              ? `<span class="img-zoomavel mini cat-thumb produto-card-foto" role="button" tabindex="0" title="Ver imagem maior"><img src="${p.image}" alt="${escCat(p.name)}"><span class="img-zoom-hint">${ICONE_LUPA}</span></span>`
+              : `<div class="produto-card-foto vazio"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2h6v3.5l2 2V20a2 2 0 01-2 2H9a2 2 0 01-2-2V7.5l2-2z"/></svg></div>`}
+            <div class="produto-card-id"><div class="ativo-card-name">${escCat(p.name)}</div><div class="produto-card-marca">${escCat(p.brand)}</div></div>
+          </div>
+          <div class="ativo-card-desc produto-card-desc">${escCat(p.func || '')}</div>
+          <div class="produto-card-preco">${faixaDePrecoCompacta(p.price, p.apenasBrasil)}</div>
+          <div class="ativo-card-footer">
+            <span class="category-chip">${escCat(p.category || '')}</span>
+            <button type="button" class="ativo-card-ler-mais">Ver produto ›</button>
+          </div>`;
+        card.querySelector('.ativo-card-ler-mais').addEventListener('click', () => openProduto(p.id));
+        card.querySelector('.ativo-card-name').addEventListener('click', () => openProduto(p.id));
+        const thumb = card.querySelector('.cat-thumb');
+        if(thumb){
+          const abrir = (e) => { e.stopPropagation(); abrirImagemTelaCheia(p.image, p.name, p.brand); };
+          thumb.addEventListener('click', abrir);
+          thumb.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); abrir(e); } });
+        }
+        grid.appendChild(card);
+      });
+      grupo.appendChild(grid);
+      container.appendChild(grupo);
+    });
   }
 
-  document.getElementById('catalogoSearch').addEventListener('input', () => { catalogoPaginaAtual = 1; renderCatalogo(); });
+  document.getElementById('catalogoSearch').addEventListener('input', () => renderCatalogo());
 
   document.querySelectorAll('#view-catalogo .fin-tab[data-catalogosubview]').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -219,7 +229,7 @@
       document.getElementById('catalogo-subpanel-' + tab.dataset.catalogosubview).classList.add('active');
     });
   });
-  document.getElementById('catalogoCategoria').addEventListener('change', () => { catalogoPaginaAtual = 1; renderCatalogo(); });
+  document.getElementById('catalogoCategoria').addEventListener('change', () => renderCatalogo());
 
   /* ---------- Visualizar imagem em tela cheia (produtos do catálogo) ---------- */
   function abrirImagemTelaCheia(src, titulo, subtitulo){

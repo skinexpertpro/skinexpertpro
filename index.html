@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="css/pacientes.css?v=20261006a">
 <link rel="stylesheet" href="css/agenda.css?v=20261122b">
 <link rel="stylesheet" href="css/registro-paciente.css?v=20261112a">
-<link rel="stylesheet" href="css/catalogo.css?v=20261006a">
+<link rel="stylesheet" href="css/catalogo.css?v=20261122f">
 <link rel="stylesheet" href="css/planos.css?v=20261006a">
 <link rel="stylesheet" href="css/financeiro.css?v=20261122b">
 <link rel="stylesheet" href="css/mensagens.css?v=20261122e">
@@ -1790,7 +1790,7 @@
         <div class="filter-bar">
           <div class="search-input">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="catalogoSearch" placeholder="Buscar produto ou marca...">
+            <input type="text" id="catalogoSearch" placeholder="Buscar produto, marca ou ativo...">
           </div>
           <div class="select-box" style="position:relative;">
             <select id="catalogoCategoria" style="border:none; outline:none; background:transparent; font-family:inherit; font-size:14px; font-weight:600; color: var(--text-dark); appearance:none; padding-right:4px;">
@@ -1810,22 +1810,8 @@
 
         <div class="catalogo-count">Produtos Cadastrados: <b id="catalogoCount">0</b></div>
 
-        <div class="card-table">
-          <div class="card-head"><div class="card-title">Lista de Produtos</div></div>
-          <table>
-            <thead>
-              <tr>
-                <th>Produto</th>
-                <th>Marca</th>
-                <th>Categoria</th>
-                <th>Função</th>
-                <th>Faixa de Preço</th>
-              </tr>
-            </thead>
-            <tbody id="catalogoBody"></tbody>
-          </table>
-          <div class="pagination-bar" id="catalogoPagination"></div>
-        </div>
+        <div class="az-nav" id="catalogoAzNav"></div>
+        <div id="catalogoCards"></div>
 
         </div>
 
@@ -3270,7 +3256,7 @@
 <script src="js/pacientes.js?v=20261007c"></script>
 <script src="js/registro-paciente.js?v=20261106b"></script>
 <script src="js/plano-skincare.js?v=20261117a"></script>
-<script src="js/catalogo.js?v=20261008d"></script>
+<script src="js/catalogo.js?v=20261122f"></script>
 <script src="js/planos.js?v=20261007b"></script>
 <script src="js/agenda.js?v=20261122b"></script>
 <script src="js/agenda-estudio.js?v=20261104a"></script>
