@@ -200,11 +200,13 @@ Sei que posso retirar esta autorização a qualquer momento, falando com a profi
         <td>${m.servicos.length ? m.servicos.map(s => `<span class="category-chip">${escHTML(s)}</span>`).join(' ') : '<span style="color:var(--text-muted);">Nenhum (envio manual)</span>'}</td>
         <td><div class="fin-acoes" style="justify-content:flex-start;">
           <button class="icon-btn" type="button" title="Editar" aria-label="Editar termo ${escHTML(m.titulo)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg></button>
-          <button class="icon-btn" type="button" title="${m.ativo ? 'Desativar termo' : 'Reativar termo'}" aria-label="${m.ativo ? 'Desativar' : 'Reativar'} termo ${escHTML(m.titulo)}">${m.ativo ? ICONE_DESATIVAR : ICONE_REATIVAR}</button>
+          ${m.ativo ? '' : `<button class="icon-btn" type="button" data-reativar title="Reativar termo" aria-label="Reativar termo ${escHTML(m.titulo)}">${ICONE_REATIVAR}</button>`}
+          <button class="comanda-apagar" type="button" data-apagar title="Apagar termo" aria-label="Apagar termo ${escHTML(m.titulo)}">${ICONE_LIXEIRA}</button>
         </div></td>`;
-      const [bEdit, bAtivo] = tr.querySelectorAll('button');
-      bEdit.addEventListener('click', () => abrirModeloTermo(m));
-      bAtivo.addEventListener('click', () => alternarModeloAtivo(m));
+      tr.querySelector('button').addEventListener('click', () => abrirModeloTermo(m));
+      const bReativar = tr.querySelector('[data-reativar]');
+      if(bReativar) bReativar.addEventListener('click', () => alternarModeloAtivo(m));
+      tr.querySelector('[data-apagar]').addEventListener('click', () => apagarModeloTermo(m));
       body.appendChild(tr);
     });
   }
@@ -257,6 +259,18 @@ Sei que posso retirar esta autorização a qualquer momento, falando com a profi
       showToast(modeloEditando ? 'Termo atualizado. Os termos já enviados não mudam.' : 'Termo criado.');
     } finally { btn.disabled = false; }
   });
+  // Apagar o modelo: os termos já enviados e assinados continuam guardados na ficha
+  // (cada um tem a própria cópia do texto; no banco o vínculo com o modelo vira vazio).
+  async function apagarModeloTermo(m){
+    if(!confirm(`Apagar o termo "${m.titulo}"?\n\nOs termos que as pacientes já assinaram continuam guardados na ficha de cada uma.`)) return;
+    if(!modoDemonstracao){
+      const { error } = await supabaseClient.from('termos_modelos').delete().eq('id', m.id);
+      if(error){ avisarErroTermos(error); return; }
+    }
+    termosModelos = termosModelos.filter(x => x !== m);
+    renderTermosModelos();
+    showToast('Termo apagado. Os termos já assinados continuam guardados.');
+  }
   async function alternarModeloAtivo(m){
     const ativo = !m.ativo;
     if(!modoDemonstracao){
