@@ -90,3 +90,54 @@
     /* Letra de 16px nos campos: abaixo disso o iPhone dá zoom ao tocar e a tela "corta". */
     html.celular-ativo .auth-field input{ font-size:16px; }
   }
+
+  /* ================= Visual novo do login (mesma linha do site skinexpertpro.com) ================= */
+  .auth-screen{
+    font-family:'Inter', system-ui, sans-serif;
+    background:
+      radial-gradient(900px 520px at 88% 8%, #F3D9D1 0%, rgba(243,217,209,0) 62%),
+      radial-gradient(760px 520px at 0% 100%, #EADBC8 0%, rgba(234,219,200,0) 60%),
+      linear-gradient(170deg, #FBF6F2 0%, #F5EAE3 50%, #EDD8CF 100%);
+    gap:72px;
+  }
+  .auth-intro{ max-width:480px; }
+  .auth-intro-tag{ color:#2A1A1D; background: linear-gradient(135deg, #F6D6CE, #E8C9A0); padding:7px 14px; letter-spacing:.08em; margin-bottom:20px; }
+  .auth-intro h1{ font-family:'Outfit', system-ui, sans-serif; font-weight:300; font-size:46px; line-height:1.06; letter-spacing:-0.02em; color:#2A1A1D; margin:0 0 18px; }
+  .auth-intro h1 span{ background: linear-gradient(90deg, #6B1E2E 0%, #A5524A 55%, #B8925A 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .auth-intro-lead{ color:#5A4347; }
+  .auth-intro-lista{ gap:10px; }
+  .auth-intro-lista li{ padding:12px 14px 12px 46px; color:#5A4347; background:rgba(255,255,255,0.55); border:1px solid rgba(255,255,255,0.85); border-radius:16px; }
+  .auth-intro-lista li::before{ left:14px; top:14px; width:20px; height:20px; border-radius:50%;
+    background: #6B1E2E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 12.5l3.2 3.2L17 9' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat; }
+  .auth-intro-lista strong{ color:#2A1A1D; }
+  .auth-intro-nota{ border-top-color: rgba(107,30,46,0.15); }
+  .auth-intro-nota a{ color:#6B1E2E; }
+
+  .auth-box{
+    width:400px; padding:40px 36px; border-radius:28px;
+    background:rgba(255,255,255,0.78); border:1px solid rgba(255,255,255,0.95);
+    -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px);
+    box-shadow:0 30px 70px -34px rgba(74,20,32,0.45);
+  }
+  .auth-logo{ margin-bottom:24px; }
+  .auth-logo .brand-logo{ width:40px; height:40px; }
+  .auth-logo span{ font-family:'Syne', sans-serif; font-weight:800; font-size:21px; letter-spacing:-0.02em; text-transform:lowercase; color:#6B1E2E; }
+  .auth-title{ font-family:'Outfit', system-ui, sans-serif; font-weight:400; font-size:26px; letter-spacing:-0.01em; color:#2A1A1D; }
+  .auth-sub{ color:#5A4347; }
+  .auth-field label{ color:#2A1A1D; }
+  .auth-field input{ padding:13px 16px; border-radius:14px; border-color:#E8D6CF; background:#FFFFFF; }
+  .auth-field input:focus{ border-color:#6B1E2E; box-shadow:0 0 0 3px rgba(107,30,46,0.12); }
+  .auth-forgot a, .auth-switch a{ color:#6B1E2E; }
+  .auth-btn{
+    padding:15px; border-radius:999px; font-size:15px;
+    background: linear-gradient(135deg, #8A2B3D, #5A1828);
+    box-shadow:0 14px 30px -14px rgba(107,30,46,0.7);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .auth-btn:hover{ background: linear-gradient(135deg, #7A2435, #4A1420); transform:translateY(-1px); }
+  .auth-legal{ border-top-color: rgba(107,30,46,0.12); }
+  .auth-legal a:hover{ color:#6B1E2E; }
+  @media (max-width: 900px){
+    .auth-intro h1{ font-size:32px; }
+    .auth-box{ width:100%; max-width:420px; padding:32px 24px; }
+  }
