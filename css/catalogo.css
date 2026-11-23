@@ -211,3 +211,13 @@
   .produto-card .produto-card-desc{ -webkit-line-clamp:4; margin:0; }
   .produto-card-preco .faixa-preco-principal{ font-size:13px; }
   .produto-card .ativo-card-footer{ gap:8px; }
+
+  /* Faixa de marcas do Catálogo */
+  .marcas-faixa-wrap{ margin:0 0 16px; }
+  .marcas-faixa-titulo{ font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--text-muted); margin:0 0 8px 2px; }
+  .marcas-faixa{ display:flex; gap:10px; overflow-x:auto; padding:2px 2px 8px; scrollbar-width:thin; }
+  .marca-tile{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-width:118px; height:64px; padding:0 16px; background:#fff; border:1px solid var(--border); border-radius:12px; cursor:pointer; font-family:inherit; color: var(--text-dark); transition: border-color .15s, box-shadow .15s; }
+  .marca-tile:hover{ border-color: var(--gold); }
+  .marca-tile.active{ border-color: var(--sidebar-bg); box-shadow:0 0 0 2px var(--sidebar-bg); }
+  .marca-tile-nome{ font-family:'Playfair Display', serif; font-size:14.5px; font-weight:700; white-space:nowrap; }
+  .marca-tile-qtd{ font-size:11px; color: var(--text-muted); }

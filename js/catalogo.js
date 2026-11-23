@@ -124,12 +124,34 @@
 
   // Catálogo no mesmo formato do Dicionário de Ativos: barra A–Z + cartões por letra.
   let catalogoLetra = 'A';
+  let catalogoMarca = ''; // marca escolhida na faixa de marcas ('' = todas)
   const CATALOGO_LETRAS = ['#'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
   const escCat = (t) => String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const semAcentoCat = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   function letraDoProduto(nome){
     const l = String(nome || '').trim().charAt(0).normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
     return /^[A-Z]$/.test(l) ? l : '#';
+  }
+
+
+  // Faixa de marcas: cada marca do catálogo vira um botão (com a quantidade de produtos). Clicar filtra pela marca.
+  function renderFaixaMarcas(lista){
+    const faixa = document.getElementById('catalogoMarcas');
+    if(!faixa) return;
+    const porMarca = {};
+    lista.forEach(p => {
+      const k = semAcentoCat(p.brand).trim();
+      if(!k) return;
+      if(!porMarca[k]) porMarca[k] = { nome: p.brand, qtd: 0 };
+      porMarca[k].qtd++;
+    });
+    if(catalogoMarca && !porMarca[catalogoMarca]) catalogoMarca = '';
+    const marcas = Object.entries(porMarca).sort((a, b) => b[1].qtd - a[1].qtd || a[1].nome.localeCompare(b[1].nome, 'pt-BR'));
+    faixa.innerHTML = marcas.map(([k, m]) => `<button type="button" class="marca-tile ${catalogoMarca === k ? 'active' : ''}" data-marca="${escCat(k)}" aria-pressed="${catalogoMarca === k}" title="${m.qtd} produto(s) da ${escCat(m.nome)}"><span class="marca-tile-nome">${escCat(m.nome)}</span><span class="marca-tile-qtd">${m.qtd}</span></button>`).join('');
+    faixa.querySelectorAll('.marca-tile').forEach(b => b.addEventListener('click', () => {
+      catalogoMarca = catalogoMarca === b.dataset.marca ? '' : b.dataset.marca;
+      renderCatalogo();
+    }));
   }
 
   function renderCatalogo(){
@@ -143,6 +165,11 @@
       const matchesCategory = !categoryFilter || p.category === categoryFilter;
       return matchesSearch && matchesCategory;
     }).sort((x, y) => String(x.name).localeCompare(String(y.name), 'pt-BR'));
+    renderFaixaMarcas(filtered);
+    if(catalogoMarca){
+      const soDaMarca = filtered.filter(p => semAcentoCat(p.brand) === catalogoMarca);
+      filtered.length = 0; soDaMarca.forEach(p => filtered.push(p));
+    }
 
     document.getElementById('catalogoCount').textContent = filtered.length;
 
@@ -167,7 +194,7 @@
       const ativa = !buscando && catalogoLetra === l;
       const rotulo = l === '#' ? 'começando com número' : 'com a letra ' + l;
       return `<button type="button" class="az-nav-letter ${tem ? '' : 'disabled'} ${ativa ? 'active' : ''}" data-letra="${l}" ${tem ? '' : 'disabled'} aria-pressed="${ativa}" title="${tem ? grupos[l].length + ' produto(s) ' + rotulo : 'Nenhum produto ' + rotulo}">${l}</button>`;
-    }).join('') + `<button type="button" class="az-nav-letter todas ${!buscando && catalogoLetra === 'TODAS' ? 'active' : ''}" data-letra="TODAS" aria-pressed="${!buscando && catalogoLetra === 'TODAS'}">Todas</button>`;
+    }).join('');
     azNav.querySelectorAll('.az-nav-letter:not(.disabled)').forEach(btn => btn.addEventListener('click', () => {
       catalogoLetra = btn.dataset.letra;
       const busca = document.getElementById('catalogoSearch');
@@ -175,10 +202,13 @@
       renderCatalogo();
     }));
 
-    if(buscando){
+    if(buscando || catalogoMarca){
       const info = document.createElement('div');
       info.className = 'ativo-busca-info';
-      info.textContent = `${filtered.length} produto(s) encontrado(s) para "${termoBruto}" em todas as letras`;
+      const marcaNome = catalogoMarca ? (filtered[0] ? filtered[0].brand : '') : '';
+      info.textContent = termo
+        ? `${filtered.length} produto(s) encontrado(s) para "${termoBruto}"${marcaNome ? ' da ' + marcaNome : ''} em todas as letras`
+        : `${filtered.length} produto(s) da ${marcaNome} · clique na marca de novo para ver todas`;
       container.appendChild(info);
     }
 
