@@ -228,14 +228,16 @@
   .marca-tile.logo-cheio .marca-tile-qtd{ position:absolute; right:6px; bottom:4px; background:rgba(255,255,255,.9); color: var(--text-dark); border-radius:8px; padding:0 6px; font-weight:700; }
   .marca-tile.logo-cheio.active{ box-shadow:0 0 0 3px var(--sidebar-bg); }
 
-  /* Faixa de marcas: rola sozinha, devagar, sem barra de rolagem */
-  .marcas-faixa{ overflow:hidden; padding:4px 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
-  .marcas-trilho{ display:flex; gap:10px; width:max-content; padding:0 2px; animation: marcasRolar 60s linear infinite; }
-  .marcas-faixa:hover .marcas-trilho, .marcas-faixa:focus-within .marcas-trilho{ animation-play-state: paused; }
-  @keyframes marcasRolar{ from{ transform: translateX(0); } to{ transform: translateX(calc(-50% - 5px)); } }
-  @media (prefers-reduced-motion: reduce){
-    .marcas-trilho{ animation:none; }
-    .marcas-faixa{ overflow-x:auto; scrollbar-width:none; }
-    .marcas-faixa::-webkit-scrollbar{ display:none; }
-    .marcas-trilho > [aria-hidden="true"]{ display:none; }
-  }
+  /* Faixa de marcas: rola sozinha devagar (JS), setas dos lados, sem barra */
+  .marcas-faixa-linha{ display:flex; align-items:center; gap:8px; }
+  .marcas-seta{ flex:0 0 auto; width:38px; height:38px; border-radius:50%; border:1px solid var(--border); background:#fff; color: var(--text-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .marcas-seta:hover{ border-color: var(--gold); color: var(--pink); }
+  .marcas-faixa{ flex:1; min-width:0; overflow-x:auto; overflow-y:hidden; padding:4px 0; scrollbar-width:none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent); mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent); }
+  .marcas-faixa::-webkit-scrollbar{ display:none; }
+  .marcas-trilho{ display:flex; gap:10px; width:max-content; padding:0 4px; }
+  .marca-tile{ width:140px; min-width:0; padding:0 12px; height:64px; align-items:center; justify-content:center; }
+  .marca-tile-nome{ text-align:center; white-space:normal; line-height:1.2; }
+  .marca-tile-logo{ display:block; object-fit:contain; max-width:none; max-height:none; }
+  .marca-tile.active{ box-shadow:0 0 0 2px var(--sidebar-bg); }
+  .catalogo-count-final{ margin:8px 0 0 4px; text-align:center; }

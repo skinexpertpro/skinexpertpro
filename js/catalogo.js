@@ -136,12 +136,62 @@
 
   // Faixa de marcas: cada marca do catálogo vira um botão (com a quantidade de produtos). Clicar filtra pela marca.
   // Logos das marcas (img/marcas). "cheio": o logo tem fundo próprio e ocupa a caixa toda.
+  // Logos das marcas (img/marcas). "proporcao" = largura/altura da imagem: serve para todos os logos
+  // ficarem com o mesmo "peso" visual, centralizados na caixa. "fundo": a caixa leva a cor da marca.
   const LOGOS_MARCAS = {
-    'svr': { src: 'img/marcas/svr.png' },
-    'medicube': { src: 'img/marcas/medicube.png' },
-    'creamy': { src: 'img/marcas/creamy.png' },
-    'sallve': { src: 'img/marcas/sallve.png', cheio: true, fundo: '#ff5b35' },
+    'svr':      { src: 'img/marcas/svr.png',      proporcao: 179 / 96 },
+    'medicube': { src: 'img/marcas/medicube.png', proporcao: 423 / 96 },
+    'creamy':   { src: 'img/marcas/creamy.png',   proporcao: 312 / 96 },
+    'sallve':   { src: 'img/marcas/sallve.png',   proporcao: 340 / 96, fundo: '#ff5b35' },
   };
+  function tamanhoDoLogo(proporcao){
+    const AREA = 2500; // px² que cada logo ocupa, mais ou menos
+    let h = Math.sqrt(AREA / proporcao), w = h * proporcao;
+    if(h > 36){ h = 36; w = h * proporcao; }
+    if(w > 108){ w = 108; h = w / proporcao; }
+    return { w: Math.round(w), h: Math.round(h) };
+  }
+
+  // Rolagem da faixa: anda sozinha, devagar, e as setas levam para o lado. A lista aparece duas vezes
+  // para o giro não ter emenda. Para com o mouse por cima; quem pede "menos movimento" vê parada.
+  const marcasRolagem = { pausada: false, ultimo: 0, pos: 0, iniciada: false };
+  const MARCAS_VELOCIDADE = 22; // px por segundo
+  const semMovimento = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function metadeDaFaixa(faixa){ const t = faixa.querySelector('.marcas-trilho'); return t ? t.scrollWidth / 2 : 0; }
+  function ajustarVolta(faixa){
+    const meio = metadeDaFaixa(faixa);
+    if(meio > 0){
+      while(marcasRolagem.pos >= meio) marcasRolagem.pos -= meio;
+      while(marcasRolagem.pos < 0) marcasRolagem.pos += meio;
+    }
+    faixa.scrollLeft = marcasRolagem.pos;
+  }
+  function passoDaRolagem(agora){
+    const faixa = document.getElementById('catalogoMarcas');
+    const dt = marcasRolagem.ultimo ? Math.min(0.1, (agora - marcasRolagem.ultimo) / 1000) : 0;
+    marcasRolagem.ultimo = agora;
+    const visivel = faixa && faixa.offsetParent !== null && document.visibilityState === 'visible';
+    if(visivel && !marcasRolagem.pausada && !semMovimento && !faixa.classList.contains('deslizando')){
+      marcasRolagem.pos += MARCAS_VELOCIDADE * dt;
+      ajustarVolta(faixa);
+    }
+    requestAnimationFrame(passoDaRolagem);
+  }
+  function moverMarcas(sentido){
+    const faixa = document.getElementById('catalogoMarcas');
+    if(!faixa) return;
+    const alvo = marcasRolagem.pos + sentido * Math.max(220, faixa.clientWidth * 0.6);
+    const inicio = marcasRolagem.pos, t0 = performance.now(), dur = 450;
+    faixa.classList.add('deslizando');
+    const anima = (agora) => {
+      const k = Math.min(1, (agora - t0) / dur), suave = 1 - Math.pow(1 - k, 3);
+      marcasRolagem.pos = inicio + (alvo - inicio) * suave;
+      ajustarVolta(faixa);
+      if(k < 1) requestAnimationFrame(anima); else faixa.classList.remove('deslizando');
+    };
+    requestAnimationFrame(anima);
+  }
+
   function renderFaixaMarcas(lista){
     const faixa = document.getElementById('catalogoMarcas');
     if(!faixa) return;
@@ -156,22 +206,37 @@
     const marcas = Object.entries(porMarca).sort((a, b) => b[1].qtd - a[1].qtd || a[1].nome.localeCompare(b[1].nome, 'pt-BR'));
     const tiles = marcas.map(([k, m]) => {
       const logo = LOGOS_MARCAS[k];
-      const cls = 'marca-tile' + (catalogoMarca === k ? ' active' : '') + (logo ? ' com-logo' : '') + (logo && logo.cheio ? ' logo-cheio' : '');
-      const estilo = logo && logo.fundo ? ` style="background:${logo.fundo}"` : '';
-      const miolo = logo
-        ? `<img class="marca-tile-logo" src="${logo.src}?v=20261123b" alt="${escCat(m.nome)}" loading="lazy"><span class="marca-tile-qtd">${m.qtd}</span>`
-        : `<span class="marca-tile-nome">${escCat(m.nome)}</span><span class="marca-tile-qtd">${m.qtd}</span>`;
-      return `<button type="button" class="${cls}"${estilo} data-marca="${escCat(k)}" aria-pressed="${catalogoMarca === k}" title="${m.qtd} produto(s) da ${escCat(m.nome)}">${miolo}</button>`;
+      const cls = 'marca-tile' + (catalogoMarca === k ? ' active' : '') + (logo ? ' com-logo' : '');
+      const estilo = logo && logo.fundo ? ` style="background:${logo.fundo}; border-color:${logo.fundo}"` : '';
+      let miolo;
+      if(logo){
+        const t = tamanhoDoLogo(logo.proporcao);
+        miolo = `<img class="marca-tile-logo" src="${logo.src}?v=20261123e" alt="${escCat(m.nome)}" width="${t.w}" height="${t.h}" style="width:${t.w}px; height:${t.h}px" loading="lazy">`;
+      } else {
+        miolo = `<span class="marca-tile-nome">${escCat(m.nome)}</span>`;
+      }
+      return `<button type="button" class="${cls}"${estilo} data-marca="${escCat(k)}" aria-pressed="${catalogoMarca === k}" title="${escCat(m.nome)} · ${m.qtd} produto(s)">${miolo}</button>`;
     }).join('');
-    // Rolagem automática e lenta (sem barra): a lista aparece duas vezes para o giro não ter emenda.
-    // Para quando o mouse passa por cima; quem pede "menos movimento" no aparelho vê a faixa parada.
-    const segundos = Math.max(30, marcas.length * 5);
     const copia = tiles.replace(/<button /g, '<button tabindex="-1" aria-hidden="true" ');
-    faixa.innerHTML = `<div class="marcas-trilho" style="animation-duration:${segundos}s">${tiles}${copia}</div>`;
+    faixa.innerHTML = `<div class="marcas-trilho">${tiles}${semMovimento ? '' : copia}</div>`;
+    ajustarVolta(faixa);
     faixa.querySelectorAll('.marca-tile').forEach(b => b.addEventListener('click', () => {
       catalogoMarca = catalogoMarca === b.dataset.marca ? '' : b.dataset.marca;
       renderCatalogo();
     }));
+    if(!marcasRolagem.iniciada){
+      marcasRolagem.iniciada = true;
+      const wrap = faixa.closest('.marcas-faixa-wrap');
+      wrap.addEventListener('mouseenter', () => { marcasRolagem.pausada = true; });
+      wrap.addEventListener('mouseleave', () => { marcasRolagem.pausada = false; });
+      faixa.addEventListener('focusin', () => { marcasRolagem.pausada = true; });
+      faixa.addEventListener('focusout', () => { marcasRolagem.pausada = false; });
+      // arrastar com o dedo no celular/tablet
+      faixa.addEventListener('scroll', () => { if(Math.abs(faixa.scrollLeft - marcasRolagem.pos) > 2) marcasRolagem.pos = faixa.scrollLeft; }, { passive: true });
+      document.getElementById('marcasAnterior').addEventListener('click', () => moverMarcas(-1));
+      document.getElementById('marcasProxima').addEventListener('click', () => moverMarcas(1));
+      requestAnimationFrame(passoDaRolagem);
+    }
   }
 
   function renderCatalogo(){
