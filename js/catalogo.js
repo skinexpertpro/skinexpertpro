@@ -143,12 +143,20 @@
     'medicube': { src: 'img/marcas/medicube.png', proporcao: 423 / 96 },
     'creamy':   { src: 'img/marcas/creamy.png',   proporcao: 312 / 96 },
     'sallve':   { src: 'img/marcas/sallve.png',   proporcao: 340 / 96, fundo: '#ff5b35' },
+    'anua':             { src: 'img/marcas/anua.png',             proporcao: 360 / 96, escala: 0.82 },
+    'beauty of joseon': { src: 'img/marcas/beauty-of-joseon.png', proporcao: 213 / 96, escala: 1.3 },
+    'celimax':          { src: 'img/marcas/celimax.png',          proporcao: 421 / 96, escala: 0.85 },
+    'la roche-posay':   { src: 'img/marcas/la-roche-posay.png',   proporcao: 228 / 96 },
+    'haruharu wonder':  { src: 'img/marcas/haruharu-wonder.png',  proporcao: 255 / 96 },
+    'the ordinary':     { src: 'img/marcas/the-ordinary.png',     proporcao: 255 / 96 },
+    'numbuzin':         { src: 'img/marcas/numbuzin.png',         proporcao: 580 / 96 },
   };
-  function tamanhoDoLogo(proporcao){
-    const AREA = 2500; // px² que cada logo ocupa, mais ou menos
+  // "escala" corrige o peso visual de cada logo (letras grossas parecem maiores; emblema com texto fino, menor)
+  function tamanhoDoLogo(proporcao, escala){
+    const AREA = 2500 * Math.pow(escala || 1, 2); // px² que cada logo ocupa, mais ou menos
     let h = Math.sqrt(AREA / proporcao), w = h * proporcao;
-    if(h > 36){ h = 36; w = h * proporcao; }
-    if(w > 108){ w = 108; h = w / proporcao; }
+    if(h > 48){ h = 48; w = h * proporcao; }
+    if(w > 112){ w = 112; h = w / proporcao; }
     return { w: Math.round(w), h: Math.round(h) };
   }
 
@@ -210,8 +218,8 @@
       const estilo = logo && logo.fundo ? ` style="background:${logo.fundo}; border-color:${logo.fundo}"` : '';
       let miolo;
       if(logo){
-        const t = tamanhoDoLogo(logo.proporcao);
-        miolo = `<img class="marca-tile-logo" src="${logo.src}?v=20261123e" alt="${escCat(m.nome)}" width="${t.w}" height="${t.h}" style="width:${t.w}px; height:${t.h}px" loading="lazy">`;
+        const t = tamanhoDoLogo(logo.proporcao, logo.escala);
+        miolo = `<img class="marca-tile-logo" src="${logo.src}?v=20261123f" alt="${escCat(m.nome)}" width="${t.w}" height="${t.h}" style="width:${t.w}px; height:${t.h}px" loading="lazy">`;
       } else {
         miolo = `<span class="marca-tile-nome">${escCat(m.nome)}</span>`;
       }
