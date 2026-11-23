@@ -159,6 +159,10 @@
     'mixsoon': { src: 'img/marcas/mixsoon.png', proporcao: 430 / 96 },
     'mary&may': { src: 'img/marcas/mary-may.png', proporcao: 537 / 96 },
     'avene': { src: 'img/marcas/avene.png', proporcao: 227 / 96, escala: 1.05 },
+    'skin1004': { src: 'img/marcas/skin1004.png', proporcao: 999 / 96 },
+    'cosrx': { src: 'img/marcas/cosrx.png', proporcao: 425 / 96, escala: 0.82 },
+    'axis-y': { src: 'img/marcas/axis-y.png', proporcao: 644 / 96, escala: 1.05 },
+    'some by mi': { src: 'img/marcas/some-by-mi.png', proporcao: 637 / 96, escala: 0.95 },
   };
   // "escala" corrige o peso visual de cada logo (letras grossas parecem maiores; emblema com texto fino, menor)
   function tamanhoDoLogo(proporcao, escala){
@@ -228,7 +232,7 @@
       let miolo;
       if(logo){
         const t = tamanhoDoLogo(logo.proporcao, logo.escala);
-        miolo = `<img class="marca-tile-logo" src="${logo.src}?v=20261123h" alt="${escCat(m.nome)}" width="${t.w}" height="${t.h}" style="width:${t.w}px; height:${t.h}px" loading="lazy">`;
+        miolo = `<img class="marca-tile-logo" src="${logo.src}?v=20261123i" alt="${escCat(m.nome)}" width="${t.w}" height="${t.h}" style="width:${t.w}px; height:${t.h}px" loading="lazy">`;
       } else {
         miolo = `<span class="marca-tile-nome">${escCat(m.nome)}</span>`;
       }
