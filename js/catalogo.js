@@ -135,6 +135,13 @@
 
 
   // Faixa de marcas: cada marca do catálogo vira um botão (com a quantidade de produtos). Clicar filtra pela marca.
+  // Logos das marcas (img/marcas). "cheio": o logo tem fundo próprio e ocupa a caixa toda.
+  const LOGOS_MARCAS = {
+    'svr': { src: 'img/marcas/svr.png' },
+    'medicube': { src: 'img/marcas/medicube.png' },
+    'creamy': { src: 'img/marcas/creamy.png' },
+    'sallve': { src: 'img/marcas/sallve.png', cheio: true, fundo: '#ff5b35' },
+  };
   function renderFaixaMarcas(lista){
     const faixa = document.getElementById('catalogoMarcas');
     if(!faixa) return;
@@ -147,7 +154,20 @@
     });
     if(catalogoMarca && !porMarca[catalogoMarca]) catalogoMarca = '';
     const marcas = Object.entries(porMarca).sort((a, b) => b[1].qtd - a[1].qtd || a[1].nome.localeCompare(b[1].nome, 'pt-BR'));
-    faixa.innerHTML = marcas.map(([k, m]) => `<button type="button" class="marca-tile ${catalogoMarca === k ? 'active' : ''}" data-marca="${escCat(k)}" aria-pressed="${catalogoMarca === k}" title="${m.qtd} produto(s) da ${escCat(m.nome)}"><span class="marca-tile-nome">${escCat(m.nome)}</span><span class="marca-tile-qtd">${m.qtd}</span></button>`).join('');
+    const tiles = marcas.map(([k, m]) => {
+      const logo = LOGOS_MARCAS[k];
+      const cls = 'marca-tile' + (catalogoMarca === k ? ' active' : '') + (logo ? ' com-logo' : '') + (logo && logo.cheio ? ' logo-cheio' : '');
+      const estilo = logo && logo.fundo ? ` style="background:${logo.fundo}"` : '';
+      const miolo = logo
+        ? `<img class="marca-tile-logo" src="${logo.src}?v=20261123b" alt="${escCat(m.nome)}" loading="lazy"><span class="marca-tile-qtd">${m.qtd}</span>`
+        : `<span class="marca-tile-nome">${escCat(m.nome)}</span><span class="marca-tile-qtd">${m.qtd}</span>`;
+      return `<button type="button" class="${cls}"${estilo} data-marca="${escCat(k)}" aria-pressed="${catalogoMarca === k}" title="${m.qtd} produto(s) da ${escCat(m.nome)}">${miolo}</button>`;
+    }).join('');
+    // Rolagem automática e lenta (sem barra): a lista aparece duas vezes para o giro não ter emenda.
+    // Para quando o mouse passa por cima; quem pede "menos movimento" no aparelho vê a faixa parada.
+    const segundos = Math.max(30, marcas.length * 5);
+    const copia = tiles.replace(/<button /g, '<button tabindex="-1" aria-hidden="true" ');
+    faixa.innerHTML = `<div class="marcas-trilho" style="animation-duration:${segundos}s">${tiles}${copia}</div>`;
     faixa.querySelectorAll('.marca-tile').forEach(b => b.addEventListener('click', () => {
       catalogoMarca = catalogoMarca === b.dataset.marca ? '' : b.dataset.marca;
       renderCatalogo();
