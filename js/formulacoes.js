@@ -305,12 +305,28 @@
         if(skcAtivosDesejados.has(a.id)) skcAtivosDesejados.delete(a.id);
         else skcAtivosDesejados.add(a.id);
         chip.classList.toggle('selected');
+        atualizarLimparAtivos();
         renderSkcProdutosEncontrados();
       });
       wrap.appendChild(chip);
     });
+    atualizarLimparAtivos();
     renderSkcProdutosEncontrados();
   }
+
+  // "Limpar ativos": só aparece quando há ativo marcado; mostra quantos estão escolhidos
+  function atualizarLimparAtivos(){
+    const n = skcAtivosDesejados.size;
+    const btn = document.getElementById('skcBtnLimparAtivos');
+    const cont = document.getElementById('skcAtivosContagem');
+    if(btn) btn.hidden = n === 0;
+    if(cont) cont.textContent = n ? `· ${n} ${n === 1 ? 'escolhido' : 'escolhidos'}` : '';
+  }
+  document.getElementById('skcBtnLimparAtivos').addEventListener('click', () => {
+    skcAtivosDesejados.clear();
+    renderSkcAtivosDesejadosChips();
+    showToast('Ativos limpos');
+  });
 
   /* ---------- Alerta de contraindicações (medicamentos/suplementos e outras doenças) ---------- */
   const mapaContraindicacoes = [
