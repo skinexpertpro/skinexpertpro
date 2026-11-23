@@ -154,6 +154,11 @@
     'arencia':          { src: 'img/marcas/arencia.png',          proporcao: 407 / 96, escala: 1.05 },
     'cerave':           { src: 'img/marcas/cerave.png',           proporcao: 267 / 96 },
     'eucerin':          { src: 'img/marcas/eucerin.png',          proporcao: 230 / 96, escala: 0.9 },
+    'dr. althea': { src: 'img/marcas/dr-althea.png', proporcao: 317 / 96, escala: 1.15 },
+    'round lab': { src: 'img/marcas/round-lab.png', proporcao: 834 / 96, escala: 0.95 },
+    'mixsoon': { src: 'img/marcas/mixsoon.png', proporcao: 430 / 96 },
+    'mary&may': { src: 'img/marcas/mary-may.png', proporcao: 537 / 96 },
+    'avene': { src: 'img/marcas/avene.png', proporcao: 227 / 96, escala: 1.05 },
   };
   // "escala" corrige o peso visual de cada logo (letras grossas parecem maiores; emblema com texto fino, menor)
   function tamanhoDoLogo(proporcao, escala){
@@ -223,7 +228,7 @@
       let miolo;
       if(logo){
         const t = tamanhoDoLogo(logo.proporcao, logo.escala);
-        miolo = `<img class="marca-tile-logo" src="${logo.src}?v=20261123g" alt="${escCat(m.nome)}" width="${t.w}" height="${t.h}" style="width:${t.w}px; height:${t.h}px" loading="lazy">`;
+        miolo = `<img class="marca-tile-logo" src="${logo.src}?v=20261123h" alt="${escCat(m.nome)}" width="${t.w}" height="${t.h}" style="width:${t.w}px; height:${t.h}px" loading="lazy">`;
       } else {
         miolo = `<span class="marca-tile-nome">${escCat(m.nome)}</span>`;
       }
