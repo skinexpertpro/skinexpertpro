@@ -10,25 +10,27 @@
 <meta name="description" content="Sistema de gestão para profissionais da estética: pacientes, anamnese, planos de skincare, agenda integrada à Google Agenda e financeiro.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Outfit:wght@300;400;500&family=Syne:wght@600;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/seguranca-tema.js?v=20261026a"></script>
 <!-- Estilos: um arquivo por área. A ordem importa: não troque a sequência; celular.css sempre por último. -->
 <link rel="stylesheet" href="css/base.css?v=20261019a">
-<link rel="stylesheet" href="css/dashboard.css?v=20261007a">
+<link rel="stylesheet" href="css/dashboard.css?v=20261120a">
 <link rel="stylesheet" href="css/pacientes.css?v=20261006a">
-<link rel="stylesheet" href="css/agenda.css?v=20261105a">
-<link rel="stylesheet" href="css/registro-paciente.css?v=20261111d">
-<link rel="stylesheet" href="css/catalogo.css?v=20261006a">
+<link rel="stylesheet" href="css/agenda.css?v=20261122b">
+<link rel="stylesheet" href="css/registro-paciente.css?v=20261123k">
+<link rel="stylesheet" href="css/catalogo.css?v=20261123e">
 <link rel="stylesheet" href="css/planos.css?v=20261006a">
-<link rel="stylesheet" href="css/financeiro.css?v=20261111a">
-<link rel="stylesheet" href="css/mensagens.css?v=20261008a">
-<link rel="stylesheet" href="css/login.css?v=20261105a">
+<link rel="stylesheet" href="css/financeiro.css?v=20261122b">
+<link rel="stylesheet" href="css/mensagens.css?v=20261122e">
+<link rel="stylesheet" href="css/login.css?v=20261123c">
 <link rel="stylesheet" href="css/meu-negocio.css?v=20261007a">
-<link rel="stylesheet" href="css/parcerias.css?v=20261104d">
+<link rel="stylesheet" href="css/parcerias.css?v=20261122c">
 <link rel="stylesheet" href="css/tutoriais.css?v=20261104a">
 <link rel="stylesheet" href="css/modais.css?v=20261112a">
-<link rel="stylesheet" href="css/celular.css?v=20261112a">
+<link rel="stylesheet" href="css/assinatura.css?v=20261115b">
+<link rel="stylesheet" href="css/plano-cliente.css?v=20261118b">
+<link rel="stylesheet" href="css/celular.css?v=20261125a">
 </head>
 <body>
 
@@ -36,7 +38,7 @@
 <div class="auth-screen" id="authScreen">
   <section class="auth-intro" aria-labelledby="authIntroTitulo">
     <div class="auth-intro-tag">Para profissionais da estética</div>
-    <h1 id="authIntroTitulo">O consultório inteiro num só lugar.</h1>
+    <h1 id="authIntroTitulo">O consultório inteiro <span>num só lugar.</span></h1>
     <p class="auth-intro-lead">O Skin Expert Pro é um sistema de gestão para profissionais autônomas da estética: do cadastro da paciente ao plano de skincare, da agenda ao financeiro.</p>
     <ul class="auth-intro-lista">
       <li><strong>Pacientes e prontuário</strong> — ficha de anamnese (também por link), avaliação da pele, fotos de evolução e histórico.</li>
@@ -48,9 +50,9 @@
     <p class="auth-intro-nota">Os dados de cada profissional ficam protegidos, com acesso restrito e individual. A conexão com a Google Agenda é opcional e serve apenas para criar, atualizar e remover os eventos dos seus atendimentos. Saiba mais na <a href="privacidade.html">Política de Privacidade</a>.</p>
   </section>
   <div class="auth-box">
-    <div class="auth-logo">
+    <div class="auth-logo" aria-label="Skin Expert Pro">
       <div class="brand-logo"></div>
-      <span>Skin Expert Pro</span>
+      <span class="auth-marca"><b>skin</b><i>expert pro</i></span>
     </div>
     <div class="auth-title" id="authTitle">Entrar na sua conta</div>
     <div class="auth-sub" id="authSub">Acesse seu painel profissional</div>
@@ -128,6 +130,43 @@
       <p id="confFeitoTexto">Obrigada. A sua confirmação foi registrada.</p>
     </div>
     <div id="confInvalido" class="public-invalid" style="display:none;">Este link não é válido. Peça um novo link à sua profissional.</div>
+  </div>
+</div>
+
+<div class="public-screen" id="publicTermoScreen" style="display:none;">
+  <div class="public-container">
+    <div class="public-header">
+      <div class="brand-logo"></div>
+      <h1 id="pubTermoTituloDoc">Termo de Consentimento</h1>
+      <p id="pubTermoSaudacao">Leia o termo com calma e assine no fim da página.</p>
+    </div>
+    <div id="pubTermoCarregando" class="public-invalid">Carregando o termo…</div>
+    <div id="pubTermoConteudo" style="display:none;">
+      <div class="anamnese-card termo-texto" id="pubTermoTexto"></div>
+      <div class="anamnese-card consentimento-card" id="pubTermoAssinaturaCard">
+        <div class="anamnese-title" style="margin-bottom:12px;">Assinatura</div>
+        <div class="form-field">
+          <label for="pubTermoNome">Nome completo <span class="required">*</span></label>
+          <input type="text" id="pubTermoNome" autocomplete="name">
+        </div>
+        <div class="termo-quadro-topo"><span>Assine com o dedo (ou com o mouse) no quadro abaixo <span class="required">*</span></span><button type="button" class="termo-limpar" id="pubTermoLimpar">Limpar</button></div>
+        <canvas class="termo-quadro" id="pubTermoCanvas" aria-label="Quadro para assinar"></canvas>
+        <label class="consentimento-check" style="margin-top:14px;">
+          <input type="checkbox" id="pubTermoAceite">
+          <span>Li e concordo com este termo. <span class="required">*</span></span>
+        </label>
+      </div>
+      <div class="anamnese-footer" style="display:flex; justify-content:flex-end;">
+        <button class="btn-save" id="pubTermoAssinar">Assinar</button>
+      </div>
+      <p class="conf-nota">Ficou com alguma dúvida? Não assine — fale antes com a sua profissional.</p>
+    </div>
+    <div id="pubTermoFeito" class="public-submitted" style="display:none;">
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h2>Termo assinado!</h2>
+      <p id="pubTermoFeitoTexto">Obrigada. A sua assinatura foi registrada.</p>
+    </div>
+    <div id="pubTermoInvalido" class="public-invalid" style="display:none;">Este link não é válido. Peça um novo link à sua profissional.</div>
   </div>
 </div>
 
@@ -446,13 +485,14 @@
       Meu Negócio
     </a>
     <a class="nav-item" data-view="pacientes" data-title="Pacientes" data-subtitle="Gerencie a lista de pacientes da clínica">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21v-1a6 6 0 0112 0v1"/></svg>
       Pacientes
     </a>
     <a class="nav-item" data-view="catalogo" data-title="Catálogo de Produtos" data-subtitle="Gerencie sua lista de produtos e recomendações">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
       Catálogo de Produtos
     </a>
+    <!-- Cupons e Estoque ocultos por enquanto
     <a class="nav-item locked" data-locked="true">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H4a1 1 0 00-1 1v3a2 2 0 010 4v3a1 1 0 001 1h5"/><path d="M15 5h5a1 1 0 011 1v3a2 2 0 000 4v3a1 1 0 01-1 1h-5"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
       Cupons
@@ -462,6 +502,7 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-3V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v3a2 2 0 002 2h14a2 2 0 002-2V8a1 1 0 00-1-1z"/><path d="M4 13v6a1 1 0 001 1h14a1 1 0 001-1v-6"/></svg>
       Estoque
     </a>
+    -->
     <a class="nav-item" data-view="financeiro" data-title="Financeiro" data-subtitle="Controle receitas, despesas e comandas do seu negócio">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       Financeiro
@@ -665,8 +706,9 @@
           <div class="card schedule-card">
             <div class="schedule-toolbar">
               <div class="view-mode-toggle">
-                <button class="active" data-agenda-view="diario">Diário</button>
-                <button data-agenda-view="semanal">Semanal</button>
+                <button class="active" data-agenda-view="diario"><span class="rot-pc">Diário</span><span class="rot-cel">Dia</span></button>
+                <button data-agenda-view="semanal"><span class="rot-pc">Semanal</span><span class="rot-cel">Semana</span></button>
+                <button data-agenda-view="mes" class="so-celular"><span>Mês</span></button>
               </div>
               <div class="schedule-nav">
                 <button id="scheduleNavPrev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -706,7 +748,7 @@
 
         <div class="registro-tabs">
           <div class="registro-tab active" data-tab="dados">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21v-1a6 6 0 0112 0v1"/></svg>
             Dados
           </div>
           <div class="registro-tab" data-tab="anamnese">
@@ -740,6 +782,10 @@
           <div class="registro-tab" data-tab="recomendacoes">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Recomendações
+          </div>
+          <div class="registro-tab" data-tab="termos">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 17c1.5-1.5 2.5-1.5 3.5 0s2 1.5 3.5 0"/></svg>
+            Termos
           </div>
           <div class="registro-tab" data-tab="pacotes">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
@@ -782,7 +828,7 @@
 
             <div class="form-section">
               <div class="form-section-title">
-                <span class="form-section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></span>
+                <span class="form-section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 21v-1a6 6 0 0112 0v1"/></svg></span>
                 Dados Pessoais
               </div>
               <div class="form-grid single">
@@ -1546,7 +1592,13 @@
                 <button class="btn-save" id="skcBtnAplicarFiltros">Aplicar Filtros</button>
               </div>
 
-              <div class="toggle-subtitle">Ativos Desejados</div>
+              <div class="skc-ativos-topo">
+                <div class="toggle-subtitle">Ativos Desejados <span class="skc-ativos-contagem" id="skcAtivosContagem"></span></div>
+                <button type="button" class="skc-limpar-ativos" id="skcBtnLimparAtivos" hidden>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                  Limpar ativos
+                </button>
+              </div>
               <div class="chip-select" id="skcAtivosDesejadosChips" style="margin-bottom:18px;"></div>
             </div>
 
@@ -1590,6 +1642,16 @@
         </div>
 
         <!-- ---------- HISTÓRICO CLÍNICO PANEL ---------- -->
+        <!-- ---------- TERMOS PANEL (termos de consentimento) ---------- -->
+        <div class="registro-panel" id="panel-termos">
+          <div class="pacotes-paciente-acoes">
+            <p class="pacotes-paciente-intro">Termos de consentimento enviados e assinados por esta paciente.</p>
+            <button type="button" class="btn-primary" id="btnNovoTermoPaciente">Novo termo</button>
+          </div>
+          <div class="termos-sugeridos" id="termosSugeridos" style="display:none;"></div>
+          <div id="termosPacienteLista"></div>
+        </div>
+
         <!-- ---------- PACOTES PANEL (saldo de sessões) ---------- -->
         <div class="registro-panel" id="panel-pacotes">
           <div class="pacotes-paciente-acoes">
@@ -1736,7 +1798,7 @@
         <div class="filter-bar">
           <div class="search-input">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="catalogoSearch" placeholder="Buscar produto ou marca...">
+            <input type="text" id="catalogoSearch" placeholder="Buscar produto, marca ou ativo...">
           </div>
           <div class="select-box" style="position:relative;">
             <select id="catalogoCategoria" style="border:none; outline:none; background:transparent; font-family:inherit; font-size:14px; font-weight:600; color: var(--text-dark); appearance:none; padding-right:4px;">
@@ -1754,24 +1816,18 @@
           <div class="spacer-flex"></div>
         </div>
 
-        <div class="catalogo-count">Produtos Cadastrados: <b id="catalogoCount">0</b></div>
 
-        <div class="card-table">
-          <div class="card-head"><div class="card-title">Lista de Produtos</div></div>
-          <table>
-            <thead>
-              <tr>
-                <th>Produto</th>
-                <th>Marca</th>
-                <th>Categoria</th>
-                <th>Função</th>
-                <th>Faixa de Preço</th>
-              </tr>
-            </thead>
-            <tbody id="catalogoBody"></tbody>
-          </table>
-          <div class="pagination-bar" id="catalogoPagination"></div>
+        <div class="marcas-faixa-wrap">
+          <div class="marcas-faixa-titulo">Marcas</div>
+          <div class="marcas-faixa-linha">
+            <button type="button" class="marcas-seta" id="marcasAnterior" aria-label="Ver marcas anteriores"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <div class="marcas-faixa" id="catalogoMarcas" aria-label="Filtrar por marca"></div>
+            <button type="button" class="marcas-seta" id="marcasProxima" aria-label="Ver mais marcas"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
         </div>
+        <div class="az-nav" id="catalogoAzNav"></div>
+        <div id="catalogoCards"></div>
+        <div class="catalogo-count catalogo-count-final">Produtos cadastrados no catálogo: <b id="catalogoCount">0</b></div>
 
         </div>
 
@@ -1868,6 +1924,14 @@
         </div>
 
         <div style="flex:1; min-width:320px; display:flex; flex-direction:column; gap:20px;">
+        <div class="registro-card" style="margin-bottom:0;" id="assinaturaCard">
+          <div class="anamnese-title" style="margin-bottom:6px;">Minha Assinatura</div>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 6px 0;">Troque o cartão, veja e baixe os recibos, mude de plano ou cancele. Você entra com o e-mail usado no pagamento e recebe um link de acesso na hora.</p>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;" id="assinaturaStatus">Situação: —</p>
+          <div class="anamnese-footer" style="gap:10px; display:flex;">
+            <button class="btn-save" id="btnGerenciarAssinatura">Gerenciar assinatura</button>
+          </div>
+        </div>
         <div class="registro-card" style="margin-bottom:0;" id="googleAgendaCard">
           <div class="anamnese-title" style="margin-bottom:6px;">Google Agenda</div>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 6px 0;">Conecte sua Google Agenda para que cada atendimento marcado aqui crie automaticamente um evento na sua agenda do Google.</p>
@@ -1970,7 +2034,7 @@
           <div class="msg-painel" id="msgPainel-modelos">
             <div class="msg-variaveis">Variáveis: <code>{nome}</code> primeiro nome · <code>{nome_completo}</code> · <code>{servico}</code> · <code>{dia}</code> ex.: quinta-feira, 02/10 · <code>{data}</code> 02/10 · <code>{hora}</code> · <code>{profissional}</code> seu nome · <code>{link}</code> link de confirmação da anamnese</div>
             <div id="msgModelosLista"></div>
-            <button class="btn-dashed" type="button" id="btnMsgNovoModelo" style="margin-top:10px;">+ Novo modelo</button>
+            <button class="btn-dashed" type="button" id="btnMsgNovoModelo" hidden>+ Novo modelo</button>
           </div>
         </div>
 
@@ -2224,6 +2288,10 @@
               <div class="rel-corpo" id="relServicos"></div>
             </div>
             <div class="card-table rel-card">
+              <div class="card-head"><div class="card-title">Faturamento por categoria</div><div class="fin-dica">Categorias dos serviços (Meu Negócio › Categorias), já com desconto.</div></div>
+              <div class="rel-corpo" id="relCategorias"></div>
+            </div>
+            <div class="card-table rel-card">
               <div class="card-head"><div class="card-title">Recebimentos por forma de pagamento</div><div class="fin-dica">Receitas pagas no período.</div></div>
               <div class="rel-corpo" id="relFormas"></div>
             </div>
@@ -2264,6 +2332,7 @@
           <!-- "Profissionais" fica escondida (público: profissional autônoma). O painel continua no código para um futuro plano com equipe. -->
           <div class="fin-tab active" data-eqtab="servicos">Serviços</div>
           <div class="fin-tab" data-eqtab="pacotes">Pacotes</div>
+          <div class="fin-tab" data-eqtab="termos">Termos</div>
           <div class="fin-tab" data-eqtab="categorias">Categorias</div>
           <div class="fin-tab" data-eqtab="expedientes">Horários de Atendimento</div>
           <div class="fin-tab" data-eqtab="parcerias">Parcerias</div>
@@ -2377,6 +2446,30 @@
           </div>
         </div>
 
+        <!-- ---------- TERMOS (modelos de termo de consentimento) ---------- -->
+        <div class="fin-panel" id="eqpanel-termos">
+          <div class="fin-filter-bar">
+            <div class="search-input" style="min-width:220px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="termosBusca" placeholder="Procurar por nome do termo ou serviço...">
+            </div>
+            <div class="spacer-flex"></div>
+            <button class="btn-primary" id="btnNovoTermo">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo Termo
+            </button>
+          </div>
+          <div class="card-table">
+            <div class="card-head"><div class="card-title">Termos de Consentimento</div></div>
+            <table>
+              <thead>
+                <tr><th>Termo</th><th>Serviços que pedem este termo</th><th></th></tr>
+              </thead>
+              <tbody id="termosModelosBody"></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- ---------- EXPEDIENTES ---------- -->
         <div class="fin-panel" id="eqpanel-expedientes">
           <div class="fin-filter-bar">
@@ -2411,9 +2504,11 @@
   </div>
   <!-- Menu do celular (só aparece em telas pequenas) -->
   <nav class="mobile-nav" id="mobileNav" aria-label="Menu">
-    <button type="button" data-view="dashboard"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Dashboard</span></button>
-    <button type="button" data-view="agenda"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Agenda</span></button>
-    <button type="button" data-view="pacientes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg><span>Pacientes</span></button>
+    <button type="button" data-view="dashboard"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span>Início</span></button>
+    <button type="button" data-view="agenda"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Agenda</span></button>
+    <button type="button" class="mobile-nav-mais" id="celBtnMais" aria-label="Criar novo" aria-haspopup="dialog"><span class="mobile-nav-mais-bola"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+    <button type="button" data-view="pacientes"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.5 3 5.2"/></svg><span>Pacientes</span></button>
+    <button type="button" id="celBtnMenu" aria-haspopup="dialog"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menu</span></button>
   </nav>
 </div>
 
@@ -2440,6 +2535,7 @@
       <!-- lista interna dos serviços marcados (mantém a lógica de duração e de salvar) -->
       <div id="apptServicosContainer" style="display:none;"></div>
       <div id="apptPacoteAviso" class="comanda-aviso aviso-pacote" style="display:none; margin:8px 0 0;"></div>
+      <div id="apptTermoAviso" class="comanda-aviso aviso-termo" style="display:none; margin:8px 0 0;"></div>
     </div>
     <div class="modal-field">
       <label for="apptDate">Data</label>
@@ -2962,6 +3058,74 @@
 </div>
 
 <!-- MODAL: novo pacote -->
+<!-- MODAL: modelo de termo (Meu Negócio → Termos) -->
+<div class="modal-overlay" id="modalTermoModeloOverlay">
+  <div class="modal-box wide">
+    <h3 id="modalTermoModeloTitle">Novo Termo</h3>
+    <div class="modal-field">
+      <label for="termoModeloTitulo">Nome do termo</label>
+      <input id="termoModeloTitulo" type="text" placeholder="Ex: Termo de Consentimento — Peeling Químico">
+    </div>
+    <div class="modal-field">
+      <label>Serviços que pedem este termo <span style="font-weight:500;">(a agenda avisa quando a paciente ainda não assinou)</span></label>
+      <div class="termo-servicos" id="termoModeloServicos"></div>
+    </div>
+    <div class="modal-field">
+      <label for="termoModeloTexto">Texto</label>
+      <textarea id="termoModeloTexto" class="termo-textarea" rows="14"></textarea>
+      <div class="termo-dica">Use <code>{paciente}</code>, <code>{profissional}</code> e <code>{data}</code>: o app troca pelo nome da paciente, pelo seu nome e pela data do envio. Títulos em LETRAS MAIÚSCULAS viram subtítulos.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalTermoModeloCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalTermoModeloConfirm">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: enviar termo para a paciente -->
+<div class="modal-overlay" id="modalTermoEnvioOverlay">
+  <div class="modal-box wide">
+    <h3>Novo termo para a paciente</h3>
+    <div class="modal-field">
+      <label for="termoEnvioModelo">Termo</label>
+      <select id="termoEnvioModelo"></select>
+    </div>
+    <div class="modal-field">
+      <label for="termoEnvioTexto">Texto que a paciente vai assinar <span style="font-weight:500;">(pode ajustar só para ela)</span></label>
+      <textarea id="termoEnvioTexto" class="termo-textarea" rows="12"></textarea>
+    </div>
+    <div class="modal-actions termo-envio-acoes">
+      <button class="modal-btn-cancel" id="modalTermoEnvioCancel">Cancelar</button>
+      <span class="spacer-flex"></span>
+      <button class="modal-btn-cancel" id="termoEnvio-copiar">Copiar link</button>
+      <button class="modal-btn-cancel" id="termoEnvio-aqui">Assinar aqui</button>
+      <button class="modal-btn-confirm" id="termoEnvio-whats">Enviar por WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: assinar no aparelho da profissional (no atendimento) -->
+<div class="modal-overlay" id="modalTermoAquiOverlay">
+  <div class="modal-box wide">
+    <h3 id="termoAquiTitulo">Termo</h3>
+    <div class="termo-texto termo-texto-modal" id="termoAquiTexto"></div>
+    <div class="modal-field" style="margin-top:14px;">
+      <label for="termoAquiNome">Nome completo de quem assina</label>
+      <input id="termoAquiNome" type="text">
+    </div>
+    <div class="termo-quadro-topo"><span>Assinatura (com o dedo ou com o mouse)</span><button type="button" class="termo-limpar" id="termoAquiLimpar">Limpar</button></div>
+    <canvas class="termo-quadro" id="termoAquiCanvas" aria-label="Quadro para assinar"></canvas>
+    <label class="consentimento-check" style="margin-top:12px;">
+      <input type="checkbox" id="termoAquiAceite">
+      <span>Li e concordo com este termo.</span>
+    </label>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="modalTermoAquiCancel">Cancelar</button>
+      <button class="modal-btn-confirm" id="modalTermoAquiConfirm">Assinar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalPacoteOverlay">
   <div class="modal-box wide">
     <h3 id="modalPacoteTitle">Criar Novo Pacote</h3>
@@ -3102,31 +3266,34 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/dados.js?v=20261005a"></script>
+<script src="js/dados.js?v=20261123d"></script>
 <!-- Lógica do app: um arquivo por área. A ordem importa: não troque a sequência (nucleo.js sempre primeiro, celular.js sempre por último). -->
 <script src="js/nucleo.js?v=20261023a"></script>
 <script src="js/pacientes.js?v=20261007c"></script>
 <script src="js/registro-paciente.js?v=20261106b"></script>
-<script src="js/plano-skincare.js?v=20261106b"></script>
-<script src="js/catalogo.js?v=20261008d"></script>
+<script src="js/plano-skincare.js?v=20261117a"></script>
+<script src="js/catalogo.js?v=20261123j"></script>
 <script src="js/planos.js?v=20261007b"></script>
-<script src="js/agenda.js?v=20261104a"></script>
+<script src="js/agenda.js?v=20261122b"></script>
 <script src="js/agenda-estudio.js?v=20261104a"></script>
-<script src="js/lembretes-mensagens.js?v=20261008b"></script>
+<script src="js/lembretes-mensagens.js?v=20261122e"></script>
 <script src="js/dashboard.js?v=20261015a"></script>
 <script src="js/financeiro.js?v=20261111a"></script>
-<script src="js/relatorios.js?v=20261015a"></script>
+<script src="js/relatorios.js?v=20261122b"></script>
 <script src="js/meu-negocio.js?v=20261111a"></script>
 <script src="js/pacotes-paciente.js?v=20261111a"></script>
-<script src="js/parcerias.js?v=20261104d"></script>
+<script src="js/parcerias.js?v=20261122c"></script>
 <script src="js/tutoriais.js?v=20261104a"></script>
-<script src="js/formulacoes.js?v=20261105a"></script>
-<script src="js/anamneses.js?v=20261111c"></script>
-<script src="js/login.js?v=20261105a"></script>
-<script src="js/lgpd.js?v=20261007b"></script>
+<script src="js/formulacoes.js?v=20261123k"></script>
+<script src="js/anamneses.js?v=20261120b"></script>
+<script src="js/login.js?v=20261115a"></script>
+<script src="js/assinatura.js?v=20261115b"></script>
+<script src="js/lgpd.js?v=20261112a"></script>
 <script src="js/anamneses-especificas.js?v=20261030b"></script>
-<script src="js/paginacao.js?v=20261015a"></script>
-<script src="js/celular.js?v=20261029a"></script>
+<script src="js/termos.js?v=20261122a"></script>
+<script src="js/plano-cliente.js?v=20261118b"></script>
+<script src="js/paginacao.js?v=20261112a"></script>
+<script src="js/celular.js?v=20261120a"></script>
 
 <!-- Vercel Speed Insights: mede a velocidade das telas (sem cookies). Tira tudo depois do "?" do endereço antes de enviar, para não levar links de pacientes. -->
 <script>

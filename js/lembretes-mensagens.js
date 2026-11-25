@@ -222,6 +222,7 @@
     return out;
   }
   function salvarModelos(){ salvarConfig('mensagens_modelos', mensagensModelos); }
+  let modeloEmEdicao = null; // id do modelo aberto para edição na aba Modelos
   function registrarEnvio(paciente, modeloId, texto){
     mensagensHistorico.unshift({ em: new Date().toISOString(), pacienteId: paciente && paciente.id != null ? String(paciente.id) : null,
       paciente: (paciente && paciente.name) || '', modelo: modeloId, texto: String(texto || '').slice(0, 400) });
@@ -329,23 +330,40 @@
       lista.appendChild(row);
     });
 
-    // Modelos
+    // Modelos: uma caixa por modelo (duas por linha). O texto aparece num balão; "Editar" abre o texto ali mesmo.
     const box = document.getElementById('msgModelosLista');
     if(!box.contains(document.activeElement)){ // não redesenha enquanto você digita
       box.innerHTML = '';
+      box.classList.add('msg-modelos-grade');
+      const ICONE_MSG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.4 8.4 0 01-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.4 8.4 0 013.8-.9h.5a8.5 8.5 0 018 8z"/></svg>';
+      // O balão mostra a mensagem já preenchida com um exemplo (como a paciente recebe)
+      const exemploModelo = { paciente: { name: 'Ana Souza' }, key: dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)), hora: '10:00', servico: 'Limpeza de Pele', link: enderecoPublico() + '?anamnese=…' };
+      const variaveisHtml = (document.querySelector('#msgPainel-modelos .msg-variaveis') || {}).innerHTML || '';
       listaModelos().forEach(m => {
-        const el = document.createElement('div');
+        const el = document.createElement('article');
         el.className = 'msg-modelo';
         const original = MODELOS_PADRAO.find(x => x.id === m.id);
         const editado = m.padrao && original && (m.texto !== original.texto || m.titulo !== original.titulo);
-        el.innerHTML = `<div class="msg-modelo-topo"><input type="text" value="${escHTML(m.titulo)}" maxlength="50" aria-label="Nome do modelo">${m.padrao ? '<span class="tag">padrão</span>' : ''}</div>
-          <textarea aria-label="Texto do modelo ${escHTML(m.titulo)}">${escHTML(m.texto)}</textarea>
-          <div class="msg-modelo-acoes">
-            <button type="button" class="fin-btn-mini" data-acao="previa">Ver exemplo</button>
-            ${editado ? '<button type="button" class="fin-btn-mini" data-acao="restaurar">Restaurar texto original</button>' : ''}
-            ${m.padrao ? '' : '<button type="button" class="fin-btn-mini" data-acao="apagar">Apagar</button>'}
-          </div>`;
-        const [titulo, area] = [el.querySelector('input'), el.querySelector('textarea')];
+        const emEdicao = modeloEmEdicao === m.id;
+        const selo = editado ? '<span class="tag editado">editado</span>' : (m.padrao ? '<span class="tag">padrão</span>' : '<span class="tag meu">seu modelo</span>');
+        el.innerHTML = emEdicao
+          ? `<div class="msg-modelo-topo"><span class="msg-modelo-ic">${ICONE_MSG}</span><input type="text" value="${escHTML(m.titulo)}" maxlength="50" aria-label="Nome do modelo">${selo}</div>
+             <textarea aria-label="Texto do modelo ${escHTML(m.titulo)}">${escHTML(m.texto)}</textarea>
+             <div class="msg-variaveis msg-variaveis-caixa">${variaveisHtml}</div>
+             <div class="msg-modelo-acoes">
+               ${m.padrao ? '' : '<button type="button" class="fin-btn-mini msg-acao-esq" data-acao="apagar">Apagar</button>'}
+               <button type="button" class="fin-btn-mini" data-acao="previa">Ver exemplo</button>
+               <button type="button" class="fin-btn-mini" data-acao="cancelar">Cancelar</button>
+               <button type="button" class="fin-btn-mini msg-btn-cheio" data-acao="salvar">Salvar</button>
+             </div>`
+          : `<div class="msg-modelo-topo"><span class="msg-modelo-ic">${ICONE_MSG}</span><h3>${escHTML(m.titulo)}</h3>${selo}</div>
+             <div class="msg-balao">${escHTML(preencherModelo(m.texto, exemploModelo))}</div>
+             <div class="msg-modelo-acoes">
+               ${editado ? '<button type="button" class="msg-link msg-acao-esq" data-acao="restaurar">Restaurar original</button>' : ''}
+               <button type="button" class="fin-btn-mini msg-btn-cheio" data-acao="editar">Editar</button>
+             </div>`;
+        if(emEdicao) el.classList.add('editando');
+        const titulo = el.querySelector('input'), area = el.querySelector('textarea');
         const salvarEste = () => {
           if(m.padrao){
             mensagensModelos.titulos = mensagensModelos.titulos || {}; mensagensModelos.textos = mensagensModelos.textos || {};
@@ -358,23 +376,38 @@
           salvarModelos();
           showToast('Modelo salvo.');
         };
-        titulo.addEventListener('change', salvarEste);
-        area.addEventListener('change', salvarEste);
+        const redesenhar = () => { document.activeElement && document.activeElement.blur(); renderCentroMensagens(); };
         el.querySelectorAll('[data-acao]').forEach(b => b.addEventListener('click', () => {
-          if(b.dataset.acao === 'previa'){
+          const acao = b.dataset.acao;
+          if(acao === 'previa'){
             const exemplo = { paciente: { name: 'Ana Souza' }, key: dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)), hora: '10:00', servico: 'Limpeza de Pele' };
-            alert('Exemplo de como a paciente recebe:\n\n' + preencherModelo(area.value, exemplo));
-          } else if(b.dataset.acao === 'restaurar'){
+            alert('Exemplo de como a paciente recebe:\n\n' + preencherModelo(area ? area.value : m.texto, { ...exemplo, link: exemploModelo.link }));
+          } else if(acao === 'editar'){
+            modeloEmEdicao = m.id; redesenhar();
+            const a2 = box.querySelector('.msg-modelo.editando textarea');
+            if(a2){ a2.focus(); a2.setSelectionRange(a2.value.length, a2.value.length); }
+          } else if(acao === 'salvar'){
+            salvarEste(); modeloEmEdicao = null; redesenhar();
+          } else if(acao === 'cancelar'){
+            modeloEmEdicao = null; redesenhar();
+          } else if(acao === 'restaurar'){
+            if(!confirm(`Voltar o modelo "${m.titulo}" para o texto original?`)) return;
             delete mensagensModelos.textos[m.id]; delete mensagensModelos.titulos[m.id];
-            salvarModelos(); document.activeElement && document.activeElement.blur(); renderCentroMensagens();
-          } else if(b.dataset.acao === 'apagar'){
+            salvarModelos(); redesenhar();
+          } else if(acao === 'apagar'){
             if(!confirm(`Apagar o modelo "${m.titulo}"?`)) return;
             mensagensModelos.extras = mensagensModelos.extras.filter(e => e.id !== m.id);
-            salvarModelos(); document.activeElement && document.activeElement.blur(); renderCentroMensagens();
+            modeloEmEdicao = null; salvarModelos(); redesenhar();
           }
         }));
         box.appendChild(el);
       });
+      const novo = document.createElement('button');
+      novo.type = 'button';
+      novo.className = 'msg-modelo-novo';
+      novo.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Novo modelo';
+      novo.addEventListener('click', () => document.getElementById('btnMsgNovoModelo').click());
+      box.appendChild(novo);
     }
 
     // O histórico de mensagens fica no Histórico de cada paciente (não mais numa lista geral aqui)
@@ -419,11 +452,14 @@
   }
   document.getElementById('btnMsgNovoModelo').addEventListener('click', () => {
     mensagensModelos.extras = mensagensModelos.extras || [];
-    mensagensModelos.extras.push({ id: 'm' + Date.now(), titulo: 'Novo modelo', texto: 'Oi, {nome}! ' });
+    const id = 'm' + Date.now();
+    mensagensModelos.extras.push({ id, titulo: 'Novo modelo', texto: 'Oi, {nome}! ' });
     salvarModelos();
+    modeloEmEdicao = id;
+    document.activeElement && document.activeElement.blur();
     renderCentroMensagens();
-    const areas = document.querySelectorAll('#msgModelosLista textarea');
-    if(areas.length){ areas[areas.length - 1].focus(); }
+    const area = document.querySelector('#msgModelosLista .msg-modelo.editando textarea');
+    if(area){ area.focus(); area.setSelectionRange(area.value.length, area.value.length); area.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
   });
   // Atualiza ao abrir Configurações
   document.querySelectorAll('.nav-item[data-view="configuracoes"]').forEach(n => n.addEventListener('click', () => { try{ renderCentroMensagens(); }catch(e){} }));

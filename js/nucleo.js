@@ -220,7 +220,7 @@
       response_type: 'code',
       access_type: 'offline',
       prompt: 'consent',
-      scope: 'https://www.googleapis.com/auth/calendar.events',
+      scope: 'https://www.googleapis.com/auth/calendar.events.owned',
       state: userId,
     });
     window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();

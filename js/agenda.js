@@ -980,9 +980,20 @@
     apptServicoSearch.placeholder = getServicosSelecionados().length ? 'Adicionar outro serviço...' : 'Buscar serviço por nome...';
   }
 
+  // Categoria de cada serviço (Meu Negócio › Serviços); a lista de escolha sai agrupada por ela
+  function categoriaDoServico(nome){
+    try{
+      const s = (servicosData || []).find(x => semAcento(x.nome) === semAcento(nome));
+      return (s && String(s.categoria || '').trim()) || 'Sem categoria';
+    }catch(e){ return 'Sem categoria'; }
+  }
   function servicosFiltrados(){
     const termo = semAcento(apptServicoSearch.value.trim());
-    return checkboxesServicos().filter(cb => !cb.checked && (!termo || semAcento(cb.value).includes(termo)));
+    return checkboxesServicos()
+      .filter(cb => !cb.checked && (!termo || semAcento(cb.value).includes(termo)))
+      .map((cb, i) => ({ cb, i, cat: categoriaDoServico(cb.value) }))
+      .sort((a, b) => (a.cat === 'Sem categoria') - (b.cat === 'Sem categoria') || a.cat.localeCompare(b.cat, 'pt-BR') || a.i - b.i)
+      .map(x => x.cb);
   }
 
   function renderResultadosServico(){
@@ -993,7 +1004,10 @@
       apptServicoResults.innerHTML = '<div class="appt-patient-result-empty">Nenhum serviço encontrado.</div>';
     } else {
       servicoResultadoAtivo = Math.min(servicoResultadoAtivo, lista.length - 1);
+      const cats = lista.map(cb => categoriaDoServico(cb.value));
+      const agrupar = new Set(cats).size > 1;
       apptServicoResults.innerHTML = lista.map((cb, i) =>
+        (agrupar && cats[i] !== cats[i - 1] ? `<div class="appt-serv-grupo" aria-hidden="true">${escHTML(cats[i])}</div>` : '') +
         `<div class="appt-patient-result-item${i === servicoResultadoAtivo ? ' ativo' : ''}" data-nome="${escHTML(cb.value)}">${escHTML(cb.value)}<span class="serv-dur">${escHTML(cb.dataset.duracao || '')}</span></div>`
       ).join('');
     }

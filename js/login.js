@@ -90,6 +90,8 @@
     document.body.classList.remove('modo-demo');
     authScreenEl.style.display = 'none';
     appRootEl.style.display = 'flex';
+    // Assinatura: sem plano liberado, mostra a tela de escolher o plano (não espera o resto carregar)
+    if(typeof verificarAssinatura === 'function') verificarAssinatura();
     // Velocidade: tudo que não depende de outra coisa carrega AO MESMO TEMPO
     // (antes era um depois do outro, e cada espera somava).
     const semTravar = pr => Promise.resolve().then(pr).catch(e => console.warn('Carregamento:', e));
@@ -105,6 +107,7 @@
       semTravar(carregarAcompanhamentos),
       semTravar(async () => { comandasCriadas = await garantirComandasDaAgenda(); }),
       semTravar(carregarConfiguracoesSalvas),
+      semTravar(() => typeof carregarTermos === 'function' && carregarTermos()),
     ]);
     setTimeout(avisarHorariosDuplicados, comandasCriadas ? 5000 : 0); // não cobre o aviso das comandas
   }
@@ -123,6 +126,7 @@
     carregarPerfilProfissionalDemo();
     carregarIntegracaoWhatsappDemo();
     try{ carregarAcompanhamentos(); }catch(e){}
+    try{ carregarTermos(); }catch(e){}
     // Catálogo de Produtos e Dicionário de Ativos: sempre os de verdade (os mesmos das profissionais).
     // A sessão do login de demonstração fica aberta só para ler esses dados compartilhados;
     // nada é salvo, porque o app bloqueia gravações no modo demonstração.

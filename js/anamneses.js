@@ -537,6 +537,16 @@
       }
     });
 
+    // Minha Assinatura: portal do Stripe (trocar cartão, recibos, mudar de plano, cancelar).
+    // A profissional entra com o e-mail do pagamento e o Stripe manda o link de acesso.
+    const PORTAL_ASSINATURA_STRIPE = 'https://billing.stripe.com/p/login/5kQeVd8HZ89d44M1PXdEs00';
+    document.getElementById('btnGerenciarAssinatura')?.addEventListener('click', async () => {
+      if(modoDemonstracao){ showToast('No modo demonstração não há assinatura para gerenciar.'); return; }
+      let email = '';
+      try{ const { data } = await supabaseClient.auth.getUser(); email = (data && data.user && data.user.email) || ''; }catch(e){}
+      window.open(PORTAL_ASSINATURA_STRIPE + (email ? '?prefilled_email=' + encodeURIComponent(email) : ''), '_blank', 'noopener');
+    });
+
     document.getElementById('btnConectarGoogleAgenda').addEventListener('click', async () => {
       const { data: userData } = await supabaseClient.auth.getUser();
       if(!userData || !userData.user){
@@ -637,7 +647,7 @@
         .limit(60);
       if(error || !data) return;
 
-      const lista = semAnamnesesRepetidas(data.filter(a => a.token)).slice(0, 5);
+      const lista = semAnamnesesRepetidas(data.filter(a => a.token)).slice(0, 3); // só as 3 mais recentes
       container.innerHTML = '';
       if(!lista.length){
         container.innerHTML = '<div class="empty-state">Nenhuma pré-ficha respondida.</div>';

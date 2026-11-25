@@ -191,7 +191,17 @@
     const itens = [];
     n.comandas.forEach(c => {
       const fator = c.subtotal > 0 ? c.valor / c.subtotal : 1;
-      (c.itens || []).forEach(i => itens.push({ nome: i.nome, valor: (Number(i.preco) || 0) * fator }));
+      (c.itens || []).forEach(i => itens.push({ nome: i.nome, origem: i.origem, valor: (Number(i.preco) || 0) * fator }));
+    });
+    // Faturamento por categoria de serviço (Meu Negócio › Categorias)
+    const categoriaDoItem = (i) => {
+      const sv = (servicosData || []).find(s => semAcento(s.nome) === semAcento(i.nome));
+      if(sv) return String(sv.categoria || '').trim() || 'Sem categoria';
+      return i.origem === 'pacote' ? 'Pacotes' : 'Produtos e outros';
+    };
+    $('relCategorias').innerHTML = listaComBarras(agrupar(itens, categoriaDoItem, i => i.valor), COR_RECEITA, {
+      vazio: 'Nenhuma comanda neste período.',
+      detalhe: (i) => `${i.qtd} ${i.qtd === 1 ? 'item' : 'itens'}`,
     });
     $('relServicos').innerHTML = listaComBarras(agrupar(itens, i => i.nome, i => i.valor), COR_RECEITA, {
       vazio: 'Nenhuma comanda neste período.',

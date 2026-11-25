@@ -247,3 +247,6 @@
     /* O quadro da agenda ocupa a largura toda (antes ficava estreito sem estúdio). */
     html.celular-ativo #view-agenda .agenda-grid > .schedule-card{ align-self:stretch; width:100%; min-width:0; box-sizing:border-box; }
   }
+  /* Novo atendimento: serviços agrupados por categoria */
+  .appt-serv-grupo{ padding:8px 12px 4px; font-size:10.5px; font-weight:800; letter-spacing:.8px; text-transform:uppercase; color: var(--text-muted); cursor:default; }
+  .appt-serv-grupo:not(:first-child){ border-top:1px solid var(--border); margin-top:4px; }

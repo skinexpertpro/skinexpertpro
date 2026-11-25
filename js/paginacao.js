@@ -13,7 +13,7 @@
     ['#preFichasContainer', '', true], ['#aniversariantesContainer', '', true],
     ['#anamnesesRespondidasContainer'], ['#planosSkincareHistoricoContainer'], ['#avaliacoesHistoricoContainer'],
     ['#mensagensPacienteContainer .msg-paciente-lista', '.msg-hist-item'],
-    ['#recomendacoesList'],
+    ['#recomendacoesList'], ['#termosModelosBody'], ['#termosPacienteLista', '.termo-item'],
     ['#msgHojeLista', '.msg-item'], ['#msgModelosLista', '.msg-modelo'],
   ];
 

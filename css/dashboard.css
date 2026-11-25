@@ -131,8 +131,8 @@
   .table-header.acomp-grid span:nth-child(2){ text-align:left; }
   .acomp-row{ display:grid; align-items:center; padding:12px 4px; border-bottom:1px solid var(--border); }
   .acomp-row:last-child{ border-bottom:none; }
-  .acomp-nome{ font-weight:600; color: var(--pink); cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .acomp-nome:hover{ text-decoration:underline; }
+  .acomp-nome{ font-weight:700; font-size:13px; color: var(--text-dark); cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .acomp-nome:hover{ color: var(--pink); }
   .acomp-sub{ font-size:12px; color: var(--text-muted); margin-top:4px; }
   .acomp-acoes{ display:flex; gap:6px; justify-content:flex-end; }
   .acomp-acoes .lemb-btn{ white-space:nowrap; }

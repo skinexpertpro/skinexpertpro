@@ -195,3 +195,49 @@
   .ativo-card-footer{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; }
   .ativo-card-ler-mais{ font-size:12.5px; font-weight:700; color: var(--gold); background:none; border:none; cursor:pointer; padding:0; }
   .ativo-card-ler-mais:hover{ text-decoration:underline; }
+
+  /* Catálogo de Produtos em cartões (igual ao Dicionário de Ativos) */
+  #catalogo-subpanel-produtos .filter-bar .search-input{ flex:1 1 auto; }
+  #catalogo-subpanel-produtos .spacer-flex{ display:none; }
+  #catalogo-subpanel-produtos .catalogo-count{ margin:-4px 0 14px 4px; }
+  .produto-card{ gap:10px; }
+  .produto-card-topo{ display:flex; gap:12px; align-items:flex-start; }
+  .produto-card-foto{ width:52px; height:52px; border-radius:10px; flex-shrink:0; overflow:hidden; display:inline-flex; align-items:center; justify-content:center; background: var(--gold-light); color: var(--gold-dark); }
+  .produto-card-foto img{ width:52px; height:52px; object-fit:cover; display:block; }
+  .produto-card-id{ min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .produto-card .ativo-card-name{ cursor:pointer; line-height:1.3; }
+  .produto-card .ativo-card-name:hover{ color: var(--pink); }
+  .produto-card-marca{ font-size:12.5px; color: var(--text-muted); }
+  .produto-card .produto-card-desc{ -webkit-line-clamp:4; margin:0; }
+  .produto-card-preco .faixa-preco-principal{ font-size:13px; }
+  .produto-card .ativo-card-footer{ gap:8px; }
+
+  /* Faixa de marcas do Catálogo */
+  .marcas-faixa-wrap{ margin:0 0 16px; }
+  .marcas-faixa-titulo{ font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--text-muted); margin:0 0 8px 2px; }
+  .marcas-faixa{ display:flex; gap:10px; overflow-x:auto; padding:2px 2px 8px; scrollbar-width:thin; }
+  .marca-tile{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-width:118px; height:64px; padding:0 16px; background:#fff; border:1px solid var(--border); border-radius:12px; cursor:pointer; font-family:inherit; color: var(--text-dark); transition: border-color .15s, box-shadow .15s; }
+  .marca-tile:hover{ border-color: var(--gold); }
+  .marca-tile.active{ border-color: var(--sidebar-bg); box-shadow:0 0 0 2px var(--sidebar-bg); }
+  .marca-tile-nome{ font-family:'Playfair Display', serif; font-size:14.5px; font-weight:700; white-space:nowrap; }
+  .marca-tile-qtd{ font-size:11px; color: var(--text-muted); }
+  .marca-tile.com-logo{ gap:5px; }
+  .marca-tile-logo{ max-height:30px; max-width:104px; object-fit:contain; display:block; }
+  .marca-tile.logo-cheio{ position:relative; padding:0; overflow:hidden; border-color:transparent; }
+  .marca-tile.logo-cheio .marca-tile-logo{ max-height:none; max-width:none; height:100%; width:100%; object-fit:cover; }
+  .marca-tile.logo-cheio .marca-tile-qtd{ position:absolute; right:6px; bottom:4px; background:rgba(255,255,255,.9); color: var(--text-dark); border-radius:8px; padding:0 6px; font-weight:700; }
+  .marca-tile.logo-cheio.active{ box-shadow:0 0 0 3px var(--sidebar-bg); }
+
+  /* Faixa de marcas: rola sozinha devagar (JS), setas dos lados, sem barra */
+  .marcas-faixa-linha{ display:flex; align-items:center; gap:8px; }
+  .marcas-seta{ flex:0 0 auto; width:38px; height:38px; border-radius:50%; border:1px solid var(--border); background:#fff; color: var(--text-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .marcas-seta:hover{ border-color: var(--gold); color: var(--pink); }
+  .marcas-faixa{ flex:1; min-width:0; overflow-x:auto; overflow-y:hidden; padding:4px 0; scrollbar-width:none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent); mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent); }
+  .marcas-faixa::-webkit-scrollbar{ display:none; }
+  .marcas-trilho{ display:flex; gap:10px; width:max-content; padding:0 4px; }
+  .marca-tile{ width:140px; min-width:0; padding:0 12px; height:64px; align-items:center; justify-content:center; }
+  .marca-tile-nome{ text-align:center; white-space:normal; line-height:1.2; }
+  .marca-tile-logo{ display:block; object-fit:contain; max-width:none; max-height:none; }
+  .marca-tile.active{ box-shadow:0 0 0 2px var(--sidebar-bg); }
+  .catalogo-count-final{ margin:8px 0 0 4px; text-align:center; }

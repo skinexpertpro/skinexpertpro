@@ -181,3 +181,5 @@
   .comanda-baixa{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background: var(--gold-light); color: var(--text-dark); border-radius:9px; padding:10px 12px; font-size:13px; margin:12px 0; }
   .comanda-baixa .btn-outline{ white-space:nowrap; }
   .aviso-pacote{ background: var(--gold-light); }
+  /* Cartão que sobra sozinho na última linha ocupa a largura toda */
+  .rel-grade > .rel-card:last-child:nth-child(odd){ grid-column: 1 / -1; }

@@ -77,7 +77,7 @@
   async function coletarDadosPaciente(p, opcoes){
     opcoes = opcoes || {};
     const out = { geradoEm: new Date().toISOString(), paciente: null, anamneses: [], avaliacoes: [], planos: [], fotos: [],
-                  atendimentos: [], comandas: [], mensagens: [], lembretes: [], especificas: [], avisos: [] };
+                  atendimentos: [], comandas: [], mensagens: [], lembretes: [], especificas: [], termos: [], avisos: [] };
     const pid = String(p.id);
     out.mensagens = (mensagensHistorico || []).filter(h => h.pacienteId != null ? String(h.pacienteId) === pid : h.paciente === p.name)
       .map(h => ({ em: h.em, modelo: (() => { try{ return modeloPorId(h.modelo).titulo; }catch(e){ return h.modelo; } })(), texto: h.texto }));
@@ -92,7 +92,7 @@
           return data || [];
         }catch(e){ out.avisos.push(rotulo); return []; }
       };
-      const [cad, an, av, pl, fo, ag, co, esp] = await Promise.all([
+      const [cad, an, av, pl, fo, ag, co, esp, te] = await Promise.all([
         ler('cadastro', 'pacientes', q => q.eq('id', p.id)),
         ler('fichas de anamnese', 'anamneses', q => q.eq('paciente_id', p.id)),
         ler('avaliações', 'avaliacoes_cutaneas', q => q.eq('paciente_id', p.id)),
@@ -101,7 +101,9 @@
         ler('atendimentos', 'agendamentos', q => q.eq('paciente_id', p.id)),
         ler('comandas', 'comandas', q => q.eq('paciente_id', pid)),
         ler('anamneses específicas', 'anamneses_especificas', q => q.eq('paciente_id', p.id)),
+        ler('termos', 'termos_paciente', q => q.eq('paciente_id', p.id)),
       ]);
+      out.termos = te.filter(t => t.status !== 'cancelado');
       out.paciente = cad[0] || null;
       out.anamneses = an; out.avaliacoes = av; out.planos = pl; out.fotos = fo; out.atendimentos = ag;
       // tabela nova: se ainda não existir no banco, não conta como falha
@@ -129,6 +131,8 @@
       out.paciente = { nome: p.name, email: p.email, telefone_codigo: p.phoneCode, telefone_numero: p.phoneNumber,
                        data_nascimento: p.dataNascimento, pais: p.pais, status: p.status, foto_url: p.foto_url };
       out.anamneses = (demoAnamnesesPorPaciente[p.id] || []).slice();
+      out.termos = (typeof termosPaciente !== 'undefined' ? termosPaciente : []).filter(t => String(t.pacienteId) === pid && t.status !== 'cancelado')
+        .map(t => ({ titulo: t.titulo, status: t.status, criado_em: t.criadoEm, assinado_em: t.assinadoEm, nome_assinante: t.nomeAssinante, texto: t.texto, assinatura: t.assinatura }));
       Object.keys(demoEspecificas[p.id] || {}).forEach(t => (demoEspecificas[p.id][t] || []).forEach(r => out.especificas.push({ ...r, tipo: t })));
       Object.keys(appointments || {}).forEach(key => (appointments[key] || []).forEach(a => {
         if(a.type !== 'block' && (String(a.pacienteId) === pid || (!a.pacienteId && a.label === p.name)))
@@ -199,6 +203,7 @@ ${sec('Cadastro', null, d.paciente ? lgpdCamposHTML(d.paciente) : nada)}
 ${sec('Fichas de anamnese', d.anamneses.length, lista(d.anamneses, 'Ficha', 'respondida_em'))}
 ${sec('Avaliações cutâneas', d.avaliacoes.length, lista(d.avaliacoes, 'Avaliação', 'data_avaliacao'))}
 ${sec('Planos de skincare', d.planos.length, lista(d.planos, 'Plano', 'created_at'))}
+${d.termos && d.termos.length ? sec('Termos de consentimento', d.termos.length, d.termos.map(t => `<div class="bloco"><h3>${escHTML(t.titulo)} — ${t.status === 'assinado' ? 'assinado em ' + escHTML(lgpdData(t.assinado_em) || '') + (t.nome_assinante ? ' por ' + escHTML(t.nome_assinante) : '') : 'aguardando assinatura'}</h3><p style="white-space:pre-line;">${escHTML(t.texto || '')}</p>${t.assinatura ? `<img src="${escHTML(t.assinatura)}" alt="Assinatura" style="max-width:260px; max-height:110px;">` : ''}</div>`).join('')) : ''}
 ${d.especificas.length ? sec('Anamneses específicas', d.especificas.length, d.especificas.map(r => `<div class="bloco"><h3>${escHTML((ESPECIALIDADES[r.tipo] || {}).titulo || r.tipo)} — ${escHTML(lgpdData(r.created_at) || '')}</h3><table>${espLinhas(r.tipo, r.dados || {}).map(([k, v]) => `<tr><th>${escHTML(k)}</th><td>${escHTML(v)}</td></tr>`).join('')}</table></div>`).join('')) : ''}
 ${sec('Fotos de evolução', d.fotos.length, fotos)}
 ${sec('Atendimentos', d.atendimentos.length, atend)}
