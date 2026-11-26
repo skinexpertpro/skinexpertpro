@@ -568,7 +568,7 @@
     }
     if(modeloPacote){
       // Venda de pacote: as sessões ficam no saldo da paciente, por isso ela precisa estar cadastrada
-      if(!c.pacienteId){ showToast('Para vender um pacote, escolha uma cliente cadastrada em Pacientes (o saldo de sessões fica na ficha dela).'); document.getElementById('comandaCliente').focus(); return; }
+      if(!c.pacienteId){ showToast('Para vender um pacote, escolha uma cliente cadastrada em Clientes (o saldo de sessões fica na ficha dela).'); document.getElementById('comandaCliente').focus(); return; }
       const item = { nome: 'Pacote: ' + modeloPacote.nome, preco, origem: 'extra' };
       if(!comandaNova){
         const pp = await venderPacote({ modelo: modeloPacote, comanda: c });
