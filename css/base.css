@@ -208,3 +208,8 @@
     background: url(../img/icone-192.png) center / cover no-repeat !important;
     border-radius: 24% !important;
   }
+
+  /* ---------- Menu lateral em Outfit (o nome do logo continua em Playfair) ---------- */
+  .sidebar, .sidebar *:not(.brand-name){
+    font-family: 'Outfit', sans-serif;
+  }
