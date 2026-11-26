@@ -213,3 +213,8 @@
   .sidebar, .sidebar *:not(.brand-name){
     font-family: 'Outfit', sans-serif;
   }
+
+  /* ---------- Logo original no menu: símbolo + "skin / expert pro" ---------- */
+  .sidebar .brand-name{ display:flex; align-items:center; line-height:0; }
+  .sidebar .brand-nome-img{ height:38px; width:auto; display:block; }
+  .sidebar .brand-logo{ width:40px; height:40px; }
