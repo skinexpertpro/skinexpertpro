@@ -3,11 +3,11 @@
 
   /* ---------- Patients table ---------- */
   const patients = [
-    { id:"p1", initials:"P1", color:"#8a949a", bg:"#eef0f2", name:"Paciente Teste 1", age:60, gender:"Feminino", phone:"+55 (11) 00000-0001", phoneCode:"+55", phoneNumber:"(11) 00000-0001", email:"", cep:"00000-000", endereco:"Rua Exemplo", numero:"", complemento:"", bairro:"Bairro Teste", cidade:"São Paulo", estado:"SP", pais:"Brasil", rotina:"08/04/2026", acomp:{type:"gray", label:"Encerrado"}, status:"Ativo" },
-    { id:"p2", initials:"P2", color:"#c65d8a", bg:"#fbe8f0", name:"Paciente Teste 2", age:24, gender:"Feminino", phone:"+351 900 000 002", phoneCode:"+351", phoneNumber:"900 000 002", rotina:null, acomp:{type:"dash"}, status:"Ativo" },
-    { id:"p3", initials:"P3", color:"#7c5dc6", bg:"#efe8fb", name:"Paciente Teste 3", age:24, gender:"Feminino", phone:"+55 (11) 00000-0003", phoneCode:"+55", phoneNumber:"(11) 00000-0003", rotina:"20/04/2026", acomp:{type:"gray", label:"Encerrado"}, status:"Ativo" },
-    { id:"p4", initials:"P4", color:"#c65d5d", bg:"#fbe8e8", name:"Paciente Teste 4", age:37, gender:"Feminino", phone:"+55 (11) 00000-0004", phoneCode:"+55", phoneNumber:"(11) 00000-0004", rotina:"27/04/2026", acomp:{type:"green", label:"Dia 87 / 90"}, status:"Ativo" },
-    { id:"p5", initials:"P5", color:"#5d8ac6", bg:"#e8f0fb", name:"Paciente Teste 5", age:45, gender:"Feminino", phone:"+55 (11) 00000-0005", phoneCode:"+55", phoneNumber:"(11) 00000-0005", rotina:"15/05/2026", acomp:{type:"green", label:"Dia 12 / 60"}, status:"Ativo" },
+    { id:"p1", initials:"P1", color:"#8a949a", bg:"#eef0f2", name:"Cliente Teste 1", age:60, gender:"Feminino", phone:"+55 (11) 00000-0001", phoneCode:"+55", phoneNumber:"(11) 00000-0001", email:"", cep:"00000-000", endereco:"Rua Exemplo", numero:"", complemento:"", bairro:"Bairro Teste", cidade:"São Paulo", estado:"SP", pais:"Brasil", rotina:"08/04/2026", acomp:{type:"gray", label:"Encerrado"}, status:"Ativo" },
+    { id:"p2", initials:"P2", color:"#c65d8a", bg:"#fbe8f0", name:"Cliente Teste 2", age:24, gender:"Feminino", phone:"+351 900 000 002", phoneCode:"+351", phoneNumber:"900 000 002", rotina:null, acomp:{type:"dash"}, status:"Ativo" },
+    { id:"p3", initials:"P3", color:"#7c5dc6", bg:"#efe8fb", name:"Cliente Teste 3", age:24, gender:"Feminino", phone:"+55 (11) 00000-0003", phoneCode:"+55", phoneNumber:"(11) 00000-0003", rotina:"20/04/2026", acomp:{type:"gray", label:"Encerrado"}, status:"Ativo" },
+    { id:"p4", initials:"P4", color:"#c65d5d", bg:"#fbe8e8", name:"Cliente Teste 4", age:37, gender:"Feminino", phone:"+55 (11) 00000-0004", phoneCode:"+55", phoneNumber:"(11) 00000-0004", rotina:"27/04/2026", acomp:{type:"green", label:"Dia 87 / 90"}, status:"Ativo" },
+    { id:"p5", initials:"P5", color:"#5d8ac6", bg:"#e8f0fb", name:"Cliente Teste 5", age:45, gender:"Feminino", phone:"+55 (11) 00000-0005", phoneCode:"+55", phoneNumber:"(11) 00000-0005", rotina:"15/05/2026", acomp:{type:"green", label:"Dia 12 / 60"}, status:"Ativo" },
   ];
 
 
@@ -142,7 +142,7 @@
           <div class="aniv-nome">${ehHoje ? '🎂 ' : ''}${p.name}${ehHoje ? '<span class="aniv-badge-hoje">HOJE</span>' : ''}</div>
           <div class="aniv-sub">${quando}</div>
         </div>
-        ${diasAte >= 0 ? `<button class="aniv-whats" ${link ? '' : 'disabled title="Paciente sem telefone cadastrado"'} title="${ehHoje ? 'Enviar parabéns pelo WhatsApp' : 'Abrir WhatsApp com mensagem de parabéns'}">${iconeWhats}${ehHoje ? ' Parabenizar' : ''}</button>` : ''}
+        ${diasAte >= 0 ? `<button class="aniv-whats" ${link ? '' : 'disabled title="Cliente sem telefone cadastrado"'} title="${ehHoje ? 'Enviar parabéns pelo WhatsApp' : 'Abrir WhatsApp com mensagem de parabéns'}">${iconeWhats}${ehHoje ? ' Parabenizar' : ''}</button>` : ''}
       `;
       item.addEventListener('click', () => openPatientRegistro(p.id, 'dados'));
       const btn = item.querySelector('.aniv-whats');
@@ -156,7 +156,7 @@
     if(semData > 0 && patients.length > 0){
       const dica = document.createElement('div');
       dica.className = 'aniv-dica';
-      dica.innerHTML = `${semData} de ${patients.length} paciente${patients.length === 1 ? '' : 's'} ainda ${semData === 1 ? 'não tem' : 'não têm'} data de nascimento na ficha. <a id="anivVerPacientes">Completar cadastros</a>`;
+      dica.innerHTML = `${semData} de ${patients.length} cliente${patients.length === 1 ? '' : 's'} ainda ${semData === 1 ? 'não tem' : 'não têm'} data de nascimento na ficha. <a id="anivVerPacientes">Completar cadastros</a>`;
       container.appendChild(dica);
       dica.querySelector('#anivVerPacientes').addEventListener('click', () => {
         const nav = document.querySelector('.nav-item[data-view="pacientes"]');
@@ -241,7 +241,7 @@
       .select('*')
       .order('created_at', { ascending: false });
 
-    if(error){ console.warn('Não foi possível carregar pacientes do Supabase:', error.message); return; }
+    if(error){ console.warn('Não foi possível carregar clientes do Supabase:', error.message); return; }
     if(!data) return;
 
     patients.length = 0;
@@ -316,9 +316,9 @@
     const numero = document.getElementById('npTelefone').value.trim();
     const pais = document.getElementById('npPais').value;
     const nascimento = document.getElementById('npNascimento').value;
-    if(!nome){ showToast('Informe o nome da paciente.'); document.getElementById('npNome').focus(); return; }
+    if(!nome){ showToast('Informe o nome da cliente.'); document.getElementById('npNome').focus(); return; }
     if(!codigo){ showToast('Selecione o código do país do telefone.'); document.getElementById('npPhoneCode').focus(); return; }
-    if(!numero){ showToast('O telefone é obrigatório para cadastrar uma nova paciente.'); document.getElementById('npTelefone').focus(); return; }
+    if(!numero){ showToast('O telefone é obrigatório para cadastrar uma nova cliente.'); document.getElementById('npTelefone').focus(); return; }
     const btn = document.getElementById('npSalvar');
     btn.disabled = true;
     try{
@@ -329,5 +329,5 @@
 
   document.getElementById('btnNovoPaciente').addEventListener('click', async () => {
     const criada = await abrirNovaPaciente('');
-    if(criada) showToast('Paciente cadastrada com sucesso!');
+    if(criada) showToast('Cliente cadastrada com sucesso!');
   });

@@ -262,7 +262,7 @@ Sei que posso retirar esta autorização a qualquer momento, falando com a profi
   // Apagar o modelo: os termos já enviados e assinados continuam guardados na ficha
   // (cada um tem a própria cópia do texto; no banco o vínculo com o modelo vira vazio).
   async function apagarModeloTermo(m){
-    if(!confirm(`Apagar o termo "${m.titulo}"?\n\nOs termos que as pacientes já assinaram continuam guardados na ficha de cada uma.`)) return;
+    if(!confirm(`Apagar o termo "${m.titulo}"?\n\nOs termos que as clientes já assinaram continuam guardados na ficha de cada uma.`)) return;
     if(!modoDemonstracao){
       const { error } = await supabaseClient.from('termos_modelos').delete().eq('id', m.id);
       if(error){ avisarErroTermos(error); return; }
@@ -317,7 +317,7 @@ Sei que posso retirar esta autorização a qualquer momento, falando com a profi
 
     const lista = termosDaPaciente(currentPatient.id).slice().sort((a, b) => String(b.criadoEm).localeCompare(String(a.criadoEm)));
     if(!lista.length){
-      box.innerHTML = '<div class="empty-state">Nenhum termo enviado para esta paciente ainda.</div>';
+      box.innerHTML = '<div class="empty-state">Nenhum termo enviado para esta cliente ainda.</div>';
       return;
     }
     box.innerHTML = '';
@@ -377,16 +377,16 @@ Sei que posso retirar esta autorização a qualquer momento, falando com a profi
   }
   function enviarTermoWhatsapp(t){
     const p = patients.find(x => String(x.id) === String(t.pacienteId)) || currentPatient;
-    if(modoDemonstracao){ showToast('No modo demonstração o link não abre para a paciente. Use "Assinar aqui" para testar.'); return; }
+    if(modoDemonstracao){ showToast('No modo demonstração o link não abre para a cliente. Use "Assinar aqui" para testar.'); return; }
     const url = linkWhatsapp(p, mensagemTermoWhatsapp(t, p));
-    if(!url){ copiarTexto(linkDoTermo(t), 'A paciente não tem WhatsApp cadastrado. O link foi copiado para você enviar.'); return; }
+    if(!url){ copiarTexto(linkDoTermo(t), 'A cliente não tem WhatsApp cadastrado. O link foi copiado para você enviar.'); return; }
     window.open(url, '_blank');
   }
 
   /* ---------- Novo termo para a paciente ---------- */
   let envioModelo = null;
   function abrirEnvioTermo(modeloInicial){
-    if(!currentPatient){ showToast('Selecione uma paciente primeiro.'); return; }
+    if(!currentPatient){ showToast('Selecione uma cliente primeiro.'); return; }
     const ativos = termosModelos.filter(m => m.ativo);
     if(!ativos.length){ showToast('Cadastre um termo em Meu Negócio → Termos.'); return; }
     const sel = document.getElementById('termoEnvioModelo');
@@ -435,12 +435,12 @@ Sei que posso retirar esta autorização a qualquer momento, falando com a profi
       document.getElementById('modalTermoEnvioOverlay').classList.remove('open');
       renderTermosDaPaciente();
       if(modo === 'whats'){
-        if(modoDemonstracao){ showToast('Termo criado. No modo demonstração o link não abre para a paciente; use "Assinar aqui".'); return; }
+        if(modoDemonstracao){ showToast('Termo criado. No modo demonstração o link não abre para a cliente; use "Assinar aqui".'); return; }
         const url = linkWhatsapp(currentPatient, mensagemTermoWhatsapp(t, currentPatient));
         if(url && janela) janela.location.href = url;
-        else { if(janela) janela.close(); copiarTexto(linkDoTermo(t), 'A paciente não tem WhatsApp cadastrado. O link foi copiado para você enviar.'); }
+        else { if(janela) janela.close(); copiarTexto(linkDoTermo(t), 'A cliente não tem WhatsApp cadastrado. O link foi copiado para você enviar.'); }
       } else if(modo === 'copiar'){
-        if(modoDemonstracao){ showToast('Termo criado. No modo demonstração o link não abre para a paciente; use "Assinar aqui".'); return; }
+        if(modoDemonstracao){ showToast('Termo criado. No modo demonstração o link não abre para a cliente; use "Assinar aqui".'); return; }
         copiarTexto(linkDoTermo(t), 'Termo criado e link copiado!');
       } else abrirAssinaturaPresencial(t);
     } finally { btn.disabled = false; }
@@ -587,7 +587,7 @@ ${textoTermoHTML(t.texto || '')}
     let servs = [];
     try{ servs = getServicosSelecionados(); }catch(e){}
     const faltam = pacId ? termosModelos.filter(m => m.ativo && m.servicos.some(s => servs.some(x => semAcento(x) === semAcento(s))) && !pacienteTemTermo(pacId, m, true)) : [];
-    aviso.innerHTML = faltam.length ? `Pede termo ainda não assinado: ${faltam.map(m => `<strong>${escHTML(m.titulo)}</strong>`).join(', ')}. Envie pela ficha da paciente, na aba Termos.` : '';
+    aviso.innerHTML = faltam.length ? `Pede termo ainda não assinado: ${faltam.map(m => `<strong>${escHTML(m.titulo)}</strong>`).join(', ')}. Envie pela ficha da cliente, na aba Termos.` : '';
     aviso.style.display = faltam.length ? 'block' : 'none';
   }
   ['apptServicosContainer', 'apptDate'].forEach(id => document.getElementById(id)?.addEventListener('change', atualizarAvisoTermoAgenda));

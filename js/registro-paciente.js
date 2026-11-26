@@ -13,7 +13,7 @@
     if(url){
       inner.style.background = '';
       inner.style.color = '';
-      inner.innerHTML = `<img src="${url}" alt="Foto da paciente">`;
+      inner.innerHTML = `<img src="${url}" alt="Foto da cliente">`;
     } else if(initials){
       inner.style.background = bg || 'var(--tag-bg)';
       inner.style.color = color || 'var(--tag-text)';
@@ -222,7 +222,7 @@
     if(pacientesNavForRegistro) pacientesNavForRegistro.classList.add('active');
     views.forEach(v => v.classList.remove('active'));
     document.getElementById('view-registro-paciente').classList.add('active');
-    pageTitle.textContent = 'Registro de Paciente';
+    pageTitle.textContent = 'Registro de Cliente';
     pageSubtitle.style.display = 'none';
 
     switchRegistroTab(tab || 'dados');
@@ -265,13 +265,13 @@
     document.getElementById('view-pacientes').classList.add('active');
     const pacientesNav = document.querySelector('.nav-item[data-view="pacientes"]');
     if(pacientesNav) pacientesNav.classList.add('active');
-    pageTitle.textContent = 'Pacientes';
-    pageSubtitle.textContent = 'Gerencie a lista de pacientes da clínica';
+    pageTitle.textContent = 'Clientes';
+    pageSubtitle.textContent = 'Gerencie a lista de clientes da clínica';
     pageSubtitle.style.display = 'block';
   });
 
   document.getElementById('btnSalvarAlteracoes').addEventListener('click', async () => {
-    if(!currentPatient){ showToast('Nenhuma paciente selecionada.'); return; }
+    if(!currentPatient){ showToast('Nenhuma cliente selecionada.'); return; }
 
     const nome = document.getElementById('regNome').value.trim();
     const status = document.getElementById('regStatus').value;
@@ -286,7 +286,7 @@
     if(!phoneCode){ showToast('Selecione o código do país do telefone.'); document.getElementById('regPhoneCode').focus(); return; }
 
     const duplicada = encontrarPacienteDuplicado(nome, phoneNumber, currentPatient.id);
-    if(duplicada){ showToast('Já existe uma paciente cadastrada com esse nome e telefone: ' + duplicada.name); return; }
+    if(duplicada){ showToast('Já existe uma cliente cadastrada com esse nome e telefone: ' + duplicada.name); return; }
 
     if(isPacienteReal(currentPatient)){
       const { error } = await supabaseClient.from('pacientes').update({
@@ -320,7 +320,7 @@
   // Excluir cadastro e Exportar dados (LGPD): ver o bloco "LGPD — DIREITOS DA PACIENTE" mais abaixo.
 
   document.getElementById('btnGerarLinkPaciente').addEventListener('click', async () => {
-    if(!currentPatient){ showToast('Selecione uma paciente primeiro.'); return; }
+    if(!currentPatient){ showToast('Selecione uma cliente primeiro.'); return; }
     const { data: userData } = await supabaseClient.auth.getUser();
     if(!userData || !userData.user){ showToast('Faça login com uma conta real (fora do modo demonstração) para gerar o link.'); return; }
 
@@ -365,7 +365,7 @@
   });
   document.getElementById('btnSalvarAnamnese').addEventListener('click', async () => {
     if(salvandoAnamnese) return; // clique duplo não grava duas vezes
-    if(!currentPatient){ showToast('Nenhuma paciente selecionada.'); return; }
+    if(!currentPatient){ showToast('Nenhuma cliente selecionada.'); return; }
     salvandoAnamnese = true;
     const btnSalvarAn = document.getElementById('btnSalvarAnamnese');
     btnSalvarAn.disabled = true;
@@ -483,7 +483,7 @@
         const texto = msgDoModelo('confirmar_anamnese', { paciente: pacienteConf, link: linkConfirmacaoAnamnese(tokenConf) });
         const url = linkWhatsapp(pacienteConf, texto);
         if(url && janelaConf){ janelaConf.location.href = url; janelaUsada = true; try{ registrarEnvio(pacienteConf, 'confirmar_anamnese', texto); }catch(e){} }
-        else setTimeout(() => showToast(url ? 'Anamnese salva. Envie o link de confirmação pela aba Histórico.' : 'Anamnese salva. A paciente não tem telefone cadastrado: envie o link pela aba Histórico.'), 2600);
+        else setTimeout(() => showToast(url ? 'Anamnese salva. Envie o link de confirmação pela aba Histórico.' : 'Anamnese salva. A cliente não tem telefone cadastrado: envie o link pela aba Histórico.'), 2600);
       }
     } else {
       payload.respondida_em = new Date().toISOString();
@@ -494,7 +494,7 @@
 
     renderAnamnesesRespondidas().then(updateHistoricoCountBadge);
     atualizarHeaderPaciente(currentPatient);
-    showToast(janelaUsada ? 'Anamnese salva! Envie o link no WhatsApp para a paciente confirmar.' : 'Anamnese salva com sucesso!');
+    showToast(janelaUsada ? 'Anamnese salva! Envie o link no WhatsApp para a cliente confirmar.' : 'Anamnese salva com sucesso!');
     } finally {
       if(janelaConf && !janelaUsada){ try{ janelaConf.close(); }catch(e){} }
     }
@@ -640,7 +640,7 @@
   }
 
   document.getElementById('btnSalvarAvaliacao').addEventListener('click', async () => {
-    if(!currentPatient){ showToast('Nenhuma paciente selecionada.'); return; }
+    if(!currentPatient){ showToast('Nenhuma cliente selecionada.'); return; }
 
     const payload = {
       paciente_id: currentPatient.id,
@@ -854,7 +854,7 @@
   });
 
   document.getElementById('btnAdicionarFotoEvolucao').addEventListener('click', async () => {
-    if(!currentPatient){ showToast('Nenhuma paciente selecionada.'); return; }
+    if(!currentPatient){ showToast('Nenhuma cliente selecionada.'); return; }
     const fileInput = document.getElementById('fotoEvolucaoInput');
     const arquivos = Array.from(fileInput.files || []);
     if(!arquivos.length){ showToast('Selecione pelo menos uma foto.'); return; }

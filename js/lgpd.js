@@ -10,7 +10,7 @@
     principal_queixa: 'Queixa principal', tratamentos_anteriores: 'Tratamentos anteriores', autopercepcao: 'Autopercepção da pele',
     integrativa: 'Avaliação integrativa', sistemica: 'Saúde', estilo_vida: 'Estilo de vida', skincare: 'Skincare', investimento: 'Investimento',
     observacoes: 'Observações', respondida_em: 'Respondida em', consentimento_em: 'Autorização dada em', consentimento_versao: 'Versão da autorização',
-    consentimento_texto: 'Texto autorizado', confirmada_em: 'Conferida pela paciente em', fitzpatrick: 'Fototipo (Fitzpatrick)', baumann: 'Baumann',
+    consentimento_texto: 'Texto autorizado', confirmada_em: 'Conferida pela cliente em', fitzpatrick: 'Fototipo (Fitzpatrick)', baumann: 'Baumann',
     glogau: 'Glogau', hidratacao: 'Hidratação', integridade: 'Integridade', textura: 'Textura', poros: 'Poros', oleosidade: 'Oleosidade', acne: 'Acne',
     rosacea: 'Rosácea', discromias: 'Discromias', olheiras: 'Olheiras', data_avaliacao: 'Data da avaliação', objetivo: 'Objetivo',
     duracao_dias: 'Duração (dias)', rotina_manha: 'Rotina da manhã', rotina_noite: 'Rotina da noite', data_foto: 'Data da foto', etiqueta: 'Etiqueta',
@@ -18,7 +18,7 @@
     servicos: 'Serviços', valor: 'Valor', saldo: 'Saldo', pagamento: 'Forma de pagamento', itens: 'Itens', pagamentos: 'Pagamentos',
     desconto: 'Desconto', subtotal: 'Subtotal', moeda: 'Moeda', presente: 'Presente', areas: 'Áreas', intensidade: 'Intensidade', grau: 'Grau',
     licoes: 'Lesões', subtipo: 'Subtipo', tipos: 'Tipos', preco: 'Preço', forma: 'Forma', em: 'Em', texto: 'Texto', modelo: 'Mensagem',
-    paciente: 'Paciente', paciente_nome: 'Paciente', respondida: 'Respondida', manha: 'Manhã', noite: 'Noite', produto: 'Produto', passo: 'Passo',
+    paciente: 'Cliente', paciente_nome: 'Cliente', respondida: 'Respondida', manha: 'Manhã', noite: 'Noite', produto: 'Produto', passo: 'Passo',
   };
   function lgpdRotulo(k){
     if(LGPD_ROTULOS[k]) return LGPD_ROTULOS[k];
@@ -153,7 +153,7 @@
   /* ---------- Relatório legível (HTML) ---------- */
   function relatorioPacienteHTML(d, p){
     const prof = (perfilProfissional && perfilProfissional.nome) || '';
-    const nome = (d.paciente && d.paciente.nome) || p.name || 'Paciente';
+    const nome = (d.paciente && d.paciente.nome) || p.name || 'Cliente';
     const agora = new Date();
     const sec = (titulo, n, corpo) => `<section><h2>${escHTML(titulo)}${n != null ? ` <small>(${n})</small>` : ''}</h2>${corpo}</section>`;
     const nada = '<p class="vazio">Nenhum registro.</p>';
@@ -197,7 +197,7 @@
 </style></head><body>
 <header>${fotoPerfil}<div><h1>Dados pessoais de ${escHTML(nome)}</h1>
 <p class="meta">Gerado em ${escHTML(agora.toLocaleDateString('pt-BR'))} às ${escHTML(agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }))}${prof ? ' por ' + escHTML(prof) : ''} · Skin Expert Pro</p></div></header>
-<p class="meta">Este documento reúne todos os dados desta paciente guardados no sistema, em atendimento ao direito de acesso aos próprios dados (LGPD, art. 18; RGPD, art. 15).</p>
+<p class="meta">Este documento reúne todos os dados desta cliente guardados no sistema, em atendimento ao direito de acesso aos próprios dados (LGPD, art. 18; RGPD, art. 15).</p>
 ${d.avisos.length ? `<p class="aviso">Atenção: algumas partes não puderam ser lidas e podem estar incompletas: ${escHTML(d.avisos.join('; '))}.</p>` : ''}
 ${sec('Cadastro', null, d.paciente ? lgpdCamposHTML(d.paciente) : nada)}
 ${sec('Fichas de anamnese', d.anamneses.length, lista(d.anamneses, 'Ficha', 'respondida_em'))}
@@ -210,13 +210,13 @@ ${sec('Atendimentos', d.atendimentos.length, atend)}
 ${sec('Comandas', d.comandas.length, comandas)}
 ${sec('Mensagens enviadas pelo app', d.mensagens.length, msgs)}
 ${d.lembretes.length ? sec('Lembretes', d.lembretes.length, lemb) : ''}
-<p class="rodape">Contém dados pessoais e de saúde. Guarde em local seguro e compartilhe somente com a própria paciente.</p>
+<p class="rodape">Contém dados pessoais e de saúde. Guarde em local seguro e compartilhe somente com a própria cliente.</p>
 <button class="imprimir" onclick="window.print()">Imprimir / salvar em PDF</button>
 </body></html>`;
   }
   function jsonPacienteLimpo(d){
     const limpo = JSON.parse(JSON.stringify(d, (k, v) => (k === '_img' || k === 'token' || k === 'confirmacao_token' || k === 'foto_base64') ? undefined : v));
-    return JSON.stringify({ formato: 'Skin Expert Pro — dados da paciente', versao: 1, ...limpo }, null, 2);
+    return JSON.stringify({ formato: 'Skin Expert Pro — dados da cliente', versao: 1, ...limpo }, null, 2);
   }
 
   /* ---------- Janela "Exportar dados" ---------- */
@@ -224,7 +224,7 @@ ${d.lembretes.length ? sec('Lembretes', d.lembretes.length, lemb) : ''}
   let exportarPaciente = null;
   function abrirExportarDados(p){
     p = p || currentPatient;
-    if(!p){ showToast('Nenhuma paciente selecionada.'); return; }
+    if(!p){ showToast('Nenhuma cliente selecionada.'); return; }
     exportarPaciente = p;
     document.getElementById('expTitulo').textContent = 'Exportar dados de ' + (p.name || 'paciente');
     document.getElementById('expStatus').textContent = '';
@@ -268,10 +268,10 @@ ${d.lembretes.length ? sec('Lembretes', d.lembretes.length, lemb) : ''}
   function plural(n, um, varios){ return n + ' ' + (n === 1 ? um : varios); }
   async function abrirApagarPaciente(){
     const p = currentPatient;
-    if(!p){ showToast('Nenhuma paciente selecionada.'); return; }
+    if(!p){ showToast('Nenhuma cliente selecionada.'); return; }
     apagarCtx = { p, dados: null };
     document.getElementById('apgTitulo').textContent = 'Excluir ' + (p.name || 'paciente');
-    document.getElementById('apgCorpo').innerHTML = '<p class="lgpd-texto">Verificando os dados da paciente…</p>';
+    document.getElementById('apgCorpo').innerHTML = '<p class="lgpd-texto">Verificando os dados da cliente…</p>';
     document.getElementById('apgConfirmaWrap').style.display = 'none';
     apgConfirma.value = ''; apgConfirmar.disabled = true; apgConfirmar.textContent = 'Apagar definitivamente';
     modalApagarPacOverlay.classList.add('open');
@@ -300,8 +300,8 @@ ${d.lembretes.length ? sec('Lembretes', d.lembretes.length, lemb) : ''}
       <div class="lgpd-sub">Será apagado para sempre:</div>
       <ul class="lgpd-lista apaga">${apaga.map(t => `<li>${escHTML(t)}</li>`).join('')}</ul>
       ${pagas ? `<div class="lgpd-sub">Fica no Financeiro, sem o nome dela:</div>
-      <ul class="lgpd-lista mantem"><li>${escHTML(plural(pagas, 'comanda com pagamento', 'comandas com pagamento'))} e os lançamentos do Controle Financeiro. Os valores continuam nos relatórios, mas aparecem como “Paciente removida”. A lei permite e exige guardar os registros financeiros.</li></ul>` : ''}
-      <p class="lgpd-texto">Se a paciente pediu uma cópia dos dados, <a href="#" id="apgExportar">exporte antes de apagar</a>. Depois de apagar não tem como recuperar.</p>`;
+      <ul class="lgpd-lista mantem"><li>${escHTML(plural(pagas, 'comanda com pagamento', 'comandas com pagamento'))} e os lançamentos do Controle Financeiro. Os valores continuam nos relatórios, mas aparecem como “Cliente removida”. A lei permite e exige guardar os registros financeiros.</li></ul>` : ''}
+      <p class="lgpd-texto">Se a cliente pediu uma cópia dos dados, <a href="#" id="apgExportar">exporte antes de apagar</a>. Depois de apagar não tem como recuperar.</p>`;
     const linkExp = document.getElementById('apgExportar');
     if(linkExp) linkExp.addEventListener('click', (e) => { e.preventDefault(); abrirExportarDados(p); });
     document.getElementById('apgConfirmaWrap').style.display = 'block';
@@ -356,7 +356,7 @@ ${d.lembretes.length ? sec('Lembretes', d.lembretes.length, lemb) : ''}
         const dela = String(c.pacienteId) === pid || (!c.pacienteId && c.cliente === p.name);
         if(!dela) return true;
         if(!comandaTemPagamento(c)) return false;
-        c.cliente = 'Paciente removida'; c.pacienteId = null; c.agendamentoId = null;
+        c.cliente = 'Cliente removida'; c.pacienteId = null; c.agendamentoId = null;
         return true;
       });
     }

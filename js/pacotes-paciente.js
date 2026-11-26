@@ -40,7 +40,7 @@
   let avisoPacotesSemTabela = false;
   function avisarErroPacotes(error){
     const msg = (error && error.message) || String(error || '');
-    console.warn('Pacotes da paciente:', msg);
+    console.warn('Pacotes da cliente:', msg);
     if(/relation|does not exist|schema cache/i.test(msg)){
       if(!avisoPacotesSemTabela){ avisoPacotesSemTabela = true; showToast('Falta criar no Supabase as tabelas de saldo de pacotes (pacotes_paciente e pacote_sessoes).'); }
     } else showToast('Pacote: ' + msg.slice(0, 90));
@@ -55,11 +55,11 @@
         supabaseClient.from('pacotes_paciente').select('*').eq('profissional_id', user.id).order('data_venda', { ascending: true }),
         supabaseClient.from('pacote_sessoes').select('*').eq('profissional_id', user.id).order('criado_em', { ascending: true }),
       ]);
-      if(e1 || e2){ console.warn('Pacotes da paciente:', (e1 || e2).message); return; }
+      if(e1 || e2){ console.warn('Pacotes da cliente:', (e1 || e2).message); return; }
       pacotesPacienteData = (pacs || []).map(ppDoBanco);
       (sess || []).map(sessaoDoBanco).forEach(s => { const pp = pacotePorId(s.pacoteId); if(pp) pp.sessoes.push(s); });
       try{ if(document.getElementById('panel-pacotes')?.classList.contains('active')) renderPacotesDaPaciente(); }catch(e){}
-    }catch(e){ console.warn('Pacotes da paciente:', e); }
+    }catch(e){ console.warn('Pacotes da cliente:', e); }
   }
 
   /* ---------- Contas do saldo ---------- */
@@ -230,7 +230,7 @@
     if(!box || !currentPatient) return;
     const lista = pacotesDaPacienteId(currentPatient.id).slice().sort((a, b) => (b.dataVenda || '').localeCompare(a.dataVenda || ''));
     if(!lista.length){
-      box.innerHTML = '<div class="empty-state">Nenhum pacote vendido para esta paciente ainda.<br>Para vender, abra uma comanda e adicione o item "Pacote: …".</div>';
+      box.innerHTML = '<div class="empty-state">Nenhum pacote vendido para esta cliente ainda.<br>Para vender, abra uma comanda e adicione o item "Pacote: …".</div>';
       return;
     }
     const hoje = hojeISO();
@@ -295,7 +295,7 @@
       if(!linhas.length && pacotesDaPacienteId(pacId).some(pp => pp.servicos.some(s => restantesDoServico(pp, s.nome) > 0) && !pacoteVencidoEm(pp, data))){
         const disp = [];
         pacotesDaPacienteId(pacId).forEach(pp => { if(!pacoteVencidoEm(pp, data)) pp.servicos.forEach(s => { const r = restantesDoServico(pp, s.nome); if(r > 0) disp.push(`${s.nome} (${r})`); }); });
-        linhas.push(`Esta paciente tem pacote com saldo: ${disp.join(', ')}.`);
+        linhas.push(`Esta cliente tem pacote com saldo: ${disp.join(', ')}.`);
       }
     }
     // Na edição, sessões já reservadas por este atendimento não aparecem como "nova reserva"

@@ -33,7 +33,7 @@
     aviso.className = 'aviso-computador';
     aviso.innerHTML = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       <h2>Disponível no computador</h2>
-      <p>${SO_COMPUTADOR[v]} fica na versão para computador. No celular você usa o Dashboard, a Agenda e as Pacientes.</p>
+      <p>${SO_COMPUTADOR[v]} fica na versão para computador. No celular você usa o Dashboard, a Agenda e as Clientes.</p>
       <button type="button">Voltar ao Dashboard</button>`;
     aviso.querySelector('button').addEventListener('click', () => { const d = document.querySelector('.nav-item[data-view="dashboard"]'); if(d) d.click(); });
     view.prepend(aviso);
@@ -140,7 +140,7 @@
   function celAbrirMais(){
     celAbrirPainel('O que você quer criar?', [
       { titulo: 'Novo atendimento', sub: 'Escolha cliente, serviço e horário', icone: CEL_ICONES.atendimento, destaque: true, acao: celNovoAtendimento },
-      { titulo: 'Nova paciente', sub: 'Cadastro com nome, telefone e e-mail', icone: CEL_ICONES.paciente, cor: 'dourado', acao: () => { const b = document.getElementById('btnNovoPaciente'); if(b) b.click(); } },
+      { titulo: 'Nova cliente', sub: 'Cadastro com nome, telefone e e-mail', icone: CEL_ICONES.paciente, cor: 'dourado', acao: () => { const b = document.getElementById('btnNovoPaciente'); if(b) b.click(); } },
       { titulo: 'Bloquear horário', sub: 'Almoço, folga, curso…', icone: CEL_ICONES.bloquear, cor: 'neutro', acao: () => openModal('block') },
     ]);
   }
@@ -195,7 +195,7 @@
           return `<button type="button" class="cel-atend" data-i="${i}">
             <span class="cel-atend-hora"><b>${celEsc(a.time)}</b><small>${a.duration || 0} min</small></span>
             <span class="cel-atend-barra" aria-hidden="true"></span>
-            <span class="cel-atend-txt"><b>${celEsc(a.label || 'Paciente')}</b><small>${celEsc(a.servico || '')}</small></span>${tag}</button>`;
+            <span class="cel-atend-txt"><b>${celEsc(a.label || 'Cliente')}</b><small>${celEsc(a.servico || '')}</small></span>${tag}</button>`;
         }).join('')
       : `<div class="cel-vazio"><b>Nenhum atendimento hoje</b><span>Aproveite para responder mensagens ou montar planos de skincare.</span><button type="button" class="cel-vazio-btn">Agendar alguém</button></div>`;
     celInicio.innerHTML = `<div class="cel-numeros">${numeros}</div>
@@ -246,7 +246,7 @@
     const itens = (appointments[key] || []).slice().sort((a, b) => timeStrToMinutes(a.time) - timeStrToMinutes(b.time));
     if(!itens.length){ celListaDia.innerHTML = '<div class="cel-lista-vazia">Nada marcado neste dia.</div>'; return; }
     celListaDia.innerHTML = itens.map((a, i) => `<button type="button" class="cel-lista-item ${a.type === 'block' ? 'bloqueio' : ''}" data-i="${i}">
-      <b>${celEsc(a.time)}</b><span>${celEsc(a.type === 'block' ? (a.label || 'Bloqueado') + ' · bloqueado' : (a.label || 'Paciente'))}${a.servico ? ` <small>· ${celEsc(a.servico)}</small>` : ''}</span></button>`).join('');
+      <b>${celEsc(a.time)}</b><span>${celEsc(a.type === 'block' ? (a.label || 'Bloqueado') + ' · bloqueado' : (a.label || 'Cliente'))}${a.servico ? ` <small>· ${celEsc(a.servico)}</small>` : ''}</span></button>`).join('');
     celListaDia.querySelectorAll('.cel-lista-item').forEach(b => b.addEventListener('click', () => {
       const item = itens[Number(b.dataset.i)];
       if(item.type === 'appt'){ try{ abrirDetalhesAtendimento(key, item, celRedesenharAgenda); }catch(e){} }

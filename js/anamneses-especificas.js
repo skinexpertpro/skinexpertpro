@@ -117,13 +117,13 @@
       { id: 'observacoes', l: 'Observações', t: 'area' },
     ]},
   };
-  const DECLARACAO_ESPECIFICA = 'A paciente conferiu estas informações e autorizou o registro destes dados para o atendimento.';
+  const DECLARACAO_ESPECIFICA = 'A cliente conferiu estas informações e autorizou o registro destes dados para o atendimento.';
   var areasAtuacao = { hof: false, tricologia: false, corporal: false };
   const demoEspecificas = {}; // { pacienteId: { tipo: [registros] } } — só no modo demonstração
   const espEstado = {}; // { tipo: { registros, mostrandoId, seq } }
 
   function espRotulo(tipo, id){
-    if(id === 'consentimento') return 'Autorização da paciente';
+    if(id === 'consentimento') return 'Autorização da cliente';
     const c = (ESPECIALIDADES[tipo] || { campos: [] }).campos.find(x => x.id === id);
     if(c) return c.l;
     const base = id.replace(/_qual$/, '');
@@ -139,7 +139,7 @@
       if(v != null && v !== '' && !(Array.isArray(v) && !v.length)) out.push([c.l, Array.isArray(v) ? v.join(', ') : (c.t === 'date' ? (lgpdData(v) || v) : String(v))]);
       if(c.det && dados[c.id + '_qual']) out.push(['↳ ' + c.det, dados[c.id + '_qual']]);
     });
-    if(dados.consentimento) out.push(['Autorização da paciente', 'Sim']);
+    if(dados.consentimento) out.push(['Autorização da cliente', 'Sim']);
     return out;
   }
 
@@ -299,7 +299,7 @@
   }
   async function salvarEspecifica(tipo){
     const p = currentPatient;
-    if(!p){ showToast('Nenhuma paciente selecionada.'); return; }
+    if(!p){ showToast('Nenhuma cliente selecionada.'); return; }
     const dados = lerEspecifica(tipo);
     if(!Object.keys(dados).filter(k => k !== 'consentimento').length){ showToast('Preencha pelo menos um campo antes de salvar.'); return; }
     const st = espEstado[tipo] = espEstado[tipo] || { registros: [] };
@@ -365,10 +365,10 @@
       .ass{margin-top:46px;display:flex;gap:40px} .ass div{flex:1;border-top:1px solid #333;padding-top:6px;font-size:12px;text-align:center}
       @media print{button{display:none}}</style></head><body>
       <h1>${escHTML(esp.titulo)}</h1>
-      <p class="meta">Paciente: <b>${escHTML(p.name)}</b> · Ficha de ${escHTML(quando)}${prof ? ' · Profissional: ' + escHTML(prof) : ''}</p>
+      <p class="meta">Cliente: <b>${escHTML(p.name)}</b> · Ficha de ${escHTML(quando)}${prof ? ' · Profissional: ' + escHTML(prof) : ''}</p>
       <table>${linhas.map(([k, v]) => `<tr><th>${escHTML(k)}</th><td>${escHTML(v).replace(/\n/g, '<br>')}</td></tr>`).join('')}</table>
       <p style="font-size:12.5px;margin-top:22px;">Declaro que as informações acima são verdadeiras e que informei a profissional sobre minha saúde e procedimentos anteriores.</p>
-      <div class="ass"><div>Assinatura da paciente</div><div>Assinatura da profissional</div></div>
+      <div class="ass"><div>Assinatura da cliente</div><div>Assinatura da profissional</div></div>
       <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`;
     const w = window.open('', '_blank');
     if(!w){ showToast('Permita pop-ups para imprimir a ficha.'); return; }
@@ -391,7 +391,7 @@
     areasAtuacao[cb.value] = cb.checked;
     aplicarAreasAtuacao();
     const ok = await salvarConfig('areas_atuacao', areasAtuacao);
-    showToast(cb.checked ? `${ESPECIALIDADES[cb.value].titulo} ligada: a aba aparece na ficha das pacientes.` : `${ESPECIALIDADES[cb.value].titulo} desligada. As fichas salvas continuam guardadas.`);
+    showToast(cb.checked ? `${ESPECIALIDADES[cb.value].titulo} ligada: a aba aparece na ficha das clientes.` : `${ESPECIALIDADES[cb.value].titulo} desligada. As fichas salvas continuam guardadas.`);
     if(ok === false && !modoDemonstracao) console.warn('Áreas de atuação salvas só neste navegador.');
   }));
   async function carregarAreasAtuacao(){

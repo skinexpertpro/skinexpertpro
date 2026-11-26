@@ -15,7 +15,7 @@
         { label: "Gestão financeira simples", on: true },
         { label: "Link público de agendamento", on: false },
         { label: "Secretária digital automática", on: false },
-        { label: "Notificações por e-mail ao paciente", on: false },
+        { label: "Notificações por e-mail à cliente", on: false },
       ]
     },
     {
@@ -31,7 +31,7 @@
         { label: "Análises de rótulos completas", on: true },
         { label: "Catálogo de produtos por região", on: true },
         { label: "Antes & Depois avançado", on: true },
-        { label: "Pacientes e análises ilimitados", on: true },
+        { label: "Clientes e análises ilimitados", on: true },
       ]
     },
     {
@@ -42,7 +42,7 @@
       features: [
         { label: "Tudo do Profissional", on: true },
         { label: "Gestão de equipe multi-profissional", on: true },
-        { label: "Follow-up automatizado de pacientes", on: true },
+        { label: "Follow-up automatizado de clientes", on: true },
         { label: "Exportação de relatórios", on: true },
         { label: "Suporte VIP prioritário", on: true },
       ]

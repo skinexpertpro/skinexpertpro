@@ -221,7 +221,7 @@ let ativosData = [
       dosagem: '3,0 a 10,0%', fonte: 'Galena', periodo: 'Ambos',
       vegano: true, organico: true, gestantes: true,
       favorito: false,
-      anotacao: 'Paciente Maria, que estava com rosácea. Pós peeling.'
+      anotacao: 'Cliente Maria, que estava com rosácea. Pós peeling.'
     },
     {
       id: 'ext-glic-aveia', nome: 'Ext. Glic. Aveia', classe: ['Calmantes'],

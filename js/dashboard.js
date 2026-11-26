@@ -223,7 +223,7 @@
     if(lembAtivo >= lista.length) lembAtivo = 0;
     lembResultados.innerHTML = lista.length
       ? lista.map((p, i) => `<div class="appt-patient-result-item${i === lembAtivo ? ' ativo' : ''}" data-id="${escHTML(p.id)}">${escHTML(p.name)}</div>`).join('')
-      : '<div class="appt-patient-result-empty">Nenhuma paciente encontrada.</div>';
+      : '<div class="appt-patient-result-empty">Nenhuma cliente encontrada.</div>';
     lembResultados.classList.add('open');
   }
   function escolherPacienteLembrete(p){
@@ -272,7 +272,7 @@
     if(lembBusca.value.trim() && !lembId.value){
       const achadas = pacientesParaLembrete(lembBusca.value);
       if(achadas.length === 1) escolherPacienteLembrete(achadas[0]);
-      else { showToast(achadas.length ? 'Escolha a paciente na lista.' : 'Nenhuma paciente com esse nome. Apague o nome ou escolha da lista.'); lembBusca.focus(); renderBuscaPacienteLembrete(); return; }
+      else { showToast(achadas.length ? 'Escolha a cliente na lista.' : 'Nenhuma cliente com esse nome. Apague o nome ou escolha da lista.'); lembBusca.focus(); renderBuscaPacienteLembrete(); return; }
     }
     const pacienteId = document.getElementById('lembretePaciente').value || null;
     const paciente = pacienteId ? patients.find(p => String(p.id) === String(pacienteId)) : null;

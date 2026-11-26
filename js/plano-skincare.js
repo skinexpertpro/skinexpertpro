@@ -107,7 +107,7 @@
     if(!av.tipoPele && !av.baumann && !av.fototipo) faltando.push('avaliação da pele');
 
     box.innerHTML = `
-      <div class="skc-resumo-titulo">Buscando para ${escHTML(p.name || 'a paciente')}</div>
+      <div class="skc-resumo-titulo">Buscando para ${escHTML(p.name || 'a cliente')}</div>
       ${itens.length ? `<div class="skc-resumo-itens">${itens.map(i => `<span class="skc-resumo-item ${i.cls || ''}">${i.rot ? `<b>${escHTML(i.rot)}:</b>` : ''}${escHTML(i.txt)}</span>`).join('')}</div>` : ''}
       ${(gestante || lactante) ? '<div class="skc-resumo-nota">Filtro de gestante/lactante ligado: só aparecem ativos liberados para ela.</div>' : ''}
       ${faltando.length ? `<div class="skc-resumo-nota">Sem ${faltando.join(' nem ')} preenchida${faltando.length > 1 ? 's' : ''} ainda: o resumo fica mais completo quando ${faltando.length > 1 ? 'elas forem preenchidas' : 'ela for preenchida'}.</div>` : ''}
@@ -333,7 +333,7 @@
       </summary>
       <div class="historico-entry-body">
         <div class="plano-enviar">
-          <span>Enviar para a paciente ver no celular:</span>
+          <span>Enviar para a cliente ver no celular:</span>
           <button type="button" class="plano-enviar-btn" data-enviar-plano="whatsapp">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11 11 0 0 0 3.2 17.3L2 22l4.8-1.2A11 11 0 1 0 20.5 3.5zM12 20a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.7.8-2.8-.2-.3A8 8 0 1 1 12 20z"/></svg>
             WhatsApp
@@ -376,7 +376,7 @@
   // Link da página do plano para a paciente (?rotina=código): abre no celular dela, sem login.
   function linkDoPlano(plano){ return enderecoPublico() + '?rotina=' + plano.token; }
   async function enviarPlanoParaPaciente(plano, como){
-    if(!plano.token){ showToast('O link para a paciente funciona com pacientes cadastradas (não no modo demonstração).'); return; }
+    if(!plano.token){ showToast('O link para a cliente funciona com clientes cadastradas (não no modo demonstração).'); return; }
     const link = linkDoPlano(plano);
     if(como === 'copiar'){
       try{ await navigator.clipboard.writeText(link); showToast('Link do plano copiado.'); }
@@ -387,7 +387,7 @@
     const assinatura = perfilProfissional && perfilProfissional.nome ? `\n\n${perfilProfissional.nome}` : '';
     const msg = `Oi${primeiro ? ', ' + primeiro : ''}! Aqui está o seu plano de skincare, com a rotina da manhã e da noite e onde comprar cada produto:\n${link}${assinatura}`;
     const wa = linkWhatsapp(currentPatient, msg);
-    if(!wa){ try{ await navigator.clipboard.writeText(link); }catch(e){} showToast('A paciente não tem WhatsApp cadastrado. O link foi copiado.'); return; }
+    if(!wa){ try{ await navigator.clipboard.writeText(link); }catch(e){} showToast('A cliente não tem WhatsApp cadastrado. O link foi copiado.'); return; }
     window.open(wa, '_blank', 'noopener');
   }
 
@@ -430,7 +430,7 @@
     badge.textContent = planos.length + (planos.length === 1 ? ' plano' : ' planos');
 
     if(planos.length === 0){
-      list.innerHTML = '<div class="registro-card empty-state">Nenhum plano de SkinCare foi salvo ainda para esta paciente.</div>';
+      list.innerHTML = '<div class="registro-card empty-state">Nenhum plano de SkinCare foi salvo ainda para esta cliente.</div>';
       return;
     }
 
@@ -536,7 +536,7 @@
     if(pacientesNavBack) pacientesNavBack.classList.add('active');
     views.forEach(v => v.classList.remove('active'));
     document.getElementById('view-registro-paciente').classList.add('active');
-    pageTitle.textContent = 'Registro de Paciente';
+    pageTitle.textContent = 'Registro de Cliente';
     pageSubtitle.style.display = 'none';
     switchRegistroTab('historico');
   });
@@ -561,7 +561,7 @@
     if(!modalExcluirPlanoOverlay){ showToast('Atualize a página (Ctrl + Shift + R) para usar a exclusão.'); return; }
     if(!paciente || !plano || !plano.id){ showToast('Não foi possível identificar este plano.'); return; }
     excluirPlanoCtx = { plano, paciente };
-    const nome = paciente.name || 'esta paciente';
+    const nome = paciente.name || 'esta cliente';
     const titulo = plano.objetivo || 'Plano de SkinCare';
     document.getElementById('expResumo').textContent =
       `Você vai excluir o plano "${titulo}" de ${nome}, gerado em ${plano.dataGerada}${plano.duracao ? ' (acompanhamento de ' + plano.duracao + ' dias)' : ''}. ` +

@@ -17,9 +17,9 @@ const TUTORIAIS = [
     resposta: `
       <ol>
         <li>Abra a <b>Agenda</b> e clique em <b>Novo Atendimento</b>. Se preferir, clique direto num horário livre da grade.</li>
-        <li>Em <b>Paciente</b>, digite o nome. Se ela ainda não estiver cadastrada, escolha a opção para adicionar e preencha nome e telefone com o código do país.</li>
+        <li>Em <b>Cliente</b>, digite o nome. Se ela ainda não estiver cadastrada, escolha a opção para adicionar e preencha nome e telefone com o código do país.</li>
         <li>Escolha o <b>serviço</b> (pode ser mais de um), a <b>data</b>, o <b>horário</b> e a <b>duração</b>.</li>
-        <li>Se quiser, escreva uma observação. Com <b>Enviar confirmação por WhatsApp</b> marcado, o WhatsApp abre com a mensagem pronta para a paciente.</li>
+        <li>Se quiser, escreva uma observação. Com <b>Enviar confirmação por WhatsApp</b> marcado, o WhatsApp abre com a mensagem pronta para a cliente.</li>
         <li>Clique em <b>Agendar</b>.</li>
       </ol>
       <p>Para mudar só o horário depois, arraste o atendimento na grade. Para editar ou cancelar, clique nele.</p>`,
@@ -27,15 +27,15 @@ const TUTORIAIS = [
   {
     id: 'cadastrar-paciente',
     categoria: 'Primeiros passos',
-    pergunta: 'Como cadastro uma paciente?',
+    pergunta: 'Como cadastro uma cliente?',
     video: '',
     resposta: `
       <ol>
-        <li>Abra <b>Pacientes</b> e clique em <b>Novo Paciente</b>.</li>
+        <li>Abra <b>Clientes</b> e clique em <b>Nova Cliente</b>.</li>
         <li>Preencha o <b>nome completo</b> e o <b>telefone / WhatsApp</b> com o código do país. Esses dois são obrigatórios.</li>
-        <li>Se souber, informe o <b>país de residência</b> e a <b>data de nascimento</b>. O país de residência define a moeda dos preços dessa paciente.</li>
+        <li>Se souber, informe o <b>país de residência</b> e a <b>data de nascimento</b>. O país de residência define a moeda dos preços dessa cliente.</li>
       </ol>
-      <p>Depois é só abrir a ficha para completar os dados e preencher a anamnese. Também dá para cadastrar a paciente na hora de marcar, pelo próprio Novo Atendimento.</p>`,
+      <p>Depois é só abrir a ficha para completar os dados e preencher a anamnese. Também dá para cadastrar a cliente na hora de marcar, pelo próprio Novo Atendimento.</p>`,
   },
   {
     id: 'horarios-atendimento',
@@ -187,7 +187,7 @@ const TUTORIAIS = [
     video: '',
     resposta: `
       <ol>
-        <li>Abra a ficha da paciente, na aba <b>Dados</b>, e clique em <b>Indicar para colega</b>.</li>
+        <li>Abra a ficha da cliente, na aba <b>Dados</b>, e clique em <b>Indicar para colega</b>.</li>
         <li>Escolha a colega (do seu estúdio ou das suas conexões).</li>
         <li>Confirme que a cliente <b>autorizou</b> passar os dados dela. O app guarda a data dessa confirmação.</li>
         <li>Clique em <b>Indicar</b>.</li>

@@ -41,7 +41,7 @@
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3v2h6V3"/></svg>
           </div>
           <div>
-            <div class="historico-entry-title">${a.token ? 'Anamnese respondida pela paciente' : 'Anamnese preenchida pela profissional'}</div>
+            <div class="historico-entry-title">${a.token ? 'Anamnese respondida pela cliente' : 'Anamnese preenchida pela profissional'}</div>
             <div class="historico-entry-date">${dataFormatada}</div>
           </div>
           <div class="historico-entry-spacer"></div>
@@ -53,11 +53,11 @@
         </summary>
         <div class="historico-entry-body">
           ${a.confirmada_em
-            ? `<div class="consentimento-registro">✓ Conferida e confirmada pela paciente em ${new Date(a.confirmada_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · consentimento ${escHTML(a.consentimento_versao || '')}</div>`
+            ? `<div class="consentimento-registro">✓ Conferida e confirmada pela cliente em ${new Date(a.confirmada_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · consentimento ${escHTML(a.consentimento_versao || '')}</div>`
             : a.consentimento_em
-            ? `<div class="consentimento-registro">✓ Consentimento aceito pela paciente em ${new Date(a.consentimento_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${escHTML(a.consentimento_versao || '')}</div>`
+            ? `<div class="consentimento-registro">✓ Consentimento aceito pela cliente em ${new Date(a.consentimento_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${escHTML(a.consentimento_versao || '')}</div>`
             : a.confirmacao_token
-            ? `<div class="consentimento-registro falta">Aguardando a paciente conferir e confirmar. <button type="button" class="fin-btn-mini" data-reenviar-conf="${escHTML(a.confirmacao_token)}" style="margin-left:6px;">Enviar link pelo WhatsApp</button></div>`
+            ? `<div class="consentimento-registro falta">Aguardando a cliente conferir e confirmar. <button type="button" class="fin-btn-mini" data-reenviar-conf="${escHTML(a.confirmacao_token)}" style="margin-left:6px;">Enviar link pelo WhatsApp</button></div>`
             : '<div class="consentimento-registro falta">Sem consentimento registrado (anamnese anterior a esta função).</div>'}
           <div class="toggle-subtitle">Anamnese Sistêmica</div>
           <div class="rotina-summary-item">Medicamentos: ${sist.medicamentos || '—'}</div>
@@ -583,7 +583,7 @@
     if(pacientesNavBack) pacientesNavBack.classList.add('active');
     views.forEach(v => v.classList.remove('active'));
     document.getElementById('view-registro-paciente').classList.add('active');
-    pageTitle.textContent = 'Registro de Paciente';
+    pageTitle.textContent = 'Registro de Cliente';
     pageSubtitle.style.display = 'none';
     switchRegistroTab('recomendacoes');
   });
@@ -656,7 +656,7 @@
       lista.forEach(a => {
         const dt = new Date(a.respondida_em);
         const dataFormatada = `${pad(dt.getDate())}/${pad(dt.getMonth()+1)}`;
-        const nome = a.pacientes ? a.pacientes.nome : ((patients.find(x => String(x.id) === String(a.paciente_id)) || {}).name || 'Paciente');
+        const nome = a.pacientes ? a.pacientes.nome : ((patients.find(x => String(x.id) === String(a.paciente_id)) || {}).name || 'Cliente');
         const item = document.createElement('div');
         item.className = 'produtos-com-ativo-item';
         item.innerHTML = `

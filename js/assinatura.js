@@ -135,12 +135,12 @@
     };
     document.getElementById('tpCartoes').innerHTML =
       cartao('essencial', false, 'Para quem atende sozinha.', [
-        'Pacientes, anamnese e avaliação cutânea', 'Planos de SkinCare com PDF para a paciente', 'Agenda com Google Agenda',
+        'Clientes, anamnese e avaliação cutânea', 'Planos de SkinCare com PDF para a cliente', 'Agenda com Google Agenda',
         'Comandas, pacotes e financeiro', 'Termos de consentimento com assinatura digital', 'Até 2 conexões com colegas',
       ]) +
       cartao('studio', true, 'Para quem divide o espaço com até 3 profissionais.', [
         'Tudo do Essencial', 'Estúdio com até 3 profissionais', 'Agenda com uma coluna por profissional',
-        'Salas compartilhadas ou separadas', 'Pacientes e financeiro de cada uma, sempre privados', 'Uma assinatura para o estúdio',
+        'Salas compartilhadas ou separadas', 'Clientes e financeiro de cada uma, sempre privados', 'Uma assinatura para o estúdio',
       ]) +
       `<div class="tp-cartao tp-embreve"><h2>Expert</h2><p class="tp-desc">O mais completo, com área educacional.</p><div class="tp-preco tp-preco-breve">Em breve</div></div>`;
     document.querySelectorAll('#tpCartoes [data-assinar]').forEach(b => b.addEventListener('click', () => irParaPagamento(b.dataset.assinar)));

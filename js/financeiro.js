@@ -176,10 +176,10 @@
     return c;
   }
   let comandasData = [
-    comandaExemplo('#0001', '2026-08-13', 'Paciente Teste 1', [{ nome: 'Limpeza de Pele Profunda', preco: 150, origem: 'servico' }, { nome: 'Peeling de Diamante', preco: 130, origem: 'servico' }], [{ id: 'p1', data: '2026-08-13', forma: 'Cartão de Crédito', valor: 280 }]),
-    comandaExemplo('#0002', '2026-08-13', 'Paciente Teste 4', [{ nome: 'Limpeza de Pele Profunda', preco: 150, origem: 'servico' }], []),
-    comandaExemplo('#0003', '2026-08-12', 'Paciente Teste 3', [{ nome: 'Drenagem Linfática', preco: 120, origem: 'servico' }, { nome: 'Protetor solar', preco: 300, origem: 'extra' }], [{ id: 'p2', data: '2026-08-12', forma: 'Pix', valor: 420 }]),
-    comandaExemplo('#0004', '2026-08-11', 'Paciente Teste 5', [{ nome: 'Massagem Relaxante', preco: 99.9, origem: 'servico' }], [{ id: 'p3', data: '2026-08-11', forma: 'Dinheiro', valor: 99.9 }]),
+    comandaExemplo('#0001', '2026-08-13', 'Cliente Teste 1', [{ nome: 'Limpeza de Pele Profunda', preco: 150, origem: 'servico' }, { nome: 'Peeling de Diamante', preco: 130, origem: 'servico' }], [{ id: 'p1', data: '2026-08-13', forma: 'Cartão de Crédito', valor: 280 }]),
+    comandaExemplo('#0002', '2026-08-13', 'Cliente Teste 4', [{ nome: 'Limpeza de Pele Profunda', preco: 150, origem: 'servico' }], []),
+    comandaExemplo('#0003', '2026-08-12', 'Cliente Teste 3', [{ nome: 'Drenagem Linfática', preco: 120, origem: 'servico' }, { nome: 'Protetor solar', preco: 300, origem: 'extra' }], [{ id: 'p2', data: '2026-08-12', forma: 'Pix', valor: 420 }]),
+    comandaExemplo('#0004', '2026-08-11', 'Cliente Teste 5', [{ nome: 'Massagem Relaxante', preco: 99.9, origem: 'servico' }], [{ id: 'p3', data: '2026-08-11', forma: 'Dinheiro', valor: 99.9 }]),
   ];
 
   // Desconto { tipo: 'percent' | 'valor', valor } sobre um subtotal. Nunca passa do subtotal.
@@ -437,7 +437,7 @@
         row.querySelector('button').addEventListener('click', async () => {
           if(vendaPacote){
             const pp = pacotePorId(it.pacotePacienteId);
-            if(pp && !confirm(`Tirar o pacote "${pp.nome}" da comanda? As sessões dele deixam de existir no saldo da paciente.`)) return;
+            if(pp && !confirm(`Tirar o pacote "${pp.nome}" da comanda? As sessões dele deixam de existir no saldo da cliente.`)) return;
             if(pp && !await desfazerVendaPacote(pp)) return;
           }
           c.itens.splice(i, 1);
@@ -754,7 +754,7 @@
     // Serviço que a paciente tem no pacote: a sessão fica reservada e entra com valor zero
     const { itens, usados } = await itensDoAtendimento({ servicoNome, pacienteId, dataISO: key, agendamentoId });
     const nova = recalcularComanda({
-      id: null, codigo: proximoCodigoComanda(), dataISO: key, cliente: cliente || 'Paciente sem nome',
+      id: null, codigo: proximoCodigoComanda(), dataISO: key, cliente: cliente || 'Cliente sem nome',
       itens, pagamentos: [], status: 'Em Aberto',
       agendamentoId, pacienteId, moeda: moedaPreferidaAtual(),
     });
@@ -793,7 +793,7 @@
       for(const { key, a } of faltando){ // inclui os marcados pelo link de agendamento: também usam o pacote
         const { itens } = await itensDoAtendimento({ servicoNome: a.servico, pacienteId: a.pacienteId, dataISO: key, agendamentoId: a.id });
         novas.push(recalcularComanda({
-          id: null, codigo: '#' + String(proximo++).padStart(4, '0'), dataISO: key, cliente: a.label || 'Paciente sem nome',
+          id: null, codigo: '#' + String(proximo++).padStart(4, '0'), dataISO: key, cliente: a.label || 'Cliente sem nome',
           itens, pagamentos: [], status: 'Em Aberto', agendamentoId: a.id,
           pacienteId: a.pacienteId, moeda: moedaPreferidaAtual(),
         }));
@@ -846,7 +846,7 @@
       if(error) console.warn('Comanda não inativada:', error.message);
     }
     if(c){ c.status = 'Inativa'; recalcularComanda(c); renderComandas(); }
-    if(devolvidas) showToast(`${devolvidas === 1 ? 'A sessão voltou' : devolvidas + ' sessões voltaram'} para o pacote da paciente.`);
+    if(devolvidas) showToast(`${devolvidas === 1 ? 'A sessão voltou' : devolvidas + ' sessões voltaram'} para o pacote da cliente.`);
   }
 
   async function apagarComandaDoAgendamento(agendamentoId){
@@ -1021,7 +1021,7 @@
       if(error){ console.warn('Comandas:', error.message); comandasData = []; renderComandas(); return; }
       comandasData = (data || []).map(comandaDoBanco);
       // saldos de pacote antes de liberar a criação automática de comandas da agenda
-      try{ await carregarPacotesPaciente(); }catch(e){ console.warn('Pacotes da paciente:', e); }
+      try{ await carregarPacotesPaciente(); }catch(e){ console.warn('Pacotes da cliente:', e); }
       comandasCarregadasOk = true;
       renderComandas();
     } catch(e){ console.warn('Comandas:', e); }
@@ -1042,9 +1042,9 @@
              pago: m.pago, forma: m.forma || null, moeda: moedaPreferidaAtual() };
   }
   let controleData = [
-    { id: idLocal(), dataISO: '2026-08-13', descricao: 'Comanda #0001 — Paciente Teste 1', categoria: 'Atendimento', valor: 280, tipo: 'receita', pago: true, forma: 'Cartão de Crédito' },
-    { id: idLocal(), dataISO: '2026-08-12', descricao: 'Comanda #0003 — Paciente Teste 3', categoria: 'Atendimento', valor: 420, tipo: 'receita', pago: true, forma: 'Pix' },
-    { id: idLocal(), dataISO: '2026-08-11', descricao: 'Comanda #0004 — Paciente Teste 5', categoria: 'Atendimento', valor: 99.9, tipo: 'receita', pago: true, forma: 'Dinheiro' },
+    { id: idLocal(), dataISO: '2026-08-13', descricao: 'Comanda #0001 — Cliente Teste 1', categoria: 'Atendimento', valor: 280, tipo: 'receita', pago: true, forma: 'Cartão de Crédito' },
+    { id: idLocal(), dataISO: '2026-08-12', descricao: 'Comanda #0003 — Cliente Teste 3', categoria: 'Atendimento', valor: 420, tipo: 'receita', pago: true, forma: 'Pix' },
+    { id: idLocal(), dataISO: '2026-08-11', descricao: 'Comanda #0004 — Cliente Teste 5', categoria: 'Atendimento', valor: 99.9, tipo: 'receita', pago: true, forma: 'Dinheiro' },
     { id: idLocal(), dataISO: '2026-08-10', descricao: 'Compra de insumos', categoria: 'Estoque / Insumos', valor: 320, tipo: 'despesa', pago: true, forma: 'Pix' },
     { id: idLocal(), dataISO: '2026-08-08', descricao: 'Assinatura Skin Expert Pro', categoria: 'Assinaturas', valor: 97, tipo: 'despesa', pago: true, forma: 'Cartão de Crédito' },
   ];
@@ -1242,7 +1242,7 @@
   let contasData = [
     { id: idLocal(), vencISO: '2026-08-15', categoria: 'Aluguel', descricao: 'Aluguel da sala', valor: 1200, tipo: 'pagar', forma: '', recorrencia: 'Mensal', pago: false },
     { id: idLocal(), vencISO: '2026-08-10', categoria: 'Estoque / Insumos', descricao: 'Compra de insumos', valor: 680, tipo: 'pagar', forma: 'Pix', recorrencia: 'Não', pago: true, pagoEm: '2026-08-10' },
-    { id: idLocal(), vencISO: '2026-08-20', categoria: 'Atendimento', descricao: 'Pacote de 5 sessões — Paciente Teste 2 (2ª parcela)', valor: 250, tipo: 'receber', forma: 'Pix', recorrencia: 'Não', pago: false },
+    { id: idLocal(), vencISO: '2026-08-20', categoria: 'Atendimento', descricao: 'Pacote de 5 sessões — Cliente Teste 2 (2ª parcela)', valor: 250, tipo: 'receber', forma: 'Pix', recorrencia: 'Não', pago: false },
   ];
 
   function contasFiltradas(){

@@ -35,7 +35,7 @@
     }) || null;
   }
   function mensagemConflito(key, a){
-    const oque = a.type === 'block' ? `um bloqueio (${a.label || 'Horário bloqueado'})` : `o atendimento de ${a.label || 'outra paciente'}`;
+    const oque = a.type === 'block' ? `um bloqueio (${a.label || 'Horário bloqueado'})` : `o atendimento de ${a.label || 'outra cliente'}`;
     return `Horário ocupado: em ${formatarDataBR(key)} já existe ${oque} das ${a.time} às ${horaFim(a.time, parseInt(a.duration, 10) || 60)}. Escolha outro horário.`;
   }
   // Avisa se já existem horários com dois agendamentos (feitos antes desta regra), de hoje em diante.
@@ -292,7 +292,7 @@
     const tag = document.getElementById('apptDetTag');
     tag.textContent = isBlock ? 'Horário bloqueado' : 'Atendimento';
     tag.classList.toggle('block', isBlock);
-    document.getElementById('apptDetNome').textContent = isBlock ? (item.label || 'Horário bloqueado') : (item.label || 'Paciente sem nome');
+    document.getElementById('apptDetNome').textContent = isBlock ? (item.label || 'Horário bloqueado') : (item.label || 'Cliente sem nome');
     document.getElementById('apptDetServico').textContent = isBlock
       ? 'Horário indisponível para agendamentos'
       : (item.servico || 'Serviço não informado');
@@ -334,7 +334,7 @@
     if(!apptDetAtual) return;
     const { key, item } = apptDetAtual;
     const paciente = pacienteDoItem(item);
-    if(!paciente || !numeroWhatsappDaPaciente(paciente)){ showToast('Esta paciente não tem telefone cadastrado para o WhatsApp.'); return; }
+    if(!paciente || !numeroWhatsappDaPaciente(paciente)){ showToast('Esta cliente não tem telefone cadastrado para o WhatsApp.'); return; }
     const hojeK = dateKey(today), amanhaK = addDiasKey(hojeK, 1);
     const modelo = key < hojeK ? 'pos' : key === amanhaK ? 'lembrete' : 'confirmacao';
     fecharDetalhesAtendimento();
@@ -454,17 +454,17 @@
   const appointments = {};
   const sampleAppt = new Date(viewYear, viewMonth, Math.min(15, new Date(viewYear, viewMonth+1,0).getDate()));
   const sampleBlock = new Date(viewYear, viewMonth, Math.min(29, new Date(viewYear, viewMonth+1,0).getDate()));
-  appointments[dateKey(sampleAppt)] = [{ id:1, time:'09:00', duration:60, label:'Paciente Teste 1', servico:'Limpeza de Pele', type:'appt', observacoes:'Pele sensível na região das bochechas — evitar extração agressiva.' }];
+  appointments[dateKey(sampleAppt)] = [{ id:1, time:'09:00', duration:60, label:'Cliente Teste 1', servico:'Limpeza de Pele', type:'appt', observacoes:'Pele sensível na região das bochechas — evitar extração agressiva.' }];
   // Exemplos para os lembretes automáticos no modo demonstração: um atendimento há 2 dias
   // (gera "pós-atendimento") e uma paciente que não vem há 70 dias (gera "paciente sumida").
-  [[2, 'Paciente Teste 3', 'Limpeza de Pele Profunda', 201], [70, 'Paciente Teste 5', 'Drenagem Linfática', 202]].forEach(([diasAtras, nome, serv, id]) => {
+  [[2, 'Cliente Teste 3', 'Limpeza de Pele Profunda', 201], [70, 'Cliente Teste 5', 'Drenagem Linfática', 202]].forEach(([diasAtras, nome, serv, id]) => {
     const d = new Date(today); d.setDate(d.getDate() - diasAtras);
     (appointments[dateKey(d)] = appointments[dateKey(d)] || []).push({ id, time:'15:00', duration:60, label:nome, servico:serv, type:'appt', observacoes:'' });
   });
   // Visitas anteriores de exemplo, para o painel de detalhes mostrar a recorrência no modo demonstração.
   [56, 28].forEach((diasAntes, i) => {
     const d = new Date(sampleAppt); d.setDate(d.getDate() - diasAntes);
-    (appointments[dateKey(d)] = appointments[dateKey(d)] || []).push({ id: 100 + i, time:'10:00', duration:60, label:'Paciente Teste 1', servico: i === 0 ? 'Drenagem Linfática' : 'Limpeza de Pele', type:'appt', observacoes:'' });
+    (appointments[dateKey(d)] = appointments[dateKey(d)] || []).push({ id: 100 + i, time:'10:00', duration:60, label:'Cliente Teste 1', servico: i === 0 ? 'Drenagem Linfática' : 'Limpeza de Pele', type:'appt', observacoes:'' });
   });
   appointments[dateKey(sampleBlock)] = [{ id:2, time:'12:00', duration:120, label:'Almoço', type:'block' }];
 
@@ -861,7 +861,7 @@
   async function criarPaciente({ nome, codigo, numero, pais, nascimento }){
     const duplicada = encontrarPacienteDuplicado(nome, numero);
     if(duplicada){
-      showToast('Já existe uma paciente cadastrada com esse nome e telefone: ' + duplicada.name);
+      showToast('Já existe uma cliente cadastrada com esse nome e telefone: ' + duplicada.name);
       return null;
     }
     const usuario = await usuarioParaSalvar();
@@ -871,7 +871,7 @@
         .insert({ profissional_id: usuario.id, nome: nome.trim(), status: 'Ativo', telefone_codigo: codigo, telefone_numero: numero.trim(),
                   pais: pais || null, data_nascimento: nascimento || null })
         .select().single();
-      if(error){ showToast('Erro ao criar paciente: ' + error.message); return null; }
+      if(error){ showToast('Erro ao criar cliente: ' + error.message); return null; }
       await loadPacientesFromSupabase();
       return patients.find(p => String(p.id) === String(data.id)) || null;
     }
@@ -898,9 +898,9 @@
 
     let html = filtrados.length > 0
       ? filtrados.map(p => `<div class="appt-patient-result-item" data-id="${p.id}">${p.name}</div>`).join('')
-      : `<div class="appt-patient-result-empty">Nenhuma paciente encontrada.</div>`;
+      : `<div class="appt-patient-result-empty">Nenhuma cliente encontrada.</div>`;
     if(!nomeExato){
-      html += `<div class="appt-patient-result-add" data-novo="1">+ Adicionar nova paciente "${termoRaw}"</div>`;
+      html += `<div class="appt-patient-result-add" data-novo="1">+ Adicionar nova cliente "${termoRaw}"</div>`;
     }
 
     apptPatientResults.innerHTML = html;
@@ -930,7 +930,7 @@
       const criada = await abrirNovaPaciente(nome);
       if(criada){
         selecionarPacienteNoModal(criada);
-        showToast('Paciente "' + criada.name + '" adicionada com sucesso!');
+        showToast('Cliente "' + criada.name + '" adicionada com sucesso!');
       }
     }
   });
@@ -1095,7 +1095,7 @@
     document.getElementById('modalObsField').style.display = mode === 'appt' ? 'block' : 'none';
     if(mode === 'appt'){
       modalTitle.textContent = 'Novo Atendimento';
-      modalPatientLabel.textContent = 'Paciente';
+      modalPatientLabel.textContent = 'Cliente';
       apptPatient.style.display = 'none';
       apptPatientSearchWrap.style.display = 'block';
       modalServiceField.style.display = 'block';
@@ -1168,7 +1168,7 @@
     } else {
       const sel = patients.find(p => String(p.id) === String(apptPatientSelect.value));
       if(sel){ pacienteId = sel.id; label = sel.name; }
-      else if(apptPatientSearch.value.trim() !== (item.label || '')){ showToast('Selecione uma paciente da lista.'); return; }
+      else if(apptPatientSearch.value.trim() !== (item.label || '')){ showToast('Selecione uma cliente da lista.'); return; }
       const servicos = getServicosSelecionados();
       servicoNome = servicos.length ? servicos.join(', ') : null;
       observacoes = document.getElementById('apptObs').value.trim();
@@ -1329,7 +1329,7 @@
     }
     const textoConf = msgDoModelo('confirmacao', { paciente: r.paciente, key: r.key, hora: r.hora, servico: r.servicos }) || mensagemConfirmacaoWhatsapp(r.paciente.name, r.key, r.hora, r.servicos);
     const url = linkWhatsapp(r.paciente, textoConf);
-    if(!url){ showToast('Atendimento agendado! Esta paciente não tem telefone cadastrado para o WhatsApp.'); return; }
+    if(!url){ showToast('Atendimento agendado! Esta cliente não tem telefone cadastrado para o WhatsApp.'); return; }
     if(janela){ janela.location.href = url; try{ registrarEnvio(r.paciente, 'confirmacao', textoConf); }catch(e){} showToast('Atendimento agendado! Confira e envie a mensagem no WhatsApp.'); }
     else showToast('Atendimento agendado! Para enviar a confirmação, abra o atendimento e toque em "WhatsApp".');
   });
@@ -1349,7 +1349,7 @@
     if(usuarioLogado && modalMode === 'appt'){
       const pacienteId = apptPatientSelect.value;
       const pacienteSelecionado = patients.find(p => String(p.id) === String(pacienteId));
-      if(!pacienteSelecionado){ showToast('Selecione uma paciente.'); return; }
+      if(!pacienteSelecionado){ showToast('Selecione uma cliente.'); return; }
       const servicosSelecionados = getServicosSelecionados();
       const servicoNome = servicosSelecionados.length ? servicosSelecionados.join(', ') : null;
       const observacoes = document.getElementById('apptObs').value.trim() || null;
@@ -1442,12 +1442,12 @@
 
     // Modo demonstração (sem sessão real): mantém o comportamento local, sem Supabase
     if(modalMode === 'appt' && !patients.find(p => String(p.id) === String(apptPatientSelect.value))){
-      showToast('Selecione uma paciente.');
+      showToast('Selecione uma cliente.');
       return;
     }
     const pacienteDemoObj = modalMode === 'appt' ? patients.find(p => String(p.id) === String(apptPatientSelect.value)) : null;
     const pacienteDemo = modalMode === 'appt'
-      ? (pacienteDemoObj?.name || 'Paciente sem nome')
+      ? (pacienteDemoObj?.name || 'Cliente sem nome')
       : (apptPatient.value.trim() || 'Horário bloqueado');
     const idDemo = Date.now();
     if(modalMode === 'appt'){
@@ -1508,7 +1508,7 @@
   function completarNomesAgenda(){
     let mudou = false;
     Object.keys(appointments).forEach(k => (appointments[k] || []).forEach(a => {
-      if(a.type === 'appt' && a.pacienteId != null && (!a.label || a.label === 'Paciente sem nome')){
+      if(a.type === 'appt' && a.pacienteId != null && (!a.label || a.label === 'Cliente sem nome' || a.label === 'Paciente sem nome')){
         const p = patients.find(pp => String(pp.id) === String(a.pacienteId));
         if(p && p.name){ a.label = p.name; mudou = true; }
       }
@@ -1558,7 +1558,7 @@
           time: (row.hora || '00:00:00').slice(0,5),
           duration: parseInt(row.duracao_min || row.duracao_minutos, 10) || 60,
           label: row.tipo === 'block' ? (row.motivo || row.observacoes || 'Horário bloqueado')
-            : (row.pacientes?.nome || (patients.find(pp => String(pp.id) === String(row.paciente_id)) || {}).name || 'Paciente sem nome'),
+            : (row.pacientes?.nome || (patients.find(pp => String(pp.id) === String(row.paciente_id)) || {}).name || 'Cliente sem nome'),
           servico: row.servico_nome || null,
           type: row.tipo === 'block' ? 'block' : 'appt',
           pacienteId: row.paciente_id || null,

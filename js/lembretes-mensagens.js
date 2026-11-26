@@ -39,7 +39,7 @@
       const temFuturo = hist.some(h => h.key >= hojeKey);
       if(!passados.length) return;
       const ultimo = passados[passados.length - 1];
-      const nome = ultimo.item.label || 'Paciente';
+      const nome = ultimo.item.label || 'Cliente';
       const paciente = pacienteDoItem(ultimo.item);
       const servico = ultimo.item.servico || '';
       const diasDesde = diasEntre(ultimo.key, hojeKey);
@@ -60,7 +60,7 @@
       // 3) Paciente sumida
       if(diasDesde >= LEMB_SUMIDA_DIAS && diasDesde <= LEMB_SUMIDA_LIMITE){
         lista.push({
-          id: 'sumida:' + chave + ':' + ultimo.key, tipo:'sumida', tipoLabel:'Paciente sumida', data: addDiasKey(ultimo.key, LEMB_SUMIDA_DIAS),
+          id: 'sumida:' + chave + ':' + ultimo.key, tipo:'sumida', tipoLabel:'Cliente sumida', data: addDiasKey(ultimo.key, LEMB_SUMIDA_DIAS),
           paciente, pacienteNome: nome,
           texto: `Não vem há ${descreverIntervalo(diasDesde).replace('há ', '')} (última visita em ${formatarDataBR(ultimo.key)}) e não tem nada marcado.`,
           ctx: { key: ultimo.key, servico },
@@ -96,7 +96,7 @@
       const ctx = { key: amanhaKey, hora: a.time, servico: a.servico };
       lista.push({
         id: 'vespera:' + a.id + ':' + amanhaKey, tipo: 'vespera', tipoLabel: 'Confirmar amanhã', data: hojeKey,
-        paciente, pacienteNome: a.label || (paciente && paciente.name) || 'Paciente', ctx, modelo: 'lembrete',
+        paciente, pacienteNome: a.label || (paciente && paciente.name) || 'Cliente', ctx, modelo: 'lembrete',
         texto: `Atendimento amanhã às ${a.time}${a.servico ? ' · ' + a.servico : ''}. Confirmar a presença.`,
         msg: msgDoModelo('lembrete', { paciente: paciente || { name: a.label }, ...ctx }),
       });
@@ -180,7 +180,7 @@
     { id: 'lembrete',    titulo: 'Lembrete (véspera)',         texto: 'Oi, {nome}! Passando para lembrar do seu horário de {servico} amanhã, {dia}, às {hora}. Posso confirmar sua presença? 💕\n\n{profissional}' },
     { id: 'pos',         titulo: 'Pós-atendimento',            texto: 'Oi, {nome}! Tudo bem? Passando para saber como a sua pele reagiu à sessão de {servico} do dia {data}. Se notar qualquer vermelhidão ou tiver alguma dúvida, é só me chamar por aqui 💕' },
     { id: 'retorno',     titulo: 'Hora do retorno',            texto: 'Oi, {nome}! Já está na época do seu retorno de {servico}. Quer que eu reserve um horário para você esta semana?' },
-    { id: 'sumida',      titulo: 'Paciente sumida',            texto: 'Oi, {nome}! Senti sua falta por aqui 💕 Que tal agendarmos um cuidado para a sua pele? Tenho horários disponíveis esta semana.' },
+    { id: 'sumida',      titulo: 'Cliente sumida',            texto: 'Oi, {nome}! Senti sua falta por aqui 💕 Que tal agendarmos um cuidado para a sua pele? Tenho horários disponíveis esta semana.' },
     { id: 'aniversario', titulo: 'Aniversário',                texto: 'Feliz aniversário, {nome}! 🎉 Desejo um novo ciclo cheio de saúde, alegria e muito autocuidado. Obrigada por confiar no meu trabalho!\n\nCom carinho, {profissional}' },
     { id: 'confirmar_anamnese', titulo: 'Confirmar anamnese', texto: 'Olá, {nome}! 😊 Preenchemos juntas a sua ficha de anamnese. Por favor, confira as informações e confirme neste link:\n{link}\n\nSe algo estiver errado, é só me avisar por aqui.\n\n{profissional}' },
     { id: 'boasvindas',  titulo: 'Boas-vindas',                texto: 'Olá, {nome}! Seja muito bem-vinda 💕 Fico feliz em cuidar da sua pele. Qualquer dúvida antes do seu atendimento, é só me chamar por aqui.\n\n{profissional}' },
@@ -249,7 +249,7 @@
     document.getElementById('msgTexto').value = preencherModelo(m.texto, msgCtx || {});
     const p = msgCtx && msgCtx.paciente;
     const num = p ? numeroWhatsappDaPaciente(p) : '';
-    document.getElementById('msgPara').textContent = p ? (num ? `Para ${p.name} · +${num}` : `${p.name} não tem telefone cadastrado — ajuste na aba Dados da paciente.`) : '';
+    document.getElementById('msgPara').textContent = p ? (num ? `Para ${p.name} · +${num}` : `${p.name} não tem telefone cadastrado — ajuste na aba Dados da cliente.`) : '';
   }
   // ctx: { paciente?, key?, hora?, servico?, modelo? }
   function abrirEnvioMensagem(ctx){
@@ -276,11 +276,11 @@
   document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modalMsgOverlay.classList.contains('open')) fecharEnvioMensagem(); });
   document.getElementById('msgEnviar').addEventListener('click', () => {
     const p = msgCtx && msgCtx.paciente;
-    if(!p){ showToast('Escolha a paciente.'); document.getElementById('msgPaciente').focus(); return; }
+    if(!p){ showToast('Escolha a cliente.'); document.getElementById('msgPaciente').focus(); return; }
     const texto = document.getElementById('msgTexto').value.trim();
     if(!texto){ showToast('A mensagem está vazia.'); return; }
     const url = linkWhatsapp(p, texto);
-    if(!url){ showToast('Esta paciente não tem telefone cadastrado para o WhatsApp.'); return; }
+    if(!url){ showToast('Esta cliente não tem telefone cadastrado para o WhatsApp.'); return; }
     window.open(url, '_blank', 'noopener');
     registrarEnvio(p, document.getElementById('msgModelo').value, texto);
     fecharEnvioMensagem();
@@ -299,7 +299,7 @@
   function itensParaEnviarHoje(){
     // Mesma lista do painel (Dashboard): o que vence até hoje e não foi concluído
     const hojeKey = dateKey(today);
-    const grupos = { vespera: 'Lembretes de amanhã', aniversario: 'Aniversariantes de hoje', pos: 'Pós-atendimento', retorno: 'Hora do retorno', sumida: 'Pacientes sumidas' };
+    const grupos = { vespera: 'Lembretes de amanhã', aniversario: 'Aniversariantes de hoje', pos: 'Pós-atendimento', retorno: 'Hora do retorno', sumida: 'Clientes sumidas' };
     const ordem = ['vespera', 'aniversario', 'pos', 'retorno', 'sumida'];
     return todosLembretes()
       .filter(l => l.data <= hojeKey && l.paciente && grupos[l.tipo])
@@ -315,7 +315,7 @@
     const pendentes = itens.filter(i => !jaEnviadoHoje(i.paciente, i.modelo)).length;
     document.getElementById('msgContadorHoje').textContent = pendentes ? String(pendentes) : '';
     const lista = document.getElementById('msgHojeLista');
-    lista.innerHTML = itens.length ? '' : '<div class="msg-vazio">Nada para enviar hoje. Lembretes de amanhã, aniversariantes, pós-atendimento e pacientes sumidas aparecem aqui sozinhos.</div>';
+    lista.innerHTML = itens.length ? '' : '<div class="msg-vazio">Nada para enviar hoje. Lembretes de amanhã, aniversariantes, pós-atendimento e clientes sumidas aparecem aqui sozinhos.</div>';
     let grupoAtual = '';
     itens.forEach(i => {
       if(i.grupo !== grupoAtual){ grupoAtual = i.grupo; const g = document.createElement('div'); g.className = 'msg-grupo'; g.textContent = i.grupo; lista.appendChild(g); }
@@ -381,7 +381,7 @@
           const acao = b.dataset.acao;
           if(acao === 'previa'){
             const exemplo = { paciente: { name: 'Ana Souza' }, key: dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)), hora: '10:00', servico: 'Limpeza de Pele' };
-            alert('Exemplo de como a paciente recebe:\n\n' + preencherModelo(area ? area.value : m.texto, { ...exemplo, link: exemploModelo.link }));
+            alert('Exemplo de como a cliente recebe:\n\n' + preencherModelo(area ? area.value : m.texto, { ...exemplo, link: exemploModelo.link }));
           } else if(acao === 'editar'){
             modeloEmEdicao = m.id; redesenhar();
             const a2 = box.querySelector('.msg-modelo.editando textarea');
@@ -436,7 +436,7 @@
       <div class="msg-paciente-nota">Registradas quando você abre o WhatsApp pelo app.</div>`;
     const alvo = card.querySelector('.msg-paciente-lista');
     if(!lista.length){
-      alvo.innerHTML = '<div class="msg-vazio">Nenhuma mensagem enviada para esta paciente ainda.</div>';
+      alvo.innerHTML = '<div class="msg-vazio">Nenhuma mensagem enviada para esta cliente ainda.</div>';
     }
     lista.forEach(h => {
       const dt = new Date(h.em);

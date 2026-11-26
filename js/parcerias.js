@@ -380,7 +380,7 @@
         // A lista de pacientes foi carregada antes da indicação: recarrega para ela aparecer.
         try{ if(typeof loadPacientesFromSupabase === 'function') await loadPacientesFromSupabase(); }catch(e){}
         const de = [...new Set(novas.map(n => primeiroNome(n.de_nome)))].join(' e ');
-        showToast(novas.length === 1 ? `${de} te indicou uma cliente. Ela já está na sua lista de pacientes.` : `${de} te indicaram ${novas.length} clientes. Elas já estão na sua lista de pacientes.`);
+        showToast(novas.length === 1 ? `${de} te indicou uma cliente. Ela já está na sua lista de clientes.` : `${de} te indicaram ${novas.length} clientes. Elas já estão na sua lista de clientes.`);
         rpc('marcar_indicacoes_vistas').catch(() => {});
       }
       etiquetarLista();
