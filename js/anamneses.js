@@ -30,7 +30,7 @@
       const sist = a.sistemica || {};
       const ev = a.estilo_vida || {};
       const sk = a.skincare || {};
-      const autoList = (a.autopercepcao || []).map(t => `<div class="rotina-summary-item">${t}</div>`).join('')
+      const autoList = (a.autopercepcao || []).map(t => `<div class="rotina-summary-item">${escHTML(t)}</div>`).join('')
         || '<div class="rotina-summary-item" style="color:var(--text-muted);">Nenhum item marcado.</div>';
 
       const details = document.createElement('details');
@@ -60,36 +60,36 @@
             ? `<div class="consentimento-registro falta">Aguardando a cliente conferir e confirmar. <button type="button" class="fin-btn-mini" data-reenviar-conf="${escHTML(a.confirmacao_token)}" style="margin-left:6px;">Enviar link pelo WhatsApp</button></div>`
             : '<div class="consentimento-registro falta">Sem consentimento registrado (anamnese anterior a esta função).</div>'}
           <div class="toggle-subtitle">Anamnese Sistêmica</div>
-          <div class="rotina-summary-item">Medicamentos: ${sist.medicamentos || '—'}</div>
-          <div class="rotina-summary-item">Alergias: ${sist.alergias || '—'}${sist.alergia_tipo ? ' — Tipo: ' + sist.alergia_tipo : ''}</div>
-          <div class="rotina-summary-item">Gestante: ${sist.gestante || '—'} · Lactante: ${sist.lactante || '—'}</div>
-          <div class="rotina-summary-item">Diabética: ${sist.diabetica || '—'}${sist.diabetica_tipo ? ' (' + sist.diabetica_tipo + ')' : ''} · Tireoide: ${sist.tireoide || '—'}${sist.tireoide_tipo ? ' (' + sist.tireoide_tipo + ')' : ''}</div>
-          <div class="rotina-summary-item">Hipertensão: ${sist.hipertensao || '—'} · Hipotensão: ${sist.hipotensao || '—'}</div>
-          <div class="rotina-summary-item">Cardiopatologia: ${sist.cardiopatologia || '—'} · Epilepsia: ${sist.epilepsia || '—'}</div>
-          <div class="rotina-summary-item">Trombose: ${sist.trombose || '—'} · Insuficiência renal: ${sist.insuficiencia_renal || '—'} · Hepatite: ${sist.hepatite || '—'}</div>
-          <div class="rotina-summary-item">SOP: ${sist.sop || '—'} · Antecedentes oncológicos: ${sist.oncologicos || '—'} · Cirurgia bariátrica: ${sist.bariatrico || '—'}</div>
-          <div class="rotina-summary-item">Ansiedade: ${sist.ansiedade || '—'} · Depressão: ${sist.depressao || '—'}</div>
-          <div class="rotina-summary-item">Dermatite: ${sist.dermatite || '—'}${sist.dermatite_frequencia ? ' (freq: ' + sist.dermatite_frequencia + ')' : ''} · Asma: ${sist.asma || '—'}${sist.asma_frequencia ? ' (freq: ' + sist.asma_frequencia + ')' : ''}</div>
-          ${sist.outras_doencas ? `<div class="rotina-summary-item">Outras doenças: ${sist.outras_doencas}</div>` : ''}
+          <div class="rotina-summary-item">Medicamentos: ${escHTML(sist.medicamentos || '—')}</div>
+          <div class="rotina-summary-item">Alergias: ${escHTML(sist.alergias || '—')}${sist.alergia_tipo ? ' — Tipo: ' + escHTML(sist.alergia_tipo) : ''}</div>
+          <div class="rotina-summary-item">Gestante: ${escHTML(sist.gestante || '—')} · Lactante: ${escHTML(sist.lactante || '—')}</div>
+          <div class="rotina-summary-item">Diabética: ${escHTML(sist.diabetica || '—')}${sist.diabetica_tipo ? ' (' + escHTML(sist.diabetica_tipo) + ')' : ''} · Tireoide: ${escHTML(sist.tireoide || '—')}${sist.tireoide_tipo ? ' (' + escHTML(sist.tireoide_tipo) + ')' : ''}</div>
+          <div class="rotina-summary-item">Hipertensão: ${escHTML(sist.hipertensao || '—')} · Hipotensão: ${escHTML(sist.hipotensao || '—')}</div>
+          <div class="rotina-summary-item">Cardiopatologia: ${escHTML(sist.cardiopatologia || '—')} · Epilepsia: ${escHTML(sist.epilepsia || '—')}</div>
+          <div class="rotina-summary-item">Trombose: ${escHTML(sist.trombose || '—')} · Insuficiência renal: ${escHTML(sist.insuficiencia_renal || '—')} · Hepatite: ${escHTML(sist.hepatite || '—')}</div>
+          <div class="rotina-summary-item">SOP: ${escHTML(sist.sop || '—')} · Antecedentes oncológicos: ${escHTML(sist.oncologicos || '—')} · Cirurgia bariátrica: ${escHTML(sist.bariatrico || '—')}</div>
+          <div class="rotina-summary-item">Ansiedade: ${escHTML(sist.ansiedade || '—')} · Depressão: ${escHTML(sist.depressao || '—')}</div>
+          <div class="rotina-summary-item">Dermatite: ${escHTML(sist.dermatite || '—')}${sist.dermatite_frequencia ? ' (freq: ' + escHTML(sist.dermatite_frequencia) + ')' : ''} · Asma: ${escHTML(sist.asma || '—')}${sist.asma_frequencia ? ' (freq: ' + escHTML(sist.asma_frequencia) + ')' : ''}</div>
+          ${sist.outras_doencas ? `<div class="rotina-summary-item">Outras doenças: ${escHTML(sist.outras_doencas)}</div>` : ''}
           <div class="toggle-subtitle">Estilo de Vida</div>
-          <div class="rotina-summary-item">Atividade física: ${ev.atividade_fisica || '—'} · Alimentação: ${ev.alimentacao || '—'}</div>
-          <div class="rotina-summary-item">Água: ${ev.agua || '—'} · Sono: ${ev.sono || '—'}</div>
-          <div class="rotina-summary-item">Exposição ao sol: ${ev.sol || '—'} · Tabagista: ${ev.tabagista || '—'}</div>
-          <div class="rotina-summary-item">Bebida alcoólica: ${ev.alcool || '—'}${ev.alcool_frequencia ? ' (freq: ' + ev.alcool_frequencia + ')' : ''}</div>
-          <div class="rotina-summary-item">Evacuação: ${ev.evacuacao || '—'} · Hábito urinário: ${ev.habito_urinario || '—'}</div>
-          <div class="rotina-summary-item">Frequência menstrual: ${ev.frequencia_menstrual || '—'}</div>
-          ${a.integrativa ? `<div class="toggle-subtitle">Anamnese Integrativa</div><div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${a.integrativa}</div>` : ''}
+          <div class="rotina-summary-item">Atividade física: ${escHTML(ev.atividade_fisica || '—')} · Alimentação: ${escHTML(ev.alimentacao || '—')}</div>
+          <div class="rotina-summary-item">Água: ${escHTML(ev.agua || '—')} · Sono: ${escHTML(ev.sono || '—')}</div>
+          <div class="rotina-summary-item">Exposição ao sol: ${escHTML(ev.sol || '—')} · Tabagista: ${escHTML(ev.tabagista || '—')}</div>
+          <div class="rotina-summary-item">Bebida alcoólica: ${escHTML(ev.alcool || '—')}${ev.alcool_frequencia ? ' (freq: ' + escHTML(ev.alcool_frequencia) + ')' : ''}</div>
+          <div class="rotina-summary-item">Evacuação: ${escHTML(ev.evacuacao || '—')} · Hábito urinário: ${escHTML(ev.habito_urinario || '—')}</div>
+          <div class="rotina-summary-item">Frequência menstrual: ${escHTML(ev.frequencia_menstrual || '—')}</div>
+          ${a.integrativa ? `<div class="toggle-subtitle">Anamnese Integrativa</div><div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${escHTML(a.integrativa)}</div>` : ''}
           <div class="toggle-subtitle">Descobrindo a Sua Pele</div>
-          <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">Principal Queixa: ${a.principal_queixa || '—'}</div>
-          ${a.tratamentos_anteriores ? `<div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">Tratamentos Anteriores: ${a.tratamentos_anteriores}</div>` : ''}
+          <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">Principal Queixa: ${escHTML(a.principal_queixa || '—')}</div>
+          ${a.tratamentos_anteriores ? `<div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">Tratamentos Anteriores: ${escHTML(a.tratamentos_anteriores)}</div>` : ''}
           ${autoList}
           <div class="toggle-subtitle">Skincare</div>
-          <div class="rotina-summary-item">Rotina atual: ${sk.atual || '—'}</div>
-          ${sk.parado ? `<div class="rotina-summary-item">Produtos parados: ${sk.parado}</div>` : ''}
-          <div class="rotina-summary-item">Regularidade: ${sk.regularidade || '—'} · Como gostaria: ${sk.como_gostaria || '—'}</div>
+          <div class="rotina-summary-item">Rotina atual: ${escHTML(sk.atual || '—')}</div>
+          ${sk.parado ? `<div class="rotina-summary-item">Produtos parados: ${escHTML(sk.parado)}</div>` : ''}
+          <div class="rotina-summary-item">Regularidade: ${escHTML(sk.regularidade || '—')} · Como gostaria: ${escHTML(sk.como_gostaria || '—')}</div>
           <div class="toggle-subtitle">Investimento Confortável</div>
-          <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${a.investimento || '—'}</div>
-          ${a.observacoes ? `<div class="toggle-subtitle">Observações Adicionais</div><div class="rotina-summary-item" style="border:none;">${a.observacoes}</div>` : ''}
+          <div class="rotina-summary-item" style="border:none; padding:0 0 10px 0;">${escHTML(a.investimento || '—')}</div>
+          ${a.observacoes ? `<div class="toggle-subtitle">Observações Adicionais</div><div class="rotina-summary-item" style="border:none;">${escHTML(a.observacoes)}</div>` : ''}
         </div>
       `;
       const btnReenviar = details.querySelector('[data-reenviar-conf]');

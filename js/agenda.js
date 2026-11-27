@@ -847,7 +847,7 @@
   let modalMode = 'appt';
 
   function selecionarPacienteNoModal(paciente){
-    apptPatientSelect.innerHTML = `<option value="${paciente.id}" selected>${paciente.name}</option>`;
+    apptPatientSelect.innerHTML = `<option value="${paciente.id}" selected>${escHTML(paciente.name)}</option>`;
     apptPatientSearch.value = paciente.name;
     apptPatientResults.classList.remove('open');
   }
@@ -897,7 +897,7 @@
     const nomeExato = patients.some(p => (p.name || '').toLowerCase() === termo);
 
     let html = filtrados.length > 0
-      ? filtrados.map(p => `<div class="appt-patient-result-item" data-id="${p.id}">${p.name}</div>`).join('')
+      ? filtrados.map(p => `<div class="appt-patient-result-item" data-id="${p.id}">${escHTML(p.name)}</div>`).join('')
       : `<div class="appt-patient-result-empty">Nenhuma cliente encontrada.</div>`;
     if(!nomeExato){
       html += `<div class="appt-patient-result-add" data-novo="1">+ Adicionar nova cliente "${termoRaw}"</div>`;

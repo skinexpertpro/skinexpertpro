@@ -151,7 +151,7 @@
           <span class="lemb-quando ${quando.atrasado ? 'atrasado' : ''}">${quando.txt}</span>
           ${(() => { try{ const mod = l.modelo || ({ pos:'pos', retorno:'retorno', sumida:'sumida' })[l.tipo]; return mod && l.paciente && jaEnviadoHoje(l.paciente, mod) ? '<span class="msg-enviado" style="margin-left:auto;">✓ enviado</span>' : ''; }catch(e){ return ''; } })()}
         </div>
-        ${l.pacienteNome ? `<div class="lemb-paciente">${l.pacienteNome}</div>` : ''}
+        ${l.pacienteNome ? `<div class="lemb-paciente">${escHTML(l.pacienteNome)}</div>` : ''}
         <div class="lemb-texto"></div>
         <div class="lemb-acoes">
           ${link ? `<button class="lemb-btn whats" data-a="whats">${iconeWhats} WhatsApp</button>` : ''}

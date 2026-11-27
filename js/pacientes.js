@@ -89,7 +89,7 @@
 
   function avatarAnivHTML(p){
     if(p.foto_url) return `<div class="aniv-avatar"><img src="${p.foto_url}" alt=""></div>`;
-    return `<div class="aniv-avatar" style="background:${p.bg || '#eef0f2'}; color:${p.color || '#8a949a'};">${initialsFromName(p.name)}</div>`;
+    return `<div class="aniv-avatar" style="background:${p.bg || '#eef0f2'}; color:${p.color || '#8a949a'};">${escHTML(initialsFromName(p.name))}</div>`;
   }
 
   function renderAniversariantes(){
@@ -139,7 +139,7 @@
         <div class="aniv-dia">${pad(aniv.getDate())}<small>${MESES_CURTOS[aniv.getMonth()]}</small></div>
         ${avatarAnivHTML(p)}
         <div class="aniv-info">
-          <div class="aniv-nome">${ehHoje ? '🎂 ' : ''}${p.name}${ehHoje ? '<span class="aniv-badge-hoje">HOJE</span>' : ''}</div>
+          <div class="aniv-nome">${ehHoje ? '🎂 ' : ''}${escHTML(p.name)}${ehHoje ? '<span class="aniv-badge-hoje">HOJE</span>' : ''}</div>
           <div class="aniv-sub">${quando}</div>
         </div>
         ${diasAte >= 0 ? `<button class="aniv-whats" ${link ? '' : 'disabled title="Cliente sem telefone cadastrado"'} title="${ehHoje ? 'Enviar parabéns pelo WhatsApp' : 'Abrir WhatsApp com mensagem de parabéns'}">${iconeWhats}${ehHoje ? ' Parabenizar' : ''}</button>` : ''}
@@ -194,14 +194,14 @@
       tr.innerHTML = `
         <td>
           <div class="patient-cell">
-            <div class="patient-avatar" style="background:${p.bg}; color:${p.color};">${p.initials}</div>
+            <div class="patient-avatar" style="background:${p.bg}; color:${p.color};">${escHTML(p.initials)}</div>
             <div>
-              <div class="patient-name" data-patient-id="${p.id}" style="cursor:pointer; color: var(--pink);">${p.name}</div>
+              <div class="patient-name" data-patient-id="${p.id}" style="cursor:pointer; color: var(--pink);">${escHTML(p.name)}</div>
               <div class="patient-age">${p.age ? p.age + ' anos' : '—'}</div>
             </div>
           </div>
         </td>
-        <td><div class="phone-cell">${p.phone || '—'} ${p.phone ? whatsappIcon : ''}</div></td>
+        <td><div class="phone-cell">${escHTML(p.phone || '—')} ${p.phone ? whatsappIcon : ''}</div></td>
         <td><div class="date-cell">${calendarIcon} ${p.rotina ? p.rotina : '<span class="date-dash">--</span>'}</div></td>
         <td>${acompHTML(p.acomp)}</td>
         <td><span class="status-active">${p.status}</span></td>
