@@ -593,7 +593,7 @@
       const lista = semAnamnesesRepetidas(data.filter(a => a.token)).slice(0, 3); // só as 3 mais recentes
       container.innerHTML = '';
       if(!lista.length){
-        container.innerHTML = '<div class="empty-state">Nenhuma pré-ficha respondida.</div>';
+        container.innerHTML = '<div class="empty-state">Nenhuma ficha de anamnese respondida.</div>';
         return;
       }
       lista.forEach(a => {
