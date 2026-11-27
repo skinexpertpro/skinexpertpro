@@ -7,6 +7,10 @@
   /* ================= SUPABASE ================= */
   const SUPABASE_URL = 'https://fpnphcbczyhhllmhqusy.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_xQoS6dQpOM11j0FibRIaPw_GIRRkjTD';
+  // Link de "Esqueci minha senha": guarda isso ANTES do Supabase ler e limpar o endereço,
+  // para o app abrir a tela de criar a nova senha (login.js).
+  var veioDoLinkDeNovaSenha = /type=recovery/.test(window.location.hash + window.location.search);
+  var linkDeEmailExpirado = /otp_expired|error_code=/.test(window.location.hash + window.location.search);
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   /* ---------- Consentimento para dados de saúde (RGPD / LGPD) ----------

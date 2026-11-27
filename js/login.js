@@ -69,6 +69,70 @@
     }
   });
 
+  /* ---------- Criar a nova senha (quem chegou pelo link do e-mail) ----------
+     O link do e-mail já entra na conta; esta janela pede a senha nova e grava. */
+  let janelaNovaSenhaAberta = false;
+  function mostrarJanelaNovaSenha(){
+    if(janelaNovaSenhaAberta) return;
+    janelaNovaSenhaAberta = true;
+    const fundo = document.createElement('div');
+    fundo.id = 'novaSenhaFundo';
+    fundo.style.cssText = 'position:fixed; inset:0; z-index:99999; background:rgba(40,20,25,.55); display:flex; align-items:center; justify-content:center; padding:16px;';
+    fundo.innerHTML = `
+      <div class="auth-box" role="dialog" aria-labelledby="novaSenhaTitulo" style="box-shadow:0 20px 60px rgba(0,0,0,.25);">
+        <div class="auth-title" id="novaSenhaTitulo">Crie sua nova senha</div>
+        <div class="auth-sub">Digite a senha nova duas vezes. Depois é com ela que você entra.</div>
+        <div class="auth-error" id="novaSenhaErro"></div>
+        <div class="auth-field">
+          <label>Nova senha</label>
+          <input type="password" id="novaSenha1" placeholder="Pelo menos 6 caracteres" autocomplete="new-password">
+        </div>
+        <div class="auth-field">
+          <label>Repita a nova senha</label>
+          <input type="password" id="novaSenha2" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <button class="auth-btn" id="novaSenhaSalvar">Salvar nova senha</button>
+      </div>`;
+    document.body.appendChild(fundo);
+    const erro = fundo.querySelector('#novaSenhaErro');
+    const mostrarErro = msg => { erro.textContent = msg; erro.classList.add('show'); };
+    const btn = fundo.querySelector('#novaSenhaSalvar');
+    setTimeout(() => { try{ fundo.querySelector('#novaSenha1').focus(); }catch(e){} }, 50);
+    btn.addEventListener('click', async () => {
+      erro.classList.remove('show');
+      const s1 = fundo.querySelector('#novaSenha1').value;
+      const s2 = fundo.querySelector('#novaSenha2').value;
+      if(s1.length < 6){ mostrarErro('A senha precisa ter pelo menos 6 caracteres.'); return; }
+      if(s1 !== s2){ mostrarErro('As duas senhas não estão iguais. Digite de novo.'); return; }
+      btn.disabled = true; btn.textContent = 'Salvando…';
+      try{
+        const { error } = await supabaseClient.auth.updateUser({ password: s1 });
+        if(error) throw error;
+        fundo.remove();
+        janelaNovaSenhaAberta = false;
+        veioDoLinkDeNovaSenha = false;
+        showToast('Senha alterada. Na próxima vez, entre com a senha nova.');
+      }catch(err){
+        const msg = String((err && err.message) || '');
+        if(/different from the old/i.test(msg)) mostrarErro('A senha nova tem que ser diferente da antiga.');
+        else if(/session|expired|jwt/i.test(msg)) mostrarErro('O link expirou. Volte à tela de entrada, clique em "Esqueci minha senha" e use o e-mail mais recente.');
+        else mostrarErro('Não deu para salvar a senha: ' + (msg || 'tente de novo.'));
+        btn.disabled = false; btn.textContent = 'Salvar nova senha';
+      }
+    });
+  }
+  supabaseClient.auth.onAuthStateChange(evento => { if(evento === 'PASSWORD_RECOVERY') mostrarJanelaNovaSenha(); });
+  if(linkDeEmailExpirado && !veioDoLinkDeNovaSenha){
+    showAuthError('Esse link do e-mail expirou ou já foi usado. Para trocar a senha, digite seu e-mail, clique em "Esqueci minha senha" e abra só o e-mail mais recente.');
+    try{ history.replaceState(null, '', window.location.pathname); }catch(e){}
+  }
+  if(veioDoLinkDeNovaSenha){
+    supabaseClient.auth.getSession().then(({ data }) => {
+      if(data && data.session) mostrarJanelaNovaSenha();
+      else showAuthError('Esse link de senha expirou ou já foi usado. Clique em "Esqueci minha senha" de novo e use só o e-mail mais recente.');
+    }).catch(() => {});
+  }
+
   /* ---------- Troca de conta no mesmo navegador ----------
      O app guarda os dados na memória da página. Ao sair (ou ao entrar outra conta), a página
      recomeça do zero: assim nada da conta anterior (serviços, pacotes, lembretes...) aparece na próxima. */
