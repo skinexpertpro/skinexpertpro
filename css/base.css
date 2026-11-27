@@ -218,3 +218,9 @@
   .sidebar .brand-name{ display:flex; align-items:center; line-height:0; }
   .sidebar .brand-nome-img{ height:38px; width:auto; display:block; }
   .sidebar .brand-logo{ width:40px; height:40px; }
+
+  /* ---------- Logo original (símbolo + "skin / expert pro") nas telas públicas, login e planos ---------- */
+  .auth-logo .auth-marca-img{ height:46px; width:auto; display:block; }
+  .public-marca, .tp-marca{ display:flex; align-items:center; justify-content:center; gap:10px; margin:0 auto 14px; }
+  .public-marca .brand-logo, .tp-marca .tp-logo{ width:44px !important; height:44px !important; margin:0 !important; }
+  .public-marca .marca-nome, .tp-marca .marca-nome{ height:38px; width:auto; display:block; }

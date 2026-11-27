@@ -92,3 +92,7 @@
     background: url(../img/icone-192.png) center / cover no-repeat !important;
     border-radius: 24% !important;
   }
+
+  /* ---------- Logo original no topo das páginas legais ---------- */
+  .legal-marca .brand-logo{ width:34px; height:34px; }
+  .legal-marca .legal-marca-img{ height:30px; width:auto; display:block; }

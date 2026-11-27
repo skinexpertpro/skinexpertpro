@@ -84,7 +84,7 @@
     tela.innerHTML = `
       <div class="tp-caixa">
         <div class="tp-topo">
-          <div class="brand-logo tp-logo"></div>
+          <div class="tp-marca"><div class="brand-logo tp-logo"></div><img class="marca-nome" src="img/logo-nome-escuro.png" alt="Skin Expert Pro"></div>
           <h1 id="telaPlanosTitulo">${terminou ? 'A sua assinatura terminou' : 'Escolha o seu plano'}</h1>
           <p class="tp-sub">${terminou
             ? 'Para continuar usando o Skin Expert Pro, escolha um plano. Os seus dados continuam guardados.'
