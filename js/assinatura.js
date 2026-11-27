@@ -99,7 +99,7 @@
           </div>
         </div>
         <div class="tp-cartoes" id="tpCartoes"></div>
-        <p class="tp-nota">Valores sem impostos: o IVA/impostos aplicáveis ao seu país são calculados no pagamento. O pagamento é feito com segurança pelo Stripe.</p>
+        <p class="tp-nota">Em euros, os valores são + IVA, somado no pagamento. Em reais, o banco do seu cartão pode cobrar o IOF de compra internacional. O pagamento é feito com segurança pelo Stripe.</p>
         <div class="tp-rodape">
           ${a && a.tem_stripe ? '<button type="button" class="tp-link" id="tpPortal">Ver recibos e cartão</button>' : ''}
           <a class="tp-link" href="mailto:contato@skinexpertpro.com">Dúvidas? contato@skinexpertpro.com</a>
