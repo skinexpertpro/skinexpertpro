@@ -60,7 +60,7 @@
     .schedule-header .btn-agenda-primary{ justify-content:center; }
     .schedule-toolbar{ flex-wrap:wrap; gap:10px; }
   }
-  .schedule-date{ font-family:'Playfair Display', serif; font-size:19px; font-weight:700; }
+  .schedule-date{ font-family:'Outfit', sans-serif; font-size:19px; font-weight:600; }
   .schedule-count{ font-size:13.5px; color: var(--text-muted); margin-top:3px; }
 
   .schedule-toolbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }

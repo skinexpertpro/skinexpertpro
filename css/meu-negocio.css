@@ -29,7 +29,7 @@
   }
   .pacote-total-row{ display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
   .pacote-total-label{ font-size:15px; font-weight:700; }
-  .pacote-total-value{ font-family:'Playfair Display', serif; font-size:20px; font-weight:700; color: var(--pink); }
+  .pacote-total-value{ font-family:'Outfit', sans-serif; font-size:20px; font-weight:600; color: var(--pink); }
 
   /* ---------- Serviços desativados ---------- */
   tr.servico-inativo td{ color: var(--text-muted) !important; }

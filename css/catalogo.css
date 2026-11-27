@@ -6,7 +6,7 @@
   .catalogo-count{ font-size:13.5px; color: var(--text-muted); margin: -8px 0 16px 4px; }
   .catalogo-count b{ color: var(--text-dark); }
 
-  .product-name-cell{ font-family:'Playfair Display', serif; font-weight:700; color: var(--text-dark); cursor:pointer; }
+  .product-name-cell{ font-family:'Outfit', sans-serif; font-weight:600; color: var(--text-dark); cursor:pointer; }
   .product-name-cell:hover{ color: var(--pink); }
   .product-func-cell{ max-width:340px; color: var(--text-muted); font-size:13.5px; line-height:1.4; }
   .category-chip{
@@ -37,7 +37,7 @@
     flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#7c8992;
   }
   .produto-header-info{ display:flex; flex-direction:column; justify-content:center; gap:6px; }
-  .produto-title{ font-family:'Playfair Display', serif; font-size:24px; font-weight:700; color: var(--text-dark); }
+  .produto-title{ font-family:'Outfit', sans-serif; font-size:24px; font-weight:600; color: var(--text-dark); }
   .produto-brand{ font-size:15px; color: var(--text-muted); }
   .produto-meta-row{ display:flex; align-items:center; gap:10px; margin-top:6px; flex-wrap:wrap; }
   .produto-price{ font-size:13.5px; font-weight:700; color: var(--pink); line-height:1.6; }
@@ -49,7 +49,7 @@
   /* ================= FORMULAÇÕES COSMÉTICAS VIEW ================= */
   .content-formulacoes{ padding: 24px 36px 48px 36px; }
 
-  .ativo-name-cell{ font-family:'Playfair Display', serif; font-weight:700; color: var(--text-dark); }
+  .ativo-name-cell{ font-family:'Outfit', sans-serif; font-weight:600; color: var(--text-dark); }
   .ativo-mecanismo-cell{ max-width:420px; color: var(--text-muted); font-size:13.5px; line-height:1.4; }
   .ativo-view-btn{
     background: var(--gold-light); color: var(--gold-dark); border:none; border-radius:8px; width:32px; height:32px;
@@ -187,7 +187,7 @@
     display:flex; flex-direction:column; min-width:0;
   }
   .ativo-card-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px; }
-  .ativo-card-name{ font-family:'Playfair Display', serif; font-weight:700; font-size:15px; color: var(--text-dark); }
+  .ativo-card-name{ font-family:'Outfit', sans-serif; font-weight:600; font-size:15px; color: var(--text-dark); }
   .ativo-card-desc{
     font-size:12.5px; color: var(--text-muted); line-height:1.5; margin-bottom:10px;
     display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
@@ -219,7 +219,7 @@
   .marca-tile{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-width:118px; height:64px; padding:0 16px; background:#fff; border:1px solid var(--border); border-radius:12px; cursor:pointer; font-family:inherit; color: var(--text-dark); transition: border-color .15s, box-shadow .15s; }
   .marca-tile:hover{ border-color: var(--gold); }
   .marca-tile.active{ border-color: var(--sidebar-bg); box-shadow:0 0 0 2px var(--sidebar-bg); }
-  .marca-tile-nome{ font-family:'Playfair Display', serif; font-size:14.5px; font-weight:700; white-space:nowrap; }
+  .marca-tile-nome{ font-family:'Outfit', sans-serif; font-size:14.5px; font-weight:600; white-space:nowrap; }
   .marca-tile-qtd{ font-size:11px; color: var(--text-muted); }
   .marca-tile.com-logo{ gap:5px; }
   .marca-tile-logo{ max-height:30px; max-width:104px; object-fit:contain; display:block; }

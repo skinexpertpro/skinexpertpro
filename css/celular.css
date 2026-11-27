@@ -40,7 +40,7 @@
     html.celular-ativo .view.so-computador.active > .aviso-computador{ display:block; }
     html.celular-ativo .aviso-computador{ margin:28px 16px; padding:28px 22px; background:#fff; border:1px solid var(--border); border-radius:16px; text-align:center; }
     html.celular-ativo .aviso-computador svg{ color:var(--gold); }
-    html.celular-ativo .aviso-computador h2{ font-family:'Playfair Display', serif; font-size:20px; margin:12px 0 8px; color:var(--text-dark); }
+    html.celular-ativo .aviso-computador h2{ font-family:'Outfit', sans-serif; font-weight:600; font-size:20px; margin:12px 0 8px; color:var(--text-dark); }
     html.celular-ativo .aviso-computador p{ font-size:14px; color:var(--text-muted); line-height:1.5; margin:0 0 18px; }
     html.celular-ativo .aviso-computador button{ background:var(--sidebar-bg); color:#fff; border:none; border-radius:10px; padding:12px 18px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; }
 
@@ -139,7 +139,7 @@
     }
     .cel-painel-fundo.aberto .cel-painel{ transform:none; }
     .cel-painel-alca{ width:40px; height:5px; border-radius:3px; background: var(--border); margin:0 auto 14px; }
-    .cel-painel-titulo{ font-family:'Playfair Display', serif; font-size:20px; font-weight:600; color: var(--sidebar-bg); margin:0 0 8px; }
+    .cel-painel-titulo{ font-family:'Outfit', sans-serif; font-size:20px; font-weight:600; color: var(--sidebar-bg); margin:0 0 8px; }
     .cel-painel-itens{ display:flex; flex-direction:column; gap:4px; }
     .cel-painel-item{ display:flex; align-items:center; gap:14px; width:100%; padding:11px 10px; border:none; background:none; border-radius:16px; text-align:left; font-family:inherit; color: var(--text-dark); cursor:pointer; min-height:62px; }
     .cel-painel-item.destaque{ background: var(--pink-light); }
@@ -157,7 +157,7 @@
     html.celular-ativo body.cel-tela-inicio #pageTitle, html.celular-ativo body.cel-tela-inicio #pageSubtitle{ display:none !important; }
     html.celular-ativo body.cel-tela-inicio .cel-saudacao{ display:flex; flex-direction:column; gap:3px; }
     .cel-saudacao-data{ font-size:13px; color: var(--text-muted); }
-    .cel-saudacao-ola{ font-family:'Playfair Display', serif; font-size:27px; font-weight:600; color: var(--sidebar-bg); line-height:1.15; }
+    .cel-saudacao-ola{ font-family:'Outfit', sans-serif; font-size:27px; font-weight:600; color: var(--sidebar-bg); line-height:1.15; }
     html.celular-ativo .cel-inicio{ display:flex; flex-direction:column; gap:12px; padding:4px 12px 4px; }
     .cel-numeros{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
     .cel-numero{ background:#fff; border:1px solid color-mix(in srgb, var(--border) 70%, #fff); border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:1px; }
@@ -226,7 +226,7 @@
     html.celular-ativo body.cel-tela-agenda #pageTitle, html.celular-ativo body.cel-tela-agenda #pageSubtitle,
     html.celular-ativo body.cel-tela-agenda .conta-wrap{ display:none !important; }
     html.celular-ativo body.cel-tela-agenda .cel-agenda-topo{ display:block; }
-    .cel-agenda-mes{ font-family:'Playfair Display', serif; font-size:26px; font-weight:600; color: var(--sidebar-bg); }
+    .cel-agenda-mes{ font-family:'Outfit', sans-serif; font-size:26px; font-weight:600; color: var(--sidebar-bg); }
     html.celular-ativo body.cel-tela-agenda .cel-btn-hoje{
       display:inline-flex; align-items:center; font-family:inherit; font-size:13px; font-weight:600; color: var(--pink);
       background: var(--pink-light); border:none; border-radius:18px; padding:8px 14px; min-height:36px; cursor:pointer;

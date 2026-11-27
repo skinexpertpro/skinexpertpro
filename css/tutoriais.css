@@ -8,7 +8,7 @@
   .tut-cats button.fin-tab{ font-family:inherit; cursor:pointer; }
 
   .tut-lista{ display:flex; flex-direction:column; gap:26px; }
-  .tut-grupo h2{ font-family:'Playfair Display', Georgia, serif; font-size:19px; margin:0 0 10px; color: var(--text-dark); }
+  .tut-grupo h2{ font-family:'Outfit', sans-serif; font-weight:600; font-size:19px; margin:0 0 10px; color: var(--text-dark); }
   .tut-itens{ background:#fff; border:1px solid var(--border); border-radius:14px; overflow:hidden; }
   .tut-item + .tut-item{ border-top:1px solid #f0e8dc; }
   .tut-pergunta{ width:100%; display:flex; align-items:center; gap:12px; padding:16px 18px; background:none; border:none; text-align:left; cursor:pointer;

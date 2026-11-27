@@ -51,7 +51,7 @@
     width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     font-size:13px; font-weight:700; flex-shrink:0;
   }
-  .patient-name{ font-family:'Playfair Display', serif; font-weight:700; color: var(--text-dark); }
+  .patient-name{ font-family:'Outfit', sans-serif; font-weight:600; color: var(--text-dark); }
   .patient-age{ font-size:12.5px; color: var(--text-muted); margin-top:1px; }
 
   .phone-cell{ display:flex; align-items:center; gap:8px; color: var(--text-dark); }

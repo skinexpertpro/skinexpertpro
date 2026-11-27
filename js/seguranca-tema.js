@@ -84,9 +84,9 @@
       '  font-family:Inter, system-ui, -apple-system, "Segoe UI", sans-serif; color:#2b1a1f; text-align:center; }' +
       '#celularEmBreve .ceb-caixa{ background:#fff; border:1px solid #eadfce; border-radius:18px; padding:34px 24px 26px; max-width:360px; width:100%; }' +
       '#celularEmBreve .ceb-logo{ width:64px; height:64px; border-radius:24%; margin:0 auto 14px; background:url(img/icone-192.png) center/cover no-repeat; }' +
-      '#celularEmBreve .ceb-marca{ font-family:"Playfair Display", Georgia, serif; font-size:18px; font-weight:700; color:#4a1524; margin-bottom:18px; }' +
+      '#celularEmBreve .ceb-marca{ font-family:"Outfit", sans-serif; font-size:18px; font-weight:600; color:#4a1524; margin-bottom:18px; }' +
       '#celularEmBreve .ceb-tag{ display:inline-block; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#8a5f22; background:#f6ead2; border-radius:999px; padding:5px 12px; margin-bottom:12px; }' +
-      '#celularEmBreve h1{ font-family:"Playfair Display", Georgia, serif; font-size:24px; line-height:1.2; color:#4a1524; margin:0 0 10px; }' +
+      '#celularEmBreve h1{ font-family:"Outfit", sans-serif; font-weight:600; font-size:24px; line-height:1.2; color:#4a1524; margin:0 0 10px; }' +
       '#celularEmBreve p{ font-size:14.5px; line-height:1.55; color:#7a6a63; margin:0 0 18px; }' +
       '#celularEmBreve .ceb-site{ display:block; font-weight:700; color:#4a1524; background:#f7f1e8; border-radius:10px; padding:11px 12px; font-size:14px; margin-bottom:18px; word-break:break-all; }' +
       '#celularEmBreve .ceb-links{ font-size:12px; color:#7a6a63; border-top:1px solid #eadfce; padding-top:14px; }' +

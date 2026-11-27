@@ -9,10 +9,10 @@
   /* Página da paciente */
   .plano-cli{ min-height:100vh; background:#fbf8f3; color:#2c1b20; font-family: Inter, system-ui, sans-serif; max-width:560px; margin:0 auto; padding-bottom:24px; }
   .plano-cli-carregando, .plano-cli-invalido{ padding:80px 24px; text-align:center; color:#75655a; }
-  .plano-cli-invalido h1{ font-family:'Playfair Display', serif; color:#4a1524; font-size:24px; margin:0 0 10px; }
+  .plano-cli-invalido h1{ font-family:'Outfit', sans-serif; font-weight:600; color:#4a1524; font-size:24px; margin:0 0 10px; }
   .plano-cli-topo{ background:#4a1524; color:#fff; padding:32px 22px 26px; border-radius:0 0 28px 28px; display:flex; flex-direction:column; gap:8px; }
   .plano-cli-selo{ font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#ecd3a8; }
-  .plano-cli-topo h1{ margin:0; font-family:'Playfair Display', serif; font-size:29px; font-weight:600; line-height:1.15; }
+  .plano-cli-topo h1{ margin:0; font-family:'Outfit', sans-serif; font-size:29px; font-weight:600; line-height:1.15; }
   .plano-cli-topo p{ margin:0; font-size:13px; color:#f0dfe4; }
   .plano-cli-objetivo{ margin-top:8px; background:rgba(255,255,255,.1); border-radius:14px; padding:12px 14px; font-size:13.5px; line-height:1.5; color:#fbeff2; }
   .plano-cli-objetivo b{ display:block; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#ecd3a8; margin-bottom:2px; }
