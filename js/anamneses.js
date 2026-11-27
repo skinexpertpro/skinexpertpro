@@ -2,6 +2,17 @@
    Arquivo 13 de 17: a ordem dos arquivos no index.html importa. */
 
   /* ================= ANAMNESES RESPONDIDAS PELA PACIENTE ================= */
+  /* Limpa respostas sem sentido de fichas antigas: "Selecionar" e detalhes de perguntas respondidas com "Não"
+     (ex.: tipo de diabetes quando a cliente marcou "Não"). */
+  function limparRespostasFicha(o, pares){
+    const r = {};
+    Object.entries(o || {}).forEach(([k, v]) => { r[k] = (typeof v === 'string' && /^Selecionar/.test(v)) ? '' : v; });
+    (pares || []).forEach(([pai, filho]) => { if(r[pai] !== 'Sim' && filho in r) r[filho] = ''; });
+    return r;
+  }
+  const PARES_SISTEMICA = [['diabetica','diabetica_tipo'],['tireoide','tireoide_tipo'],['alergias','alergia_tipo'],['dermatite','dermatite_frequencia'],['asma','asma_frequencia']];
+  const PARES_ESTILO = [['alcool','alcool_frequencia']];
+
   async function renderAnamnesesRespondidas(){
     const container = document.getElementById('anamnesesRespondidasContainer');
     container.innerHTML = '';
@@ -27,9 +38,9 @@
       const pad2 = n => String(n).padStart(2, '0');
       const horario = `${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
       const dataFormatada = `${dt.getDate()} de ${monthNames[dt.getMonth()]}, ${dt.getFullYear()} às ${horario}`;
-      const sist = a.sistemica || {};
-      const ev = a.estilo_vida || {};
-      const sk = a.skincare || {};
+      const sist = limparRespostasFicha(a.sistemica, PARES_SISTEMICA);
+      const ev = limparRespostasFicha(a.estilo_vida, PARES_ESTILO);
+      const sk = limparRespostasFicha(a.skincare);
       const autoList = (a.autopercepcao || []).map(t => `<div class="rotina-summary-item">${escHTML(t)}</div>`).join('')
         || '<div class="rotina-summary-item" style="color:var(--text-muted);">Nenhum item marcado.</div>';
 
@@ -108,9 +119,9 @@
   function openAnamnesePdf(a, dataFormatada){
     pushNavHistory();
     setLandscapePrintMode(false);
-    const sist = a.sistemica || {};
-    const ev = a.estilo_vida || {};
-    const sk = a.skincare || {};
+    const sist = limparRespostasFicha(a.sistemica, PARES_SISTEMICA);
+    const ev = limparRespostasFicha(a.estilo_vida, PARES_ESTILO);
+    const sk = limparRespostasFicha(a.skincare);
 
     document.getElementById('pdfAnamneseBrand').textContent = perfilProfissional.nome || '—';
     document.getElementById('pdfAnamneseRole').textContent = perfilProfissional.titulo || '';
