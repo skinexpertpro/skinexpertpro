@@ -480,63 +480,6 @@
       showToast('Seus dados foram salvos com sucesso!');
     });
 
-    document.getElementById('btnSalvarWhatsapp').addEventListener('click', async () => {
-      const numero = document.getElementById('cfgWhatsappNumero').value.trim();
-      const phoneId = document.getElementById('cfgWhatsappPhoneId').value.trim();
-      const token = document.getElementById('cfgWhatsappToken').value.trim();
-
-      if(!phoneId || !token){ showToast('Preencha o Phone Number ID e o Access Token.'); return; }
-
-      integracaoWhatsapp = { provider: 'meta_cloud_api', phone_number_id: phoneId, access_token: token, numero_whatsapp: numero, ativo: true };
-
-      const usuarioWhats = await usuarioParaSalvar();
-      if(!usuarioWhats && !modoDemonstracao) return;
-      if(usuarioWhats){
-        try {
-          const { error: erroWhats } = await supabaseClient.from('integracoes_whatsapp').upsert({
-            profissional_id: usuarioWhats.id,
-            provider: integracaoWhatsapp.provider,
-            phone_number_id: integracaoWhatsapp.phone_number_id,
-            access_token: integracaoWhatsapp.access_token,
-            numero_whatsapp: integracaoWhatsapp.numero_whatsapp,
-            ativo: true,
-            atualizado_em: new Date().toISOString()
-          });
-          if(erroWhats) throw erroWhats;
-        } catch(err){
-          console.warn('Não foi possível salvar a integração de WhatsApp no Supabase.', err);
-          showToast('Erro ao salvar a integração. Tente novamente.');
-          return;
-        }
-      } else {
-        localStorage.setItem('skinExpertWhatsappPhoneId', phoneId);
-        localStorage.setItem('skinExpertWhatsappToken', token);
-        localStorage.setItem('skinExpertWhatsappNumero', numero);
-        localStorage.setItem('skinExpertWhatsappAtivo', 'true');
-      }
-
-      preencherCamposWhatsapp();
-      showToast('Integração com WhatsApp salva com sucesso!');
-    });
-
-    document.getElementById('btnTestarWhatsapp').addEventListener('click', async () => {
-      if(!integracaoWhatsapp.phone_number_id || !integracaoWhatsapp.access_token){
-        showToast('Salve sua integração antes de testar.');
-        return;
-      }
-      showToast('Enviando mensagem de teste...');
-      try{
-        const { data, error } = await supabaseClient.functions.invoke('testar-whatsapp', { body: {} });
-        if(error){
-          showToast('Não foi possível confirmar o envio. Verifique seu Phone Number ID e Token.');
-        } else {
-          showToast('Mensagem de teste enviada! Verifique o WhatsApp do número cadastrado.');
-        }
-      } catch(e){
-        showToast('Não foi possível conectar para testar agora.');
-      }
-    });
-
     // Minha Assinatura: portal do Stripe (trocar cartão, recibos, mudar de plano, cancelar).
     // A profissional entra com o e-mail do pagamento e o Stripe manda o link de acesso.
     const PORTAL_ASSINATURA_STRIPE = 'https://billing.stripe.com/p/login/5kQeVd8HZ89d44M1PXdEs00';

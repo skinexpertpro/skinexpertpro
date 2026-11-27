@@ -1255,24 +1255,8 @@
     }
   }
 
-  async function dispararConfirmacaoWhatsapp(agendamentoId){
-    try{
-      const { error } = await supabaseClient.functions.invoke('enviar-confirmacao-whatsapp', {
-        body: { agendamentoId },
-      });
-      if(error){
-        showToast('Atendimento salvo, mas houve um erro ao enviar o WhatsApp.');
-      } else {
-        showToast('Atendimento agendado e confirmação enviada por WhatsApp!');
-      }
-    } catch(e){
-      showToast('Atendimento salvo, mas não foi possível enviar o WhatsApp agora.');
-    }
-  }
-
   /* ---------- Confirmação por WhatsApp ----------
-     Sem configurar nada: abre o WhatsApp da paciente com a mensagem pronta (você só aperta enviar).
-     Com a API da Meta conectada em Configurações: envia sozinho pela função do servidor. */
+     Abre o WhatsApp da cliente com a mensagem pronta (a profissional só aperta enviar). */
   function numeroWhatsappDaPaciente(p){
     if(!p) return '';
     let codigo = String(p.phoneCode || '').replace(/\D/g, '');
@@ -1304,11 +1288,10 @@
 
   modalConfirm.addEventListener('click', async () => {
     if(edicaoAtual) return salvarEdicaoAtendimento();
-    const viaApi = !!(integracaoWhatsapp && integracaoWhatsapp.ativo);
     const querWhats = modalMode === 'appt' && apptEnviarWhatsapp.checked;
     // A janela do WhatsApp tem que abrir já no clique (senão o navegador bloqueia como pop-up).
     let janela = null;
-    if(querWhats && !viaApi){
+    if(querWhats){
       const keyPrev = apptDate.value || dateKey(selectedDate);
       const pacPrev = patients.find(p => String(p.id) === String(apptPatientSelect.value));
       if(pacPrev && numeroWhatsappDaPaciente(pacPrev) && !conflitoDeHorario(keyPrev, apptTime.value || '09:00', parseInt(apptDuration.value, 10), null)){
@@ -1322,11 +1305,6 @@
     if(!r || r.tipo !== 'appt') return;
 
     if(!querWhats){ showToast('Atendimento agendado!'); return; }
-    if(viaApi && isAgendamentoReal({ id: r.id })){
-      showToast('Atendimento agendado! Enviando confirmação por WhatsApp...');
-      dispararConfirmacaoWhatsapp(r.id);
-      return;
-    }
     const textoConf = msgDoModelo('confirmacao', { paciente: r.paciente, key: r.key, hora: r.hora, servico: r.servicos }) || mensagemConfirmacaoWhatsapp(r.paciente.name, r.key, r.hora, r.servicos);
     const url = linkWhatsapp(r.paciente, textoConf);
     if(!url){ showToast('Atendimento agendado! Esta cliente não tem telefone cadastrado para o WhatsApp.'); return; }

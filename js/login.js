@@ -160,7 +160,7 @@
     // (antes era um depois do outro, e cada espera somava).
     const semTravar = pr => Promise.resolve().then(pr).catch(e => console.warn('Carregamento:', e));
     await Promise.all([
-      carregarPerfilProfissionalReal, carregarIntegracaoWhatsappReal, carregarIntegracaoGoogleAgendaReal,
+      carregarPerfilProfissionalReal, carregarIntegracaoGoogleAgendaReal,
       loadPacientesFromSupabase, loadAgendamentosFromSupabase, loadServicos, loadProdutosFromSupabase,
       loadComandasFromSupabase, loadMovimentosFromSupabase, loadContasFromSupabase, loadAtivosFromSupabase,
     ].map(semTravar));
@@ -188,7 +188,6 @@
     authScreenEl.style.display = 'none';
     appRootEl.style.display = 'flex';
     carregarPerfilProfissionalDemo();
-    carregarIntegracaoWhatsappDemo();
     try{ carregarAcompanhamentos(); }catch(e){}
     try{ carregarTermos(); }catch(e){}
     // Catálogo de Produtos e Dicionário de Ativos: sempre os de verdade (os mesmos das profissionais).

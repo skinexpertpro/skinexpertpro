@@ -5,6 +5,10 @@
   var lembretesEstado, lembretesMostrarFuturos, mensagensModelos, mensagensHistorico, formasPagamento, comandasCarregadasOk, agendaCarregadaOk, garantindoComandas, modoDemonstracao, avisoConfigSemTabela, areasAtuacao;
 
   /* ================= SUPABASE ================= */
+  // Mostra qualquer texto como texto (nunca como código da página). Definida aqui, no primeiro arquivo,
+  // para estar disponível em todas as telas desde o carregamento.
+  function escHTML(t){ return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
   const SUPABASE_URL = 'https://fpnphcbczyhhllmhqusy.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_xQoS6dQpOM11j0FibRIaPw_GIRRkjTD';
   // Link de "Esqueci minha senha": guarda isso ANTES do Supabase ler e limpar o endereço,
@@ -125,57 +129,9 @@
     preencherCamposConfiguracoesPerfil();
   }
 
-  /* ---------- Integração com WhatsApp (Modelo 1: cada profissional conecta sua própria conta) ---------- */
-  let integracaoWhatsapp = { provider: 'meta_cloud_api', phone_number_id: '', access_token: '', numero_whatsapp: '', ativo: false };
-
-  function preencherCamposWhatsapp(){
-    const numeroEl = document.getElementById('cfgWhatsappNumero');
-    const phoneIdEl = document.getElementById('cfgWhatsappPhoneId');
-    const tokenEl = document.getElementById('cfgWhatsappToken');
-    const statusEl = document.getElementById('whatsappStatusLabel');
-    if(numeroEl) numeroEl.value = integracaoWhatsapp.numero_whatsapp || '';
-    if(phoneIdEl) phoneIdEl.value = integracaoWhatsapp.phone_number_id || '';
-    if(tokenEl) tokenEl.value = integracaoWhatsapp.access_token || '';
-    if(statusEl){
-      statusEl.innerHTML = integracaoWhatsapp.ativo
-        ? 'Status: <strong style="color:#1a9c5a;">Conectado</strong>'
-        : 'Status: <strong style="color:var(--text-muted);">Não conectado</strong>';
-    }
-  }
-
-  async function carregarIntegracaoWhatsappReal(){
-    integracaoWhatsapp = { provider: 'meta_cloud_api', phone_number_id: '', access_token: '', numero_whatsapp: '', ativo: false };
-    try{
-      const { data: userData } = await supabaseClient.auth.getUser();
-      if(!userData || !userData.user) return;
-      const { data, error } = await supabaseClient.from('integracoes_whatsapp')
-        .select('provider, phone_number_id, numero_whatsapp, ativo') // o token fica só no servidor
-        .eq('profissional_id', userData.user.id).maybeSingle();
-      if(!error && data){
-        integracaoWhatsapp = {
-          provider: data.provider || 'meta_cloud_api',
-          phone_number_id: data.phone_number_id || '',
-          access_token: '', // nunca volta para o navegador
-          numero_whatsapp: data.numero_whatsapp || '',
-          ativo: !!data.ativo
-        };
-      }
-    } catch(err){
-      console.warn('Não foi possível carregar a integração de WhatsApp.', err);
-    }
-    preencherCamposWhatsapp();
-  }
-
-  function carregarIntegracaoWhatsappDemo(){
-    integracaoWhatsapp = {
-      provider: 'meta_cloud_api',
-      phone_number_id: localStorage.getItem('skinExpertWhatsappPhoneId') || '',
-      access_token: localStorage.getItem('skinExpertWhatsappToken') || '',
-      numero_whatsapp: localStorage.getItem('skinExpertWhatsappNumero') || '',
-      ativo: localStorage.getItem('skinExpertWhatsappAtivo') === 'true'
-    };
-    preencherCamposWhatsapp();
-  }
+  /* WhatsApp: o app não envia mensagens sozinho. As confirmações abrem o WhatsApp com a mensagem pronta.
+     Limpa dados antigos da integração automática (removida em 27/11/2026) que possam ter ficado no navegador. */
+  try{ ['skinExpertWhatsappPhoneId','skinExpertWhatsappToken','skinExpertWhatsappNumero','skinExpertWhatsappAtivo'].forEach(k => localStorage.removeItem(k)); }catch(e){}
 
   /* ---------- Google Agenda (cada profissional conecta sua própria conta do Google) ---------- */
   // Troque pelo Client ID gerado no Google Cloud Console (OAuth 2.0 Client ID, tipo "Aplicativo da Web").
