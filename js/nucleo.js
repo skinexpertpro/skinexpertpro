@@ -149,13 +149,13 @@
       const { data: userData } = await supabaseClient.auth.getUser();
       if(!userData || !userData.user) return;
       const { data, error } = await supabaseClient.from('integracoes_whatsapp')
-        .select('provider, phone_number_id, access_token, numero_whatsapp, ativo')
+        .select('provider, phone_number_id, numero_whatsapp, ativo') // o token fica só no servidor
         .eq('profissional_id', userData.user.id).maybeSingle();
       if(!error && data){
         integracaoWhatsapp = {
           provider: data.provider || 'meta_cloud_api',
           phone_number_id: data.phone_number_id || '',
-          access_token: data.access_token || '',
+          access_token: '', // nunca volta para o navegador
           numero_whatsapp: data.numero_whatsapp || '',
           ativo: !!data.ativo
         };
